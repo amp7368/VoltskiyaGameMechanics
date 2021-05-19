@@ -10,7 +10,9 @@ import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import voltskiya.apple.game_mechanics.temperature.PluginTemperature;
+import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.util.PluginUtils;
+import voltskiya.apple.game_mechanics.util.gui.PluginInventoryGui;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,6 +60,8 @@ public class VoltskiyaPlugin extends JavaPlugin {
     private void manuallyLoadModules() {
         final VoltskiyaModule[] modules = new VoltskiyaModule[]{
                 new PluginUtils(),
+                new PluginInventoryGui(),
+                new PluginTMW(),
                 new PluginTemperature()
         };
         for (VoltskiyaModule module : modules) {
@@ -117,7 +121,7 @@ public class VoltskiyaPlugin extends JavaPlugin {
     }
 
     private void registerModules() {
-        Reflections reflections = new Reflections("apple.voltskiya.custom_mobs", new SubTypesScanner(true));
+        Reflections reflections = new Reflections("voltskiya.apple.game_mechanics", new SubTypesScanner(true));
         reflections.getSubTypesOf(VoltskiyaModule.class).forEach(moduleClass -> {
             VoltskiyaModule module;
             try {

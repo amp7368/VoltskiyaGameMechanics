@@ -1,6 +1,6 @@
-name: VoltskiyaCustomMobs
+name: VoltskiyaGameMechanics
 version: 1.0
-main: apple.voltskiya.custom_mobs.VoltskiyaPlugin
+main: voltskiya.apple.game_mechanics.VoltskiyaPlugin
 api-version: 1.16
 authors: [ appleptr16 ]
 softdepend: [LuckPerms, LoadDependencies]
