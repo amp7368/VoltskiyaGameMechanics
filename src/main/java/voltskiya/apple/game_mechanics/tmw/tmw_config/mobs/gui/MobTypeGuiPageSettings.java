@@ -6,28 +6,49 @@ import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.jetbrains.annotations.Nullable;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobTypeDatabase;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGui;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGuiPageSimple;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotGeneric;
+import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
 import voltskiya.apple.game_mechanics.util.minecraft.NbtUtils;
 
+import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Optional;
 
 public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
-    private MobTypeGui mobTypeGui;
-    private MobTypeBuilder mob;
+    private final MobTypeGui mobTypeGui;
+    private final MobTypeBuilder mob;
+    private final InventoryGui callbackGui;
 
-    public MobTypeGuiPageSettings(MobTypeGui mobTypeGui, MobTypeBuilder mob) {
+    public MobTypeGuiPageSettings(MobTypeGui mobTypeGui, MobTypeBuilder mob, InventoryGui callbackGui) {
         super(mobTypeGui);
         this.mobTypeGui = mobTypeGui;
         this.mob = mob;
+        this.callbackGui = callbackGui;
         setSlot(new MobNameSlot(), 0);
+        setSlot(new SaveSlot(), 4);
+        setSlot(new InventoryGuiSlotGeneric((e) -> mobTypeGui.nextPage(1), InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)
+        ), 8);
+        setSlot(new InventoryGuiSlotGeneric((e) -> {
+        }, InventoryUtils.makeItem(Material.APPLE, 1, "Is persistant", null)), 36);
+        setSlot(new InventoryGuiSlotGeneric((e) -> {
+        }, InventoryUtils.makeItem(Material.APPLE, 1, "Despawns after _ real hours", null)), 37);
+        setSlot(new InventoryGuiSlotGeneric((e) -> {
+        }, InventoryUtils.makeItem(Material.APPLE, 1, "Highest y level", null)), 44);
+        setSlot(new InventoryGuiSlotGeneric((e) -> {
+        }, InventoryUtils.makeItem(Material.APPLE, 1, "Spawn with line of sight", null)), 45);
+        setSlot(new InventoryGuiSlotGeneric((e) -> {
+        }, InventoryUtils.makeItem(Material.APPLE, 1, "Time to spawn", null)), 49);
+        setSlot(new InventoryGuiSlotGeneric((e) -> {
+        }, InventoryUtils.makeItem(Material.APPLE, 1, "Lowest y level", null)), 53);
     }
 
     @Override
@@ -106,6 +127,20 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
                 }, mob.getIconItem()), 0);
                 update();
             }
+        }
+    }
+
+    private class SaveSlot implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+            MobTypeDatabase.addMob(mob.build());
+            callbackGui.update(null);
+            event.getWhoClicked().openInventory(callbackGui.getInventory());
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.LIME_CONCRETE, 1, "Save", Collections.singletonList("list of things needed before saving"));
         }
     }
 }

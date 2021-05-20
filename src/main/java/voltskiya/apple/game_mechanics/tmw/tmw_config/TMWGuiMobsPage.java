@@ -31,9 +31,8 @@ public class TMWGuiMobsPage extends InventoryGuiPageScrollable {
         super.setSlots();
         setSlot(new InventoryGuiSlotGeneric((e1) -> tmwGui.nextPage(1), InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)
         ), 8);
-        setSlot(new InventoryGuiSlotGeneric(e -> {
-            e.getWhoClicked().openInventory(new MobTypeGui(tmwGui, new MobTypeBuilder()).getInventory());
-        }, InventoryUtils.makeItem(Material.DARK_OAK_SAPLING, 1, "Add a mob", null)),4);
+        setSlot(new InventoryGuiSlotGeneric(e -> e.getWhoClicked().openInventory(new MobTypeGui(tmwGui, new MobTypeBuilder()).getInventory()),
+                InventoryUtils.makeItem(Material.DARK_OAK_SAPLING, 1, "Add a mob", null)),4);
     }
 
     @Override
