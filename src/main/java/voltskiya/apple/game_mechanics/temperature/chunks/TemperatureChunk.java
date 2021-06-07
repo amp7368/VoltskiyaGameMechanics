@@ -14,7 +14,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TemperatureChunk {
-    private static final int BLOCKS_IN_A_CHUNK = 16;
+    public static final int BLOCKS_IN_A_CHUNK = 16;
+    public static final int BUILD_HEIGHT = 256;
     private final int chunkX;
     private final int chunkZ;
     private double heightVariation;

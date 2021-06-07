@@ -1,25 +1,31 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui;
 
+import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
+import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
+import voltskiya.apple.game_mechanics.tmw.TMWCommand;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeTypeDatabase;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGui;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGuiPageSimple;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotGeneric;
 import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
 public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
     private final BiomeTypeGui biomeTypeGui;
     private final BiomeTypeBuilder biome;
-    private final InventoryGui callbackGui;
+    private final TMWGui callbackGui;
 
-    public BiomeTypeGuiPageSettings(BiomeTypeGui biomeTypeGui, BiomeTypeBuilder biome, InventoryGui callbackGui) {
+    BiomeTypeGuiPageSettings(BiomeTypeGui biomeTypeGui, BiomeTypeBuilder biome, TMWGui callbackGui) {
         super(biomeTypeGui);
         this.biomeTypeGui = biomeTypeGui;
         this.biome = biome;
@@ -33,6 +39,8 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
         setSlot(new HeightVarianceSlot(), 25);
         setSlot(new TypicalYSlot(), 26);
         setSlot(new LowestYSlot(), 35);
+        setSlot(new SpawnRateSlot(), 45);
+        setSlot(new RegisterBlocksSlot(), 53);
     }
 
     @Override
@@ -161,6 +169,44 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
             final double typicalY = biome.getTypicalY();
             String name = typicalY < 0 ? "not set" : String.format("%.2f", typicalY);
             return InventoryUtils.makeItem(Material.STONE, 1, "Typical Y", Collections.singletonList(name));
+        }
+    }
+
+    private class SpawnRateSlot implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.GHAST_TEAR, 1, "Spawn Rate", Collections.singletonList(String.valueOf(biome.getSpawnRate())));
+        }
+    }
+
+    private class RegisterBlocksSlot implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+            final Player player = callbackGui.getPlayer();
+            BiomeTypeBuilderRegisterBlocks registerBlocks = biome.getRegisterBlocks();
+            if (registerBlocks == null) {
+                player.sendMessage(ChatColor.AQUA + "When you're finished, run main gui command again and click the Register Blocks Slot.");
+                player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
+                biome.setRegisterBlocks(new BiomeTypeBuilderRegisterBlocks(player, biome));
+                TMWCommand.addOpenMeNext(player.getUniqueId(), BiomeTypeGuiPageSettings.this);
+            }else{
+                biome.updateFromRegisterBlocks();
+                update();
+            }
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.SPRUCE_SAPLING, 1, "Register Blocks", Arrays.asList(
+                    "Once you click this, walk around in the new biome.",
+                    "Each chunk you walk in will be registered.",
+                    "Walk on the surface you want to scan.",
+                    "Keep in mind, this will work in caves as well."
+            ));
         }
     }
 }

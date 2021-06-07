@@ -1,19 +1,28 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui;
 
 import org.bukkit.Material;
+import org.bukkit.block.Biome;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
+import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
 
 import java.util.List;
+import java.util.Map;
+import java.util.logging.Level;
 
 public class BiomeTypeBuilder {
+    private BiomeTypeBuilderRegisterBlocks registerBlocks = null;
     private BiomeTypeBuilder.BiomeIcon icon;
     private int highestY = -1;
     private int lowestY = -1;
-    private double heightVariance;
-    private double typicalY;
+    private double heightVariance = -1;
+    private double typicalY = -1;
+    private int spawnRate = 0;
+    private Map<Material, Double> materials;
+    private Map<Biome, Double> biomes;
 
     public BiomeTypeBuilder(BiomeType biomeType) {
         this.icon = biomeType.getIcon();
@@ -57,6 +66,36 @@ public class BiomeTypeBuilder {
 
     public double getTypicalY() {
         return typicalY;
+    }
+
+    public int getSpawnRate() {
+        return spawnRate;
+    }
+
+    public BiomeTypeBuilderRegisterBlocks getRegisterBlocks() {
+        return registerBlocks;
+    }
+
+    public void setRegisterBlocks(BiomeTypeBuilderRegisterBlocks registerBlocks) {
+        this.registerBlocks = registerBlocks;
+    }
+
+    public void updateFromRegisterBlocks() {
+        this.registerBlocks.setShouldStop();
+        BiomeTypeBuilderRegisterBlocks.BlocksInfo blocksInfo = this.registerBlocks.compute();
+        if(blocksInfo == null){
+            PluginTMW.get().log(Level.WARNING,"The player didn't register any blocks for the biome");
+            return;
+        }
+
+        this.lowestY = blocksInfo.getLowestHeight();
+        System.out.println(lowestY);
+        this.highestY = blocksInfo.getHighestHeight();
+        this.typicalY = blocksInfo.getAverageHeight();
+        this.heightVariance = blocksInfo.getHeightVariation();
+        this.materials = blocksInfo.getMaterials();
+        this.biomes = blocksInfo.getBiomes();
+        this.registerBlocks = null;
     }
 
 
