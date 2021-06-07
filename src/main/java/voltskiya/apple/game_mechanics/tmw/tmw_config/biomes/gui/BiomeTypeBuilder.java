@@ -4,7 +4,6 @@ import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
@@ -89,13 +88,16 @@ public class BiomeTypeBuilder {
         }
 
         this.lowestY = blocksInfo.getLowestHeight();
-        System.out.println(lowestY);
         this.highestY = blocksInfo.getHighestHeight();
         this.typicalY = blocksInfo.getAverageHeight();
         this.heightVariance = blocksInfo.getHeightVariation();
         this.materials = blocksInfo.getMaterials();
         this.biomes = blocksInfo.getBiomes();
         this.registerBlocks = null;
+    }
+
+    public Map<Material, Double> getMaterials() {
+        return materials;
     }
 
 

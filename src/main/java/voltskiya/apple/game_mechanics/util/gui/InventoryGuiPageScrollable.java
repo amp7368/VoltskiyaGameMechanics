@@ -17,6 +17,7 @@ public abstract class InventoryGuiPageScrollable extends InventoryGuiPageSimple 
 
     @Override
     public void fillInventory() {
+        this.currentIndex = Math.max(0, this.currentIndex);
         int scrollableIndex = currentIndex;
         for (int i = 0; i < clicking.length; i++) {
             if (clicking[i] instanceof InventoryGuiSlotScrollable) {
@@ -55,5 +56,9 @@ public abstract class InventoryGuiPageScrollable extends InventoryGuiPageSimple 
 
     public void remove(InventoryGuiSlotScrollable slot) {
         this.scrollables.remove(slot);
+    }
+
+    public void clear() {
+        this.scrollables.clear();
     }
 }

@@ -46,7 +46,7 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
                     player.getLocation().getBlockZ() - chunk.getZ() * BLOCKS_IN_A_CHUNK
             );
         }
-        Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this,20);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this, 20);
     }
 
     private void scanNearby(Chunk chunk, Set<Pair<Integer, Integer>> blocksScanned, int x, int y, int z) {
@@ -59,7 +59,7 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
             boolean shouldScanNext = false;
             if (block.getType().isAir()) {
                 // go down
-                while (y > 0 && (block = chunk.getBlock(x, --y, z)).getType().isAir()) ;
+                while (--y > 0 && (block = chunk.getBlock(x, y, z)).getType().isAir()) ;
 
                 if (y >= 0) {
                     topBlocks.add(new TopBlock(block.getType(), y, block.getBiome()));
@@ -67,9 +67,10 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
                 }
             } else {
                 // go up
-                while (y < BUILD_HEIGHT && !(block = chunk.getBlock(x, ++y, z)).getType().isAir()) ;
+                while (++y < BUILD_HEIGHT && !(block = chunk.getBlock(x, y, z)).getType().isAir()) ;
 
-                if(y<BUILD_HEIGHT){
+                if (y < BUILD_HEIGHT) {
+                    block = chunk.getBlock(x, y - 1, z);
                     topBlocks.add(new TopBlock(block.getType(), y - 1, block.getBiome()));
                     shouldScanNext = true;
                 }
@@ -89,7 +90,7 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
 
     @Nullable
     public BlocksInfo compute() {
-        if(topBlocks.isEmpty()) return null;
+        if (topBlocks.isEmpty()) return null;
         Map<Material, Double> materials = new HashMap<>();
         Map<Biome, Double> biomes = new HashMap<>();
         int ySum = 0;
