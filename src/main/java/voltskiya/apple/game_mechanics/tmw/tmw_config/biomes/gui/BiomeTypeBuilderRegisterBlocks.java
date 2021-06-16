@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.util.data_structures.Pair;
 
 import java.util.*;
@@ -19,7 +20,7 @@ import static voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk
 public class BiomeTypeBuilderRegisterBlocks implements Runnable {
     private static final int BLOCKS_TO_COUNT_DOWN = 3;
     private final Player player;
-    private final BiomeTypeBuilder biomeBuilder;
+    private final BiomeType.BiomeTypeBuilder biomeBuilder;
     private boolean shouldStop = false;
     private final Set<Pair<Integer, Integer>> chunksScanned = new HashSet<>();
     private final List<List<TopBlock>> topBlocks = new ArrayList<>() {{
@@ -27,7 +28,7 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
             add(new ArrayList<>());
     }};
 
-    public BiomeTypeBuilderRegisterBlocks(Player player, BiomeTypeBuilder biomeBuilder) {
+    public BiomeTypeBuilderRegisterBlocks(Player player, BiomeType.BiomeTypeBuilder biomeBuilder) {
         this.player = player;
         this.biomeBuilder = biomeBuilder;
         Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this);

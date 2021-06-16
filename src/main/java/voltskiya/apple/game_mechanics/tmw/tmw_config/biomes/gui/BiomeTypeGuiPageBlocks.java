@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGuiPageScrollable;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotGeneric;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotScrollable;
@@ -13,10 +14,10 @@ import java.util.*;
 
 public class BiomeTypeGuiPageBlocks extends InventoryGuiPageScrollable {
     private final BiomeTypeGui biomeTypeGui;
-    private final BiomeTypeBuilder biome;
+    private final BiomeType.BiomeTypeBuilder biome;
     private final TMWGui callbackGui;
 
-    public BiomeTypeGuiPageBlocks(BiomeTypeGui biomeTypeGui, BiomeTypeBuilder biome, TMWGui callbackGui) {
+    public BiomeTypeGuiPageBlocks(BiomeTypeGui biomeTypeGui, BiomeType.BiomeTypeBuilder biome, TMWGui callbackGui) {
         super(biomeTypeGui);
         this.biomeTypeGui = biomeTypeGui;
         this.biome = biome;

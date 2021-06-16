@@ -10,6 +10,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.TMWCommand;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeTypeDatabase;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGui;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGuiPageSimple;
@@ -22,10 +23,10 @@ import java.util.List;
 
 public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
     private final BiomeTypeGui biomeTypeGui;
-    private final BiomeTypeBuilder biome;
+    private final BiomeType.BiomeTypeBuilder biome;
     private final TMWGui callbackGui;
 
-    BiomeTypeGuiPageSettings(BiomeTypeGui biomeTypeGui, BiomeTypeBuilder biome, TMWGui callbackGui) {
+    BiomeTypeGuiPageSettings(BiomeTypeGui biomeTypeGui, BiomeType.BiomeTypeBuilder biome, TMWGui callbackGui) {
         super(biomeTypeGui);
         this.biomeTypeGui = biomeTypeGui;
         this.biome = biome;
@@ -97,7 +98,7 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
                 String name = im.getDisplayName();
                 List<String> lore = im.getLore();
 
-                biome.setIcon(new BiomeTypeBuilder.BiomeIcon(name, material, lore));
+                biome.setIcon(new BiomeType.BiomeTypeBuilder.BiomeIcon(name, material, lore));
 
                 setSlot(new InventoryGuiSlotGeneric(e -> {
                 }, biome.getIconItem()), 0);
