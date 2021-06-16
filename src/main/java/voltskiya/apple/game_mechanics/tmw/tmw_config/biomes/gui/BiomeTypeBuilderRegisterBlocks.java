@@ -17,11 +17,15 @@ import static voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk
 import static voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk.BUILD_HEIGHT;
 
 public class BiomeTypeBuilderRegisterBlocks implements Runnable {
+    private static final int BLOCKS_TO_COUNT_DOWN = 3;
     private final Player player;
     private final BiomeTypeBuilder biomeBuilder;
     private boolean shouldStop = false;
     private final Set<Pair<Integer, Integer>> chunksScanned = new HashSet<>();
-    private final List<TopBlock> topBlocks = new ArrayList<>();
+    private final List<List<TopBlock>> topBlocks = new ArrayList<>() {{
+        for (int i = 0; i < BLOCKS_TO_COUNT_DOWN; i++)
+            add(new ArrayList<>());
+    }};
 
     public BiomeTypeBuilderRegisterBlocks(Player player, BiomeTypeBuilder biomeBuilder) {
         this.player = player;
@@ -31,7 +35,6 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("run");
         if (shouldStop) return;
         @NotNull Chunk chunk = this.player.getLocation().getChunk();
         Pair<Integer, Integer> coords = new Pair<>(chunk.getX(), chunk.getZ());
@@ -62,16 +65,28 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
                 while (--y > 0 && (block = chunk.getBlock(x, y, z)).getType().isAir()) ;
 
                 if (y >= 0) {
-                    topBlocks.add(new TopBlock(block.getType(), y, block.getBiome()));
+                    // register the top blocks (key letter block's')
+                    Block lowerBlock = block;
+
+                    for (int yi = 0; yi < BLOCKS_TO_COUNT_DOWN && !lowerBlock.getType().isAir() && y - yi >= 0; yi++) {
+                        topBlocks.get(yi).add(new TopBlock(lowerBlock.getType(), y, lowerBlock.getBiome()));
+                        lowerBlock = chunk.getBlock(x, y, z);
+                    }
                     shouldScanNext = true;
                 }
             } else {
                 // go up
-                while (++y < BUILD_HEIGHT && !(block = chunk.getBlock(x, y, z)).getType().isAir()) ;
+                while (++y < BUILD_HEIGHT && !chunk.getBlock(x, y, z).getType().isAir()) ;
 
                 if (y < BUILD_HEIGHT) {
                     block = chunk.getBlock(x, y - 1, z);
-                    topBlocks.add(new TopBlock(block.getType(), y - 1, block.getBiome()));
+                    // register the top blocks (key letter block's')
+                    Block lowerBlock = block;
+
+                    for (int yi = 0; yi < BLOCKS_TO_COUNT_DOWN && !lowerBlock.getType().isAir() && y - yi >= 0; yi++) {
+                        topBlocks.get(yi).add(new TopBlock(lowerBlock.getType(), y, lowerBlock.getBiome()));
+                        lowerBlock = chunk.getBlock(x, y, z);
+                    }
                     shouldScanNext = true;
                 }
             }
@@ -97,18 +112,25 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
         int averageHeight = 0;
         int lowestHeight = Integer.MAX_VALUE;
         int highestHeight = Integer.MIN_VALUE;
-        for (TopBlock block : topBlocks) {
-            ySum += block.y;
-            lowestHeight = Math.min(lowestHeight, block.y);
-            highestHeight = Math.max(highestHeight, block.y);
+        for (List<TopBlock> layer : topBlocks) {
+            for (TopBlock block : layer) {
+                ySum += block.y;
+                lowestHeight = Math.min(lowestHeight, block.y);
+                highestHeight = Math.max(highestHeight, block.y);
+            }
         }
         // get the standard deviation
-        int yMean = ySum / topBlocks.size();
+        int topBlocksCount = 0;
+        for (List<TopBlock> layer : topBlocks) {
+            topBlocksCount += topBlocks.size();
+        }
+        int yMean = ySum / topBlocksCount;
         double sd = 0;
-        for (int i = 0; i < topBlocks.size(); i++) {
-            final int diff = topBlocks.get(i).y - yMean;
-            sd += diff * diff;
-            i++;
+        for (List<TopBlock> layer : topBlocks) {
+            for (TopBlock block : layer) {
+                final int diff = block.y - yMean;
+                sd += diff * diff;
+            }
         }
         sd = Math.sqrt(sd / (BLOCKS_IN_A_CHUNK * BLOCKS_IN_A_CHUNK));
         final double maxY = yMean + sd * 2;
@@ -116,12 +138,14 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
 
         int blocksInThisChunk = 0;
         // if you aren't within 2 standard deviation, you are probably a random pillar
-        for (final TopBlock topBlock : topBlocks) {
-            if (topBlock.y <= maxY && topBlock.y >= minY) {
-                blocksInThisChunk++;
-                averageHeight += topBlock.y;
-                materials.compute(topBlock.material, (m, perc) -> perc == null ? 1 : perc + 1);
-                biomes.compute(topBlock.biome, (b, perc) -> perc == null ? 1 : perc + 1);
+        for (List<TopBlock> layer : topBlocks) {
+            for (TopBlock topBlock : layer) {
+                if (topBlock.y <= maxY && topBlock.y >= minY) {
+                    blocksInThisChunk++;
+                    averageHeight += topBlock.y;
+                    materials.compute(topBlock.material, (m, perc) -> perc == null ? 1 : perc + 1);
+                    biomes.compute(topBlock.biome, (b, perc) -> perc == null ? 1 : perc + 1);
+                }
             }
         }
         averageHeight /= blocksInThisChunk;

@@ -77,7 +77,6 @@ public class BiomeTypeGuiPageBlocks extends InventoryGuiPageScrollable {
 
         @Override
         public void dealWithClick(InventoryClickEvent event) {
-            super.dealWithClick(event);
         }
 
         @Override
