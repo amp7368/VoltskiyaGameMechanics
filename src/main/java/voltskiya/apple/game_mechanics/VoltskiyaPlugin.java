@@ -61,8 +61,7 @@ public class VoltskiyaPlugin extends JavaPlugin {
         final VoltskiyaModule[] modules = new VoltskiyaModule[]{
                 new PluginUtils(),
                 new PluginInventoryGui(),
-                new PluginTMW(),
-                new PluginTemperature()
+                new PluginTMW()
         };
         for (VoltskiyaModule module : modules) {
             registerModule(module);

@@ -22,6 +22,9 @@ public class BiomeType {
     private final int spawnRate;
     private final HashMap<Material, Double> materials;
     private final HashMap<Biome, Double> biomes;
+    private final int importanceOfBlocks;
+    private final int importanceOfHeightVariance;
+    private final int importanceOfBiomes;
 
     public BiomeType(BiomeTypeBuilder builder) {
         this.icon = builder.icon;
@@ -32,6 +35,10 @@ public class BiomeType {
         this.spawnRate = builder.spawnRate;
         this.materials = builder.materials;
         this.biomes = builder.biomes;
+        this.importanceOfHeightVariance = builder.importanceOfHeightVariance;
+        this.importanceOfBlocks = builder.importanceOfBlocks;
+        this.importanceOfBiomes = builder.importanceOfBiomes;
+
     }
 
     public ItemStack toItem() {
@@ -46,6 +53,52 @@ public class BiomeType {
         return icon.getName();
     }
 
+    /**
+     * make a guess of whether the parameters fit this biomeType.
+     *
+     * @param heightVariance
+     * @param typicalY
+     * @param materials
+     * @param biomes
+     * @return a number between 0 and 1. the closer to 0, the less likely this is to be the biome. the inverse for 1
+     */
+    public double guess(double heightVariance, double typicalY, Map<Material, Double> materials, Map<Biome, Double> biomes) {
+        // this will be incorrect 0.3% of the time
+        // if the typicalY is way off, say this isn't happening
+        if (typicalY + heightVariance * 3 < this.typicalY || typicalY - heightVariance * 3 > this.typicalY) return 0;
+
+        // percent error of height variation
+        // a number between 0 and 1
+        double heightVarianceScore = 1 - (Math.abs(this.heightVariance - heightVariance) / (this.heightVariance + heightVariance));
+
+        // percent error of materials
+        // a number between 0 and 1
+        double materialsScore = 1;
+        for (Material material : materials.keySet())
+            materialsScore -= Math.abs(materials.get(material) - this.materials.getOrDefault(material, 0d));
+
+        // percent error of biomes
+        // a number between 0 and 1
+        double biomesScore = 1;
+        for (Biome biome : biomes.keySet())
+            biomesScore -= Math.abs(biomes.get(biome) - this.biomes.getOrDefault(biome, 0d));
+
+        // convert the scores to the scaled score based on the settings of this biome
+        heightVarianceScore *= this.importanceOfHeightVariance;
+        materialsScore *= this.importanceOfBlocks;
+        biomesScore *= this.importanceOfBiomes;
+        int importanceTotal = this.importanceOfBiomes + this.importanceOfBlocks + this.importanceOfHeightVariance;
+        heightVarianceScore /= importanceTotal;
+        materialsScore /= importanceTotal;
+        biomesScore /= importanceTotal;
+        return heightVarianceScore + materialsScore + biomesScore;
+    }
+
+    @Override
+    public String toString() {
+        return icon == null ? null : icon.getName();
+    }
+
     public static class BiomeTypeBuilder {
         private BiomeTypeBuilderRegisterBlocks registerBlocks = null;
         private BiomeIcon icon;
@@ -54,6 +107,9 @@ public class BiomeType {
         private double heightVariance = -1;
         private double typicalY = -1;
         private int spawnRate = 0;
+        private final int importanceOfBlocks = 1;
+        private final int importanceOfHeightVariance = 1;
+        private final int importanceOfBiomes = 1;
         private HashMap<Material, Double> materials;
         private HashMap<Biome, Double> biomes;
 
@@ -122,7 +178,7 @@ public class BiomeType {
 
         public void updateFromRegisterBlocks() {
             this.registerBlocks.setShouldStop();
-            BiomeTypeBuilderRegisterBlocks.BlocksInfo blocksInfo = this.registerBlocks.compute();
+            BiomeTypeBuilderRegisterBlocks.BlocksInfo blocksInfo = this.registerBlocks.computeFromCurrent();
             if (blocksInfo == null) {
                 PluginTMW.get().log(Level.WARNING, "The player didn't register any blocks for the biome");
                 return;
@@ -141,6 +197,15 @@ public class BiomeType {
             return materials;
         }
 
+        @Override
+        public int hashCode() {
+            return icon.name.hashCode();
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return obj instanceof BiomeType && icon.name.equals(((BiomeType) obj).icon.name);
+        }
 
         public static class BiomeIcon {
             private final String name;

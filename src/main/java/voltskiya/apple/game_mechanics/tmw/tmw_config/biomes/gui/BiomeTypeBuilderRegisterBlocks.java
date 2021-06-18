@@ -23,10 +23,7 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
     private final BiomeType.BiomeTypeBuilder biomeBuilder;
     private boolean shouldStop = false;
     private final Set<Pair<Integer, Integer>> chunksScanned = new HashSet<>();
-    private final List<List<TopBlock>> topBlocks = new ArrayList<>() {{
-        for (int i = 0; i < BLOCKS_TO_COUNT_DOWN; i++)
-            add(new ArrayList<>());
-    }};
+    private final List<TopBlock> topBlocks = new ArrayList<>();
 
     public BiomeTypeBuilderRegisterBlocks(Player player, BiomeType.BiomeTypeBuilder biomeBuilder) {
         this.player = player;
@@ -43,17 +40,23 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
         if (chunksScanned.add(coords)) {
             // scan the chunk
             Set<Pair<Integer, Integer>> blocksScanned = new HashSet<>();
-            scanNearby(chunk,
+            topBlocks.addAll(scanNearby(chunk,
                     blocksScanned,
                     player.getLocation().getBlockX() - chunk.getX() * BLOCKS_IN_A_CHUNK,
                     player.getLocation().getBlockY(),
                     player.getLocation().getBlockZ() - chunk.getZ() * BLOCKS_IN_A_CHUNK
-            );
+            ));
         }
         Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this, 20);
     }
 
-    private void scanNearby(Chunk chunk, Set<Pair<Integer, Integer>> blocksScanned, int x, int y, int z) {
+    @Nullable
+    public static BlocksInfo compute(Chunk chunk, Set<Pair<Integer, Integer>> blocksScanned, int x, int y, int z) {
+        return compute(scanNearby(chunk, blocksScanned, x, y, z));
+    }
+
+    public static List<TopBlock> scanNearby(Chunk chunk, Set<Pair<Integer, Integer>> blocksScanned, int x, int y, int z) {
+        List<TopBlock> topBlocksLocal = new ArrayList<>();
         if (x >= 0 && x < BLOCKS_IN_A_CHUNK &&
                 z >= 0 && z < BLOCKS_IN_A_CHUNK &&
                 blocksScanned.add(new Pair<>(x, z))) {
@@ -70,7 +73,7 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
                     Block lowerBlock = block;
 
                     for (int yi = 0; yi < BLOCKS_TO_COUNT_DOWN && !lowerBlock.getType().isAir() && y - yi >= 0; yi++) {
-                        topBlocks.get(yi).add(new TopBlock(lowerBlock.getType(), y, lowerBlock.getBiome()));
+                        topBlocksLocal.add(new TopBlock(lowerBlock.getType(), y, lowerBlock.getBiome()));
                         lowerBlock = chunk.getBlock(x, y, z);
                     }
                     shouldScanNext = true;
@@ -85,19 +88,20 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
                     Block lowerBlock = block;
 
                     for (int yi = 0; yi < BLOCKS_TO_COUNT_DOWN && !lowerBlock.getType().isAir() && y - yi >= 0; yi++) {
-                        topBlocks.get(yi).add(new TopBlock(lowerBlock.getType(), y, lowerBlock.getBiome()));
+                        topBlocksLocal.add(new TopBlock(lowerBlock.getType(), y, lowerBlock.getBiome()));
                         lowerBlock = chunk.getBlock(x, y, z);
                     }
                     shouldScanNext = true;
                 }
             }
             if (shouldScanNext) {
-                scanNearby(chunk, blocksScanned, x - 1, y, z);
-                scanNearby(chunk, blocksScanned, x + 1, y, z);
-                scanNearby(chunk, blocksScanned, x, y, z - 1);
-                scanNearby(chunk, blocksScanned, x, y, z + 1);
+                topBlocksLocal.addAll(scanNearby(chunk, blocksScanned, x - 1, y, z));
+                topBlocksLocal.addAll(scanNearby(chunk, blocksScanned, x + 1, y, z));
+                topBlocksLocal.addAll(scanNearby(chunk, blocksScanned, x, y, z - 1));
+                topBlocksLocal.addAll(scanNearby(chunk, blocksScanned, x, y, z + 1));
             }
         }
+        return topBlocksLocal;
     }
 
     public void setShouldStop() {
@@ -105,7 +109,12 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
     }
 
     @Nullable
-    public BlocksInfo compute() {
+    public BlocksInfo computeFromCurrent() {
+        return compute(this.topBlocks);
+    }
+
+    @Nullable
+    public static BlocksInfo compute(List<TopBlock> topBlocks) {
         if (topBlocks.isEmpty()) return null;
         Map<Material, Double> materials = new HashMap<>();
         Map<Biome, Double> biomes = new HashMap<>();
@@ -113,25 +122,18 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
         int averageHeight = 0;
         int lowestHeight = Integer.MAX_VALUE;
         int highestHeight = Integer.MIN_VALUE;
-        for (List<TopBlock> layer : topBlocks) {
-            for (TopBlock block : layer) {
-                ySum += block.y;
-                lowestHeight = Math.min(lowestHeight, block.y);
-                highestHeight = Math.max(highestHeight, block.y);
-            }
+        for (TopBlock block : topBlocks) {
+            ySum += block.y;
+            lowestHeight = Math.min(lowestHeight, block.y);
+            highestHeight = Math.max(highestHeight, block.y);
         }
         // get the standard deviation
-        int topBlocksCount = 0;
-        for (List<TopBlock> layer : topBlocks) {
-            topBlocksCount += topBlocks.size();
-        }
+        int topBlocksCount = topBlocks.size();
         int yMean = ySum / topBlocksCount;
         double sd = 0;
-        for (List<TopBlock> layer : topBlocks) {
-            for (TopBlock block : layer) {
-                final int diff = block.y - yMean;
-                sd += diff * diff;
-            }
+        for (TopBlock block : topBlocks) {
+            final int diff = block.y - yMean;
+            sd += diff * diff;
         }
         sd = Math.sqrt(sd / (BLOCKS_IN_A_CHUNK * BLOCKS_IN_A_CHUNK));
         final double maxY = yMean + sd * 2;
@@ -139,14 +141,12 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
 
         int blocksInThisChunk = 0;
         // if you aren't within 2 standard deviation, you are probably a random pillar
-        for (List<TopBlock> layer : topBlocks) {
-            for (TopBlock topBlock : layer) {
-                if (topBlock.y <= maxY && topBlock.y >= minY) {
-                    blocksInThisChunk++;
-                    averageHeight += topBlock.y;
-                    materials.compute(topBlock.material, (m, perc) -> perc == null ? 1 : perc + 1);
-                    biomes.compute(topBlock.biome, (b, perc) -> perc == null ? 1 : perc + 1);
-                }
+        for (TopBlock topBlock : topBlocks) {
+            if (topBlock.y <= maxY && topBlock.y >= minY) {
+                blocksInThisChunk++;
+                averageHeight += topBlock.y;
+                materials.compute(topBlock.material, (m, perc) -> perc == null ? 1 : perc + 1);
+                biomes.compute(topBlock.biome, (b, perc) -> perc == null ? 1 : perc + 1);
             }
         }
         averageHeight /= blocksInThisChunk;
