@@ -20,6 +20,7 @@ import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 
 public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
     private final BiomeTypeGui biomeTypeGui;
@@ -31,17 +32,73 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
         this.biomeTypeGui = biomeTypeGui;
         this.biome = biome;
         this.callbackGui = callbackGui;
+        setSlots();
+    }
 
+    private void setSlots() {
         setSlot(new BiomeNameSlot(), 0);
         setSlot(new SaveSlot(), 4);
         setSlot(new InventoryGuiSlotGeneric((e) -> biomeTypeGui.nextPage(1), InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)
         ), 8);
+        setSlot(new ToggleYBoundsSlot(), 16);
         setSlot(new HighestYSlot(), 17);
         setSlot(new HeightVarianceSlot(), 25);
         setSlot(new TypicalYSlot(), 26);
         setSlot(new LowestYSlot(), 35);
         setSlot(new SpawnRateSlot(), 45);
         setSlot(new RegisterBlocksSlot(), 53);
+
+        setSlot(new ImportanceChangeSlot(
+                biome::incrementBlocksImportance, 1, 5,
+                InventoryUtils.makeItem(Material.STONE_BUTTON, 1, "Increase blocks importance", Arrays.asList(
+                        "Left click - increase importance by 1",
+                        "Right click - increase importance by 5"
+                ))
+        ), 30);
+        setSlot(new ImportanceChangeSlot(
+                biome::incrementHeightImportance, 1, 5,
+                InventoryUtils.makeItem(Material.SPRUCE_BUTTON, 1, "Increase height variance importance", Arrays.asList(
+                        "Left click - increase importance by 1",
+                        "Right click - increase importance by 5"
+                ))
+        ), 31);
+        setSlot(new ImportanceChangeSlot(
+                biome::incrementBiomesImportance, 1, 5,
+                InventoryUtils.makeItem(Material.OAK_BUTTON, 1, "Increase biomes importance", Arrays.asList(
+                        "Left click - increase importance by 1",
+                        "Right click - increase importance by 5"
+                ))
+        ), 32);
+        setSlot(new ImportanceChangeSlot(
+                biome::incrementBlocksImportance, -1, -5,
+                InventoryUtils.makeItem(Material.STONE_SLAB, 1, "Decrease blocks importance", Arrays.asList(
+                        "Left click - decrease importance by 1",
+                        "Right click - decrease importance by 5"
+                ))
+        ), 48);
+        setSlot(new ImportanceChangeSlot(
+                biome::incrementHeightImportance, -1, -5,
+                InventoryUtils.makeItem(Material.SPRUCE_SLAB, 1, "Decrease height variance importance", Arrays.asList(
+                        "Left click - decrease importance by 1",
+                        "Right click - decrease importance by 5"
+                ))
+        ), 49);
+        setSlot(new ImportanceChangeSlot(
+                biome::incrementBiomesImportance, -1, -5,
+                InventoryUtils.makeItem(Material.OAK_SLAB, 1, "Decrease biomes importance", Arrays.asList(
+                        "Left click - decrease importance by 1",
+                        "Right click - decrease importance by 5"
+                ))
+        ), 50);
+        setSlot(new DisplaySlotBlocks(), 39);
+        setSlot(new DisplaySlotHeight(), 40);
+        setSlot(new DisplaySlotBiomes(), 41);
+    }
+
+    @Override
+    public void fillInventory() {
+        setSlots();
+        super.fillInventory();
     }
 
     @Override
@@ -194,7 +251,7 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
                 player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
                 biome.setRegisterBlocks(new BiomeTypeBuilderRegisterBlocks(player, biome));
                 TMWCommand.addOpenMeNext(player.getUniqueId(), BiomeTypeGuiPageSettings.this);
-            }else{
+            } else {
                 biome.updateFromRegisterBlocks();
                 update();
             }
@@ -208,6 +265,87 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
                     "Walk on the surface you want to scan.",
                     "Keep in mind, this will work in caves as well."
             ));
+        }
+    }
+
+    private class ImportanceChangeSlot implements InventoryGui.InventoryGuiSlot {
+        private final Consumer<Integer> incrementer;
+        private final int leftClickIncrement;
+        private final int rightClickIncrement;
+        private final ItemStack itemToShow;
+
+        public ImportanceChangeSlot(Consumer<Integer> incrementer, int leftClickIncrement, int rightClickIncrement, ItemStack itemToShow) {
+            this.incrementer = incrementer;
+            this.leftClickIncrement = leftClickIncrement;
+            this.rightClickIncrement = rightClickIncrement;
+            this.itemToShow = itemToShow;
+        }
+
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+            if (event.getClick().isLeftClick()) {
+                incrementer.accept(leftClickIncrement);
+            } else {
+                incrementer.accept(rightClickIncrement);
+            }
+            update();
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return itemToShow;
+        }
+    }
+
+    private class DisplaySlotBlocks implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.STONE, Math.max(1, biome.getBlocksImportanceCount()), "Blocks importance",
+                    Collections.singletonList(String.format("%.2f%%", biome.getBlocksImportancePerc() * 100)));
+        }
+    }
+
+    private class DisplaySlotHeight implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.SPRUCE_PLANKS, Math.max(1, biome.getHeightImportanceCount()), "Blocks importance",
+                    Collections.singletonList(String.format("%.2f%%", biome.getHeightImportancePerc() * 100)));
+        }
+    }
+
+    private class DisplaySlotBiomes implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.OAK_PLANKS, Math.max(1, biome.getBiomesImportanceCount()), "Blocks importance",
+                    Collections.singletonList(String.format("%.2f%%", biome.getBiomesImportancePerc() * 100)));
+        }
+    }
+
+    private class ToggleYBoundsSlot implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+            biome.toggleYBounds();
+            update();
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.LADDER, 1, "Should the biome be Y-bounded?", Collections.singletonList(biome.getYBounds() ? "Yes" : "No"));
         }
     }
 }

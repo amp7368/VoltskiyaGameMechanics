@@ -57,6 +57,7 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
 
     public static List<TopBlock> scanNearby(Chunk chunk, Set<Pair<Integer, Integer>> blocksScanned, int x, int y, int z) {
         List<TopBlock> topBlocksLocal = new ArrayList<>();
+        if (y >= 256 || y < 0) return topBlocksLocal;
         if (x >= 0 && x < BLOCKS_IN_A_CHUNK &&
                 z >= 0 && z < BLOCKS_IN_A_CHUNK &&
                 blocksScanned.add(new Pair<>(x, z))) {

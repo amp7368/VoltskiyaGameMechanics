@@ -1,8 +1,6 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world.biomes;
 
-import net.kyori.adventure.text.Component;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.minecraft.server.v1_16_R3.BaseBlockPosition;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -17,8 +15,6 @@ import voltskiya.apple.game_mechanics.util.data_structures.Pair;
 
 import java.util.*;
 import java.util.function.ToDoubleFunction;
-
-import static voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk.BLOCKS_IN_A_CHUNK;
 
 public class BiomeWatchPlayer implements Runnable {
     //TODO change the interval to config

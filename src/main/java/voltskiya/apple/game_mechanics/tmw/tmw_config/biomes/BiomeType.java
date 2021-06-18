@@ -25,6 +25,7 @@ public class BiomeType {
     private final int importanceOfBlocks;
     private final int importanceOfHeightVariance;
     private final int importanceOfBiomes;
+    private final boolean isYBoundsMatters;
 
     public BiomeType(BiomeTypeBuilder builder) {
         this.icon = builder.icon;
@@ -38,7 +39,7 @@ public class BiomeType {
         this.importanceOfHeightVariance = builder.importanceOfHeightVariance;
         this.importanceOfBlocks = builder.importanceOfBlocks;
         this.importanceOfBiomes = builder.importanceOfBiomes;
-
+        this.isYBoundsMatters = builder.yBoundsToggle;
     }
 
     public ItemStack toItem() {
@@ -65,7 +66,8 @@ public class BiomeType {
     public double guess(double heightVariance, double typicalY, Map<Material, Double> materials, Map<Biome, Double> biomes) {
         // this will be incorrect 0.3% of the time
         // if the typicalY is way off, say this isn't happening
-        if (typicalY + heightVariance * 3 < this.typicalY || typicalY - heightVariance * 3 > this.typicalY) return 0;
+        if (this.isYBoundsMatters && (typicalY + heightVariance * 3 < this.typicalY || typicalY - heightVariance * 3 > this.typicalY))
+            return 0;
 
         // percent error of height variation
         // a number between 0 and 1
@@ -107,11 +109,12 @@ public class BiomeType {
         private double heightVariance = -1;
         private double typicalY = -1;
         private int spawnRate = 0;
-        private final int importanceOfBlocks = 1;
-        private final int importanceOfHeightVariance = 1;
-        private final int importanceOfBiomes = 1;
+        private int importanceOfBlocks = 1;
+        private int importanceOfHeightVariance = 1;
+        private int importanceOfBiomes = 1;
         private HashMap<Material, Double> materials;
         private HashMap<Biome, Double> biomes;
+        private boolean yBoundsToggle = true;
 
         public BiomeTypeBuilder(BiomeType real) {
             this.icon = real.icon;
@@ -122,6 +125,10 @@ public class BiomeType {
             this.spawnRate = real.spawnRate;
             this.materials = real.materials;
             this.biomes = real.biomes;
+            this.importanceOfHeightVariance = real.importanceOfHeightVariance;
+            this.importanceOfBlocks = real.importanceOfBlocks;
+            this.importanceOfBiomes = real.importanceOfBiomes;
+            this.yBoundsToggle = real.isYBoundsMatters;
         }
 
         public BiomeTypeBuilder() {
@@ -144,16 +151,8 @@ public class BiomeType {
             return highestY;
         }
 
-        public void setHighestY(int highestY) {
-            this.highestY = highestY;
-        }
-
         public int getLowestY() {
             return lowestY;
-        }
-
-        public void setLowestY(int lowestY) {
-            this.lowestY = lowestY;
         }
 
         public double getHeightVariance() {
@@ -174,6 +173,45 @@ public class BiomeType {
 
         public void setRegisterBlocks(BiomeTypeBuilderRegisterBlocks registerBlocks) {
             this.registerBlocks = registerBlocks;
+        }
+
+        public void incrementBlocksImportance(int change) {
+            this.importanceOfBlocks += change;
+            this.importanceOfBlocks = Math.max(0, this.importanceOfBlocks);
+        }
+
+        public void incrementBiomesImportance(int change) {
+            this.importanceOfBiomes += change;
+            this.importanceOfBiomes = Math.max(0, this.importanceOfBiomes);
+        }
+
+        public void incrementHeightImportance(int change) {
+            this.importanceOfHeightVariance += change;
+            this.importanceOfHeightVariance = Math.max(0, this.importanceOfHeightVariance);
+        }
+
+        public int getBlocksImportanceCount() {
+            return importanceOfBlocks;
+        }
+
+        public double getBlocksImportancePerc() {
+            return ((double) importanceOfBlocks) / (this.importanceOfBlocks + this.importanceOfBiomes + this.importanceOfHeightVariance);
+        }
+
+        public int getBiomesImportanceCount() {
+            return importanceOfBiomes;
+        }
+
+        public double getBiomesImportancePerc() {
+            return ((double) importanceOfBiomes) / (this.importanceOfBlocks + this.importanceOfBiomes + this.importanceOfHeightVariance);
+        }
+
+        public int getHeightImportanceCount() {
+            return importanceOfHeightVariance;
+        }
+
+        public double getHeightImportancePerc() {
+            return ((double) importanceOfHeightVariance) / (this.importanceOfBlocks + this.importanceOfBiomes + this.importanceOfHeightVariance);
         }
 
         public void updateFromRegisterBlocks() {
@@ -205,6 +243,14 @@ public class BiomeType {
         @Override
         public boolean equals(Object obj) {
             return obj instanceof BiomeType && icon.name.equals(((BiomeType) obj).icon.name);
+        }
+
+        public void toggleYBounds() {
+            this.yBoundsToggle = !this.yBoundsToggle;
+        }
+
+        public boolean getYBounds() {
+            return this.yBoundsToggle;
         }
 
         public static class BiomeIcon {
