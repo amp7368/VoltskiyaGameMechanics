@@ -9,6 +9,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.util.data_structures.Pair;
 
 import java.util.*;
@@ -17,13 +18,14 @@ import static voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk
 import static voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk.BUILD_HEIGHT;
 
 public class BiomeTypeBuilderRegisterBlocks implements Runnable {
+    private static final int BLOCKS_TO_COUNT_DOWN = 3;
     private final Player player;
-    private final BiomeTypeBuilder biomeBuilder;
+    private final BiomeType.BiomeTypeBuilder biomeBuilder;
     private boolean shouldStop = false;
     private final Set<Pair<Integer, Integer>> chunksScanned = new HashSet<>();
     private final List<TopBlock> topBlocks = new ArrayList<>();
 
-    public BiomeTypeBuilderRegisterBlocks(Player player, BiomeTypeBuilder biomeBuilder) {
+    public BiomeTypeBuilderRegisterBlocks(Player player, BiomeType.BiomeTypeBuilder biomeBuilder) {
         this.player = player;
         this.biomeBuilder = biomeBuilder;
         Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this);
@@ -31,7 +33,6 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
 
     @Override
     public void run() {
-        System.out.println("run");
         if (shouldStop) return;
         @NotNull Chunk chunk = this.player.getLocation().getChunk();
         Pair<Integer, Integer> coords = new Pair<>(chunk.getX(), chunk.getZ());
@@ -39,17 +40,24 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
         if (chunksScanned.add(coords)) {
             // scan the chunk
             Set<Pair<Integer, Integer>> blocksScanned = new HashSet<>();
-            scanNearby(chunk,
+            topBlocks.addAll(scanNearby(chunk,
                     blocksScanned,
                     player.getLocation().getBlockX() - chunk.getX() * BLOCKS_IN_A_CHUNK,
                     player.getLocation().getBlockY(),
                     player.getLocation().getBlockZ() - chunk.getZ() * BLOCKS_IN_A_CHUNK
-            );
+            ));
         }
         Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this, 20);
     }
 
-    private void scanNearby(Chunk chunk, Set<Pair<Integer, Integer>> blocksScanned, int x, int y, int z) {
+    @Nullable
+    public static BlocksInfo compute(Chunk chunk, Set<Pair<Integer, Integer>> blocksScanned, int x, int y, int z) {
+        return compute(scanNearby(chunk, blocksScanned, x, y, z));
+    }
+
+    public static List<TopBlock> scanNearby(Chunk chunk, Set<Pair<Integer, Integer>> blocksScanned, int x, int y, int z) {
+        List<TopBlock> topBlocksLocal = new ArrayList<>();
+        if (y >= 256 || y < 0) return topBlocksLocal;
         if (x >= 0 && x < BLOCKS_IN_A_CHUNK &&
                 z >= 0 && z < BLOCKS_IN_A_CHUNK &&
                 blocksScanned.add(new Pair<>(x, z))) {
@@ -62,26 +70,39 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
                 while (--y > 0 && (block = chunk.getBlock(x, y, z)).getType().isAir()) ;
 
                 if (y >= 0) {
-                    topBlocks.add(new TopBlock(block.getType(), y, block.getBiome()));
+                    // register the top blocks (key letter block's')
+                    Block lowerBlock = block;
+
+                    for (int yi = 0; yi < BLOCKS_TO_COUNT_DOWN && !lowerBlock.getType().isAir() && y - yi >= 0; yi++) {
+                        topBlocksLocal.add(new TopBlock(lowerBlock.getType(), y, lowerBlock.getBiome()));
+                        lowerBlock = chunk.getBlock(x, y, z);
+                    }
                     shouldScanNext = true;
                 }
             } else {
                 // go up
-                while (++y < BUILD_HEIGHT && !(block = chunk.getBlock(x, y, z)).getType().isAir()) ;
+                while (++y < BUILD_HEIGHT && !chunk.getBlock(x, y, z).getType().isAir()) ;
 
                 if (y < BUILD_HEIGHT) {
                     block = chunk.getBlock(x, y - 1, z);
-                    topBlocks.add(new TopBlock(block.getType(), y - 1, block.getBiome()));
+                    // register the top blocks (key letter block's')
+                    Block lowerBlock = block;
+
+                    for (int yi = 0; yi < BLOCKS_TO_COUNT_DOWN && !lowerBlock.getType().isAir() && y - yi >= 0; yi++) {
+                        topBlocksLocal.add(new TopBlock(lowerBlock.getType(), y, lowerBlock.getBiome()));
+                        lowerBlock = chunk.getBlock(x, y, z);
+                    }
                     shouldScanNext = true;
                 }
             }
             if (shouldScanNext) {
-                scanNearby(chunk, blocksScanned, x - 1, y, z);
-                scanNearby(chunk, blocksScanned, x + 1, y, z);
-                scanNearby(chunk, blocksScanned, x, y, z - 1);
-                scanNearby(chunk, blocksScanned, x, y, z + 1);
+                topBlocksLocal.addAll(scanNearby(chunk, blocksScanned, x - 1, y, z));
+                topBlocksLocal.addAll(scanNearby(chunk, blocksScanned, x + 1, y, z));
+                topBlocksLocal.addAll(scanNearby(chunk, blocksScanned, x, y, z - 1));
+                topBlocksLocal.addAll(scanNearby(chunk, blocksScanned, x, y, z + 1));
             }
         }
+        return topBlocksLocal;
     }
 
     public void setShouldStop() {
@@ -89,7 +110,12 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
     }
 
     @Nullable
-    public BlocksInfo compute() {
+    public BlocksInfo computeFromCurrent() {
+        return compute(this.topBlocks);
+    }
+
+    @Nullable
+    public static BlocksInfo compute(List<TopBlock> topBlocks) {
         if (topBlocks.isEmpty()) return null;
         Map<Material, Double> materials = new HashMap<>();
         Map<Biome, Double> biomes = new HashMap<>();
@@ -103,12 +129,12 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
             highestHeight = Math.max(highestHeight, block.y);
         }
         // get the standard deviation
-        int yMean = ySum / topBlocks.size();
+        int topBlocksCount = topBlocks.size();
+        int yMean = ySum / topBlocksCount;
         double sd = 0;
-        for (int i = 0; i < topBlocks.size(); i++) {
-            final int diff = topBlocks.get(i).y - yMean;
+        for (TopBlock block : topBlocks) {
+            final int diff = block.y - yMean;
             sd += diff * diff;
-            i++;
         }
         sd = Math.sqrt(sd / (BLOCKS_IN_A_CHUNK * BLOCKS_IN_A_CHUNK));
         final double maxY = yMean + sd * 2;
@@ -116,7 +142,7 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
 
         int blocksInThisChunk = 0;
         // if you aren't within 2 standard deviation, you are probably a random pillar
-        for (final TopBlock topBlock : topBlocks) {
+        for (TopBlock topBlock : topBlocks) {
             if (topBlock.y <= maxY && topBlock.y >= minY) {
                 blocksInThisChunk++;
                 averageHeight += topBlock.y;

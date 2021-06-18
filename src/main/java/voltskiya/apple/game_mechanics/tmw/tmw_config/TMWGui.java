@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGui;
 
 public class TMWGui extends InventoryGui {
-    private Player player;
+    private final Player player;
 
     public TMWGui(Player player) {
         this.player = player;
