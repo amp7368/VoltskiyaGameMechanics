@@ -156,7 +156,6 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
                 List<String> lore = im.getLore();
 
                 biome.setIcon(new BiomeType.BiomeTypeBuilder.BiomeIcon(name, material, lore));
-
                 setSlot(new InventoryGuiSlotGeneric(e -> {
                 }, biome.getIconItem()), 0);
                 update();

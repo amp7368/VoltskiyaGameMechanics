@@ -38,14 +38,12 @@ public class MobTypeBuilder {
         private final Material material;
         private final List<String> lore;
         private final NBTTagCompound nbt;
-        private final EntityTypes<?> entityTypes;
 
         public MobIcon(String name, Material material, List<String> lore, NBTTagCompound nbt, EntityTypes<?> entityTypes) {
             this.name = name;
             this.material = material;
             this.lore = lore;
             this.nbt = nbt;
-            this.entityTypes = entityTypes;
         }
 
         public ItemStack toItem() {

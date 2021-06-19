@@ -6,6 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
 
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.Map;
 import java.util.logging.Level;
 
 public class BiomeType {
+    private final HashMap<MobType, Integer> mobs;
     private final BiomeTypeBuilder.BiomeIcon icon;
     private final int highestY;
     private final int lowestY;
@@ -40,6 +42,7 @@ public class BiomeType {
         this.importanceOfBlocks = builder.importanceOfBlocks;
         this.importanceOfBiomes = builder.importanceOfBiomes;
         this.isYBoundsMatters = builder.yBoundsToggle;
+        this.mobs = builder.mobs;
     }
 
     public ItemStack toItem() {
@@ -102,6 +105,7 @@ public class BiomeType {
     }
 
     public static class BiomeTypeBuilder {
+        public HashMap<MobType, Integer> mobs = new HashMap<>();
         private BiomeTypeBuilderRegisterBlocks registerBlocks = null;
         private BiomeIcon icon;
         private int highestY = -1;
@@ -129,6 +133,7 @@ public class BiomeType {
             this.importanceOfBlocks = real.importanceOfBlocks;
             this.importanceOfBiomes = real.importanceOfBiomes;
             this.yBoundsToggle = real.isYBoundsMatters;
+            this.mobs = real.mobs;
         }
 
         public BiomeTypeBuilder() {
@@ -251,6 +256,22 @@ public class BiomeType {
 
         public boolean getYBounds() {
             return this.yBoundsToggle;
+        }
+
+        public HashMap<MobType, Integer> getMobs() {
+            return mobs;
+        }
+
+        public Integer getMob(MobType mob) {
+            return mobs.get(mob);
+        }
+
+        public void incrementMob(MobType mob, int change) {
+            this.mobs.computeIfPresent(mob, (m, count) -> count + change);
+        }
+
+        public void addMob(MobType mob) {
+            this.mobs.putIfAbsent(mob, 1);
         }
 
         public static class BiomeIcon {
