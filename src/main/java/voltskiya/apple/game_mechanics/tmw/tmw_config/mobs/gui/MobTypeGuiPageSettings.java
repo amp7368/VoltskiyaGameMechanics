@@ -1,5 +1,6 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.gui;
 
+import com.mysql.jdbc.UpdatableResultSet;
 import net.minecraft.server.v1_16_R3.EntityTypes;
 import net.minecraft.server.v1_16_R3.NBTTagCompound;
 import org.bukkit.Material;
@@ -17,6 +18,7 @@ import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotGeneric;
 import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
 import voltskiya.apple.game_mechanics.util.minecraft.NbtUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -35,18 +37,12 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
         setSlot(new SaveSlot(), 4);
         setSlot(new InventoryGuiSlotGeneric((e) -> mobTypeGui.nextPage(1), InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)
         ), 8);
-        setSlot(new InventoryGuiSlotGeneric((e) -> {
-        }, InventoryUtils.makeItem(Material.APPLE, 1, "Is persistant", null)), 36);
-        setSlot(new InventoryGuiSlotGeneric((e) -> {
-        }, InventoryUtils.makeItem(Material.APPLE, 1, "Despawns after _ real hours", null)), 37);
-        setSlot(new InventoryGuiSlotGeneric((e) -> {
-        }, InventoryUtils.makeItem(Material.APPLE, 1, "Highest y level", null)), 44);
-        setSlot(new InventoryGuiSlotGeneric((e) -> {
-        }, InventoryUtils.makeItem(Material.APPLE, 1, "Spawn with line of sight", null)), 45);
-        setSlot(new InventoryGuiSlotGeneric((e) -> {
-        }, InventoryUtils.makeItem(Material.APPLE, 1, "Time to spawn", null)), 49);
-        setSlot(new InventoryGuiSlotGeneric((e) -> {
-        }, InventoryUtils.makeItem(Material.APPLE, 1, "Lowest y level", null)), 53);
+        setSlot(new IsPersistentSlot(), 36);
+        setSlot(new DespawnsAfterSlot(), 37);
+        setSlot(new IsSpawnWithLineOfSight(), 45);
+        setSlot(new TimeToSpawnSlot(), 49);
+        setSlot(new HighestYValue(), 44);
+        setSlot(new LowestYValue(), 53);
     }
 
     @Override
@@ -139,6 +135,135 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
         @Override
         public ItemStack getItem() {
             return InventoryUtils.makeItem(Material.LIME_CONCRETE, 1, "Save", Collections.singletonList("list of things needed before saving"));
+        }
+    }
+
+    private class IsPersistentSlot implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+            mob.togglePersistent();
+            update();
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.COBWEB, 1, "Is persistent?", Collections.singletonList(mob.isPersistent() ? "Yes" : "No"));
+        }
+    }
+
+    private class DespawnsAfterSlot implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+            if (event.getClick().isShiftClick()) {
+                if (event.getClick().isLeftClick()) {
+                    mob.changeDespawnsAfterHours(.1);
+                } else {
+                    mob.changeDespawnsAfterHours(-.1);
+                }
+            } else {
+                if (event.getClick().isLeftClick()) {
+                    mob.changeDespawnsAfterHours(1);
+                } else {
+                    mob.changeDespawnsAfterHours(-1);
+                }
+            }
+            update();
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.WITHER_ROSE, 1, String.format("Despawns after %.1f real life hours", mob.getDespawnsAfterHours()), Arrays.asList(
+                    "Shift left click: +0.1",
+                    "Normal left click: +1",
+                    "Shift right click: -0.1",
+                    "Normal right click: -1"
+            ));
+        }
+    }
+
+    private class IsSpawnWithLineOfSight implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+            mob.toggleSpawnWithLineOfSight();
+            update();
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.END_ROD, 1, "Is spawn with line of sight?", Collections.singletonList(mob.isSpawnWithLineOfSight() ? "Yes" : "No"));
+        }
+    }
+
+
+    private class TimeToSpawnSlot implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.APPLE, 1, (String) null, null);
+        }
+    }
+
+    private class HighestYValue implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+            if (event.getClick().isShiftClick()) {
+                if (event.getClick().isLeftClick()) {
+                    mob.changeHighestYLevel(5);
+                } else {
+                    mob.changeHighestYLevel(-5);
+                }
+            } else {
+                if (event.getClick().isLeftClick()) {
+                    mob.changeHighestYLevel(1);
+                } else {
+                    mob.changeHighestYLevel(-1);
+                }
+            }
+            update();
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.GRASS_BLOCK, 1, String.format("Highest Y Level: %d", mob.getHighestYLevel()), Arrays.asList(
+                    "Shift left click: +5",
+                    "Normal left click: +1",
+                    "Shift right click: -5",
+                    "Normal right click: -1"
+            ));
+        }
+    }
+
+    private class LowestYValue implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+            if (event.getClick().isShiftClick()) {
+                if (event.getClick().isLeftClick()) {
+                    mob.changeLowestYLevel(5);
+                } else {
+                    mob.changeLowestYLevel(-5);
+                }
+            } else {
+                if (event.getClick().isLeftClick()) {
+                    mob.changeLowestYLevel(1);
+                } else {
+                    mob.changeLowestYLevel(-1);
+                }
+            }
+            update();
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.BEDROCK, 1, String.format("Lowest Y Level: %d", mob.getLowestYLevel()), Arrays.asList(
+                    "Shift left click: +5",
+                    "Normal left click: +1",
+                    "Shift right click: -5",
+                    "Normal right click: -1"
+            ));
         }
     }
 }

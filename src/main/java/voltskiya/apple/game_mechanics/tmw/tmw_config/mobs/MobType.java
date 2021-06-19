@@ -13,9 +13,21 @@ import java.util.List;
 
 public class MobType {
     private final MobTypeBuilder.MobIcon icon;
+    private final boolean isPersistent;
+    private final double despawnsAfterHours;
+    private final boolean isSpawnWithLineOfSight;
+    private final int highestYLevel;
+    private final int lowestYLevel;
+    private final TimeToSpawn timeToSpawn;
 
     public MobType(MobTypeBuilder builder) {
         this.icon = builder.icon;
+        this.isPersistent = builder.isPersistent;
+        this.despawnsAfterHours = builder.despawnsAfterHours;
+        this.isSpawnWithLineOfSight = builder.isSpawnWithLineOfSight;
+        this.highestYLevel = builder.highestYLevel;
+        this.lowestYLevel = builder.lowestYLevel;
+        this.timeToSpawn = builder.timeToSpawn;
     }
 
     public ItemStack toItem() {
@@ -61,9 +73,21 @@ public class MobType {
 
     public static class MobTypeBuilder {
         private MobIcon icon;
+        private boolean isPersistent = false;
+        private double despawnsAfterHours = 0;
+        private boolean isSpawnWithLineOfSight = false;
+        private int highestYLevel = 255;
+        private int lowestYLevel = 0;
+        private TimeToSpawn timeToSpawn = new TimeToSpawn();
 
         public MobTypeBuilder(MobType real) {
             this.icon = real.icon;
+            this.isPersistent = real.isPersistent;
+            this.despawnsAfterHours = real.despawnsAfterHours;
+            this.isSpawnWithLineOfSight = real.isSpawnWithLineOfSight;
+            this.highestYLevel = real.highestYLevel;
+            this.lowestYLevel = real.lowestYLevel;
+            this.timeToSpawn = real.timeToSpawn;
         }
 
         public MobTypeBuilder() {
@@ -80,6 +104,58 @@ public class MobType {
 
         public MobType build() {
             return new MobType(this);
+        }
+
+        public boolean isPersistent() {
+            return isPersistent;
+        }
+
+        public void togglePersistent() {
+            isPersistent = !isPersistent;
+        }
+
+        public double getDespawnsAfterHours() {
+            return despawnsAfterHours;
+        }
+
+        public void changeDespawnsAfterHours(double change) {
+            this.despawnsAfterHours += change;
+        }
+
+        public boolean isSpawnWithLineOfSight() {
+            return isSpawnWithLineOfSight;
+        }
+
+        public void toggleSpawnWithLineOfSight() {
+            isSpawnWithLineOfSight = !isSpawnWithLineOfSight;
+        }
+
+        public int getHighestYLevel() {
+            return highestYLevel;
+        }
+
+        public void changeHighestYLevel(int change) {
+            this.highestYLevel += change;
+            this.highestYLevel = Math.max(0, this.highestYLevel);
+            this.highestYLevel = Math.min(255, this.highestYLevel);
+        }
+
+        public int getLowestYLevel() {
+            return lowestYLevel;
+        }
+
+        public void changeLowestYLevel(int change) {
+            this.lowestYLevel += change;
+            this.lowestYLevel = Math.max(0, this.lowestYLevel);
+            this.lowestYLevel = Math.min(255, this.lowestYLevel);
+        }
+
+        public TimeToSpawn getTimeToSpawn() {
+            return timeToSpawn;
+        }
+
+        public void setTimeToSpawn(TimeToSpawn timeToSpawn) {
+            this.timeToSpawn = timeToSpawn;
         }
 
         public static class MobIcon {
@@ -108,5 +184,8 @@ public class MobType {
                 return name;
             }
         }
+    }
+
+    private static class TimeToSpawn {
     }
 }
