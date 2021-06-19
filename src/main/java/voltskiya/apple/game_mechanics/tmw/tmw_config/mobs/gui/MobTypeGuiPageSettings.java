@@ -6,12 +6,10 @@ import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.inventory.InventoryClickEvent;
-import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.inventory.meta.SpawnEggMeta;
 import org.jetbrains.annotations.Nullable;
-import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobTypeDatabase;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGui;
 import voltskiya.apple.game_mechanics.util.gui.InventoryGuiPageSimple;
@@ -25,10 +23,10 @@ import java.util.Optional;
 
 public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
     private final MobTypeGui mobTypeGui;
-    private final MobTypeBuilder mob;
+    private final MobType.MobTypeBuilder mob;
     private final InventoryGui callbackGui;
 
-    public MobTypeGuiPageSettings(MobTypeGui mobTypeGui, MobTypeBuilder mob, InventoryGui callbackGui) {
+    public MobTypeGuiPageSettings(MobTypeGui mobTypeGui, MobType.MobTypeBuilder mob, InventoryGui callbackGui) {
         super(mobTypeGui);
         this.mobTypeGui = mobTypeGui;
         this.mob = mob;
@@ -121,7 +119,7 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
 
                 Optional<EntityTypes<?>> entityTypes = entityTypesFromNbt.isPresent() ? entityTypesFromNbt : entityTypesFromMaterial;
                 if (entityTypes.isEmpty()) return;
-                mob.setIcon(new MobTypeBuilder.MobIcon(name, material, lore, nbt, entityTypes.get()));
+                mob.setIcon(new MobType.MobTypeBuilder.MobIcon(name, material, lore, nbt, entityTypes.get()));
 
                 setSlot(new InventoryGuiSlotGeneric(e -> {
                 }, mob.getIconItem()), 0);
