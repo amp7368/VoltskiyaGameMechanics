@@ -1,4 +1,4 @@
-package voltskiya.apple.game_mechanics.temperature.chunks;
+package voltskiya.apple.game_mechanics.deleteme_later.chunks;
 
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;

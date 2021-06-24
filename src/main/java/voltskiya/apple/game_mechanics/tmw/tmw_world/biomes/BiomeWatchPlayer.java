@@ -7,15 +7,13 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
-import voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk;
+import voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
-import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeTypeDatabase;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
 import voltskiya.apple.utilities.util.data_structures.Pair;
 
 import java.util.*;
-import java.util.function.ToDoubleFunction;
 
 public class BiomeWatchPlayer implements Runnable {
     //TODO change the interval to config
@@ -39,13 +37,12 @@ public class BiomeWatchPlayer implements Runnable {
         }
         final Location playerLocation = player.getLocation();
         Chunk chunk = playerLocation.getChunk();
-        previousBiomes.add(new ComputedBiomeChunk(playerLocation.getChunk(),
-                BiomeTypeBuilderRegisterBlocks.compute(
-                        playerLocation.getChunk(),
-                        new HashSet<>(),
-                        playerLocation.getBlockX() - chunk.getX() * TemperatureChunk.BLOCKS_IN_A_CHUNK,
-                        playerLocation.getBlockY(),
-                        playerLocation.getBlockZ() - chunk.getZ() * TemperatureChunk.BLOCKS_IN_A_CHUNK
+        previousBiomes.add(new ComputedBiomeChunk(BiomeTypeBuilderRegisterBlocks.compute(
+                playerLocation.getChunk(),
+                new HashSet<>(),
+                playerLocation.getBlockX() - chunk.getX() * TemperatureChunk.BLOCKS_IN_A_CHUNK,
+                playerLocation.getBlockY(),
+                playerLocation.getBlockZ() - chunk.getZ() * TemperatureChunk.BLOCKS_IN_A_CHUNK
                 ))
         );
         while (previousBiomes.size() > PREVIOUS_BIOMES_COUNT) previousBiomes.remove(0);
@@ -62,7 +59,7 @@ public class BiomeWatchPlayer implements Runnable {
         Map<BiomeType, Double> guesses = new HashMap<>();
         final double computedMaxSize = Math.sqrt(Math.sqrt(size));
         for (int i = 0; i < size; i++) {
-            final List<Pair<BiomeType, Double>> guessedBiomes = previousBiomes.get(i).guessedBiomes;
+            final List<Pair<BiomeType, Double>> guessedBiomes = previousBiomes.get(i).getGuessedBiomes();
             if (guessedBiomes == null) continue;
             for (Pair<BiomeType, Double> guess : guessedBiomes) {
                 final double scoreToAdd = (computedMaxSize - Math.sqrt(Math.sqrt(size - i))) * guess.getValue();
@@ -80,40 +77,4 @@ public class BiomeWatchPlayer implements Runnable {
         return bestBiome;
     }
 
-    private static class ComputedBiomeChunk {
-        private final BiomeTypeBuilderRegisterBlocks.BlocksInfo blocksInfo;
-        private final int chunkX;
-        private final int chunkZ;
-        private List<Pair<BiomeType, Double>> guessedBiomes;
-
-        public ComputedBiomeChunk(Chunk chunk, BiomeTypeBuilderRegisterBlocks.BlocksInfo blocksInfo) {
-            this.chunkX = chunk.getX();
-            this.chunkZ = chunk.getZ();
-            this.blocksInfo = blocksInfo;
-            this.guessBiomes();
-        }
-
-        private void guessBiomes() {
-            if (this.blocksInfo == null) {
-                guessedBiomes = null;
-                return;
-            }
-            List<Pair<BiomeType, Double>> guesses = new ArrayList<>();
-            for (BiomeType biome : BiomeTypeDatabase.getAll()) {
-                guesses.add(
-                        new Pair<>(
-                                biome,
-                                biome.guess(
-                                        this.blocksInfo.getHeightVariation(),
-                                        this.blocksInfo.getAverageHeight(),
-                                        this.blocksInfo.getMaterials(),
-                                        this.blocksInfo.getBiomes()
-                                )
-                        )
-                );
-            }
-            guesses.sort(Comparator.comparingDouble((ToDoubleFunction<Pair<BiomeType, Double>>) Pair::getValue).reversed());
-            this.guessedBiomes = new ArrayList<>(guesses.subList(0, Math.min(5, guesses.size())));
-        }
-    }
 }

@@ -1,6 +1,6 @@
-package voltskiya.apple.game_mechanics.temperature.biome;
+package voltskiya.apple.game_mechanics.deleteme_later.biome;
 
-import voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk;
+import voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk;
 
 
 public class TemperatureAllBiomes {

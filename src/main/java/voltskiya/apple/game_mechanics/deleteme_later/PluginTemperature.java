@@ -1,11 +1,11 @@
-package voltskiya.apple.game_mechanics.temperature;
+package voltskiya.apple.game_mechanics.deleteme_later;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import voltskiya.apple.game_mechanics.VoltskiyaModule;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
-import voltskiya.apple.game_mechanics.temperature.player.TemperatureAllPlayers;
-import voltskiya.apple.game_mechanics.temperature.player.TemperaturePlayerJoinListener;
+import voltskiya.apple.game_mechanics.deleteme_later.player.TemperatureAllPlayers;
+import voltskiya.apple.game_mechanics.deleteme_later.player.TemperaturePlayerJoinListener;
 
 public class PluginTemperature extends VoltskiyaModule {
     @Override

@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk.BLOCKS_IN_A_CHUNK;
+import static voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk.BLOCKS_IN_A_CHUNK;
 
 public class MobWatchPlayer implements Runnable {
     private static final int CHUNK_SIGHT = 7;

@@ -1,11 +1,11 @@
-package voltskiya.apple.game_mechanics.temperature.chunks;
+package voltskiya.apple.game_mechanics.deleteme_later.chunks;
 
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Biome;
-import voltskiya.apple.game_mechanics.temperature.biome.TemperatureAllBiomes;
-import voltskiya.apple.game_mechanics.temperature.biome.TemperatureBiome;
+import voltskiya.apple.game_mechanics.deleteme_later.biome.TemperatureAllBiomes;
+import voltskiya.apple.game_mechanics.deleteme_later.biome.TemperatureBiome;
 import voltskiya.apple.utilities.util.data_structures.Pair;
 import voltskiya.apple.utilities.util.minecraft.MaterialUtils;
 

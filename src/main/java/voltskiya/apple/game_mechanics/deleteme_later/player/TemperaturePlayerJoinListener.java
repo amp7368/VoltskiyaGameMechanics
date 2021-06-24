@@ -1,4 +1,4 @@
-package voltskiya.apple.game_mechanics.temperature.player;
+package voltskiya.apple.game_mechanics.deleteme_later.player;
 
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -7,8 +7,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.world.ChunkLoadEvent;
-import org.bukkit.event.world.ChunkUnloadEvent;
-import voltskiya.apple.game_mechanics.temperature.chunks.TemperatureLoadedChunks;
+import voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureLoadedChunks;
 
 public class TemperaturePlayerJoinListener implements Listener {
     @EventHandler

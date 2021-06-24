@@ -11,6 +11,7 @@ public class TMWGuiWeatherPage extends InventoryGuiPageScrollable {
     public TMWGuiWeatherPage(TMWGui tmwGui) {
         super(tmwGui);
         this.tmwGui = tmwGui;
+        setSlots();
     }
     @Override
     public void setSlots() {

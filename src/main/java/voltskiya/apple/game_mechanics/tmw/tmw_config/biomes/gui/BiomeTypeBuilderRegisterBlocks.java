@@ -14,8 +14,8 @@ import voltskiya.apple.utilities.util.data_structures.Pair;
 
 import java.util.*;
 
-import static voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk.BLOCKS_IN_A_CHUNK;
-import static voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk.BUILD_HEIGHT;
+import static voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk.BLOCKS_IN_A_CHUNK;
+import static voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk.BUILD_HEIGHT;
 
 public class BiomeTypeBuilderRegisterBlocks implements Runnable {
     private static final int BLOCKS_TO_COUNT_DOWN = 3;
@@ -57,7 +57,7 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
 
     public static List<TopBlock> scanNearby(Chunk chunk, Set<Pair<Integer, Integer>> blocksScanned, int x, int y, int z) {
         List<TopBlock> topBlocksLocal = new ArrayList<>();
-        if (y >= 256 || y < 0) return topBlocksLocal;
+        if (y >= BUILD_HEIGHT || y < 0) return topBlocksLocal;
         if (x >= 0 && x < BLOCKS_IN_A_CHUNK &&
                 z >= 0 && z < BLOCKS_IN_A_CHUNK &&
                 blocksScanned.add(new Pair<>(x, z))) {
@@ -74,7 +74,7 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
                     Block lowerBlock = block;
 
                     for (int yi = 0; yi < BLOCKS_TO_COUNT_DOWN && !lowerBlock.getType().isAir() && y - yi >= 0; yi++) {
-                        topBlocksLocal.add(new TopBlock(lowerBlock.getType(), y, lowerBlock.getBiome()));
+                        topBlocksLocal.add(new TopBlock(lowerBlock.getType(), yi == 0, x, y, z, lowerBlock.getBiome()));
                         lowerBlock = chunk.getBlock(x, y, z);
                     }
                     shouldScanNext = true;
@@ -89,7 +89,7 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
                     Block lowerBlock = block;
 
                     for (int yi = 0; yi < BLOCKS_TO_COUNT_DOWN && !lowerBlock.getType().isAir() && y - yi >= 0; yi++) {
-                        topBlocksLocal.add(new TopBlock(lowerBlock.getType(), y, lowerBlock.getBiome()));
+                        topBlocksLocal.add(new TopBlock(lowerBlock.getType(), yi == 0, x, y, z, lowerBlock.getBiome()));
                         lowerBlock = chunk.getBlock(x, y, z);
                     }
                     shouldScanNext = true;
@@ -201,15 +201,6 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
         }
     }
 
-    private static class TopBlock {
-        private Material material;
-        private int y;
-        private Biome biome;
-
-        public TopBlock(Material material, int y, Biome biome) {
-            this.material = material;
-            this.y = y;
-            this.biome = biome;
-        }
+    public record TopBlock(Material material, boolean isSurface, int x, int y, int z, Biome biome) {
     }
 }

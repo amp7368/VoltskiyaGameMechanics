@@ -1,10 +1,10 @@
-package voltskiya.apple.game_mechanics.temperature.player;
+package voltskiya.apple.game_mechanics.deleteme_later.player;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
-import voltskiya.apple.game_mechanics.temperature.biome.TemperatureBiome;
+import voltskiya.apple.game_mechanics.deleteme_later.biome.TemperatureBiome;
 
 
 public class TemperaturePlayer {

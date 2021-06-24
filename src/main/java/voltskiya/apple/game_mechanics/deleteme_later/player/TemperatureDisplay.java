@@ -1,4 +1,4 @@
-package voltskiya.apple.game_mechanics.temperature.player;
+package voltskiya.apple.game_mechanics.deleteme_later.player;
 
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.entity.Player;
