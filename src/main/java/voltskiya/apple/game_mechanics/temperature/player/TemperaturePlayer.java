@@ -5,7 +5,6 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.temperature.biome.TemperatureBiome;
-import voltskiya.apple.game_mechanics.util.GetChunksRequest;
 
 
 public class TemperaturePlayer {

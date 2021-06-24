@@ -1,12 +1,12 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.mobs;
 
 import com.google.gson.*;
-import net.minecraft.server.v1_16_R3.EntityTypes;
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.EntityTypes;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
+import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -151,11 +151,8 @@ public class MobType {
         }
 
         public TimeToSpawn getTimeToSpawn() {
+            if (timeToSpawn == null) timeToSpawn = new TimeToSpawn();
             return timeToSpawn;
-        }
-
-        public void setTimeToSpawn(TimeToSpawn timeToSpawn) {
-            this.timeToSpawn = timeToSpawn;
         }
 
         public static class MobIcon {
@@ -186,6 +183,42 @@ public class MobType {
         }
     }
 
-    private static class TimeToSpawn {
+    public static class TimeToSpawn {
+        private boolean isDay = true;
+        private boolean isEvening = true;
+        private boolean isNight = true;
+        private boolean isMorning = true;
+
+        public boolean isDay() {
+            return isDay;
+        }
+
+        public void toggleDay() {
+            isDay = !isDay;
+        }
+
+        public boolean isEvening() {
+            return isEvening;
+        }
+
+        public void toggleEvening() {
+            isEvening = !isEvening;
+        }
+
+        public boolean isNight() {
+            return isNight;
+        }
+
+        public void toggleNight() {
+            isNight = !isNight;
+        }
+
+        public boolean isMorning() {
+            return isMorning;
+        }
+
+        public void toggleMorning() {
+            isMorning = !isMorning;
+        }
     }
 }

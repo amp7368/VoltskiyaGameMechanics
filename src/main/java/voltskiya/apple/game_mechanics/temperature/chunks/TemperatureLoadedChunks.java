@@ -1,11 +1,10 @@
 package voltskiya.apple.game_mechanics.temperature.chunks;
 
-import org.bukkit.Chunk;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
-import voltskiya.apple.game_mechanics.util.GetChunksRequest;
-import voltskiya.apple.game_mechanics.util.data_structures.Pair;
-import voltskiya.apple.game_mechanics.util.data_structures.Triple;
+import voltskiya.apple.utilities.util.GetChunksRequest;
+import voltskiya.apple.utilities.util.data_structures.Pair;
+import voltskiya.apple.utilities.util.data_structures.Triple;
 
 import java.util.HashMap;
 import java.util.Map;

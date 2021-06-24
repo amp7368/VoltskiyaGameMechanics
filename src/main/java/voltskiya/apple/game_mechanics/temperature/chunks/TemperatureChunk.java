@@ -6,8 +6,8 @@ import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import voltskiya.apple.game_mechanics.temperature.biome.TemperatureAllBiomes;
 import voltskiya.apple.game_mechanics.temperature.biome.TemperatureBiome;
-import voltskiya.apple.game_mechanics.util.data_structures.Pair;
-import voltskiya.apple.game_mechanics.util.minecraft.MaterialUtils;
+import voltskiya.apple.utilities.util.data_structures.Pair;
+import voltskiya.apple.utilities.util.minecraft.MaterialUtils;
 
 import java.util.Collection;
 import java.util.HashMap;

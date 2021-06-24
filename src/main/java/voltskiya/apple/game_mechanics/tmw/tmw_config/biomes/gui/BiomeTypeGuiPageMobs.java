@@ -7,10 +7,10 @@ import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.gui.MobTypeGui;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiPageScrollable;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotGeneric;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotScrollable;
-import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
+import voltskiya.apple.utilities.util.gui.InventoryGuiPageScrollable;
+import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
+import voltskiya.apple.utilities.util.gui.InventoryGuiSlotScrollable;
+import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 public class BiomeTypeGuiPageMobs extends InventoryGuiPageScrollable {
     private final BiomeTypeGui biomeTypeGui;

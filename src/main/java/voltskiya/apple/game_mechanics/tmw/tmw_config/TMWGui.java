@@ -1,7 +1,7 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config;
 
 import org.bukkit.entity.Player;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGui;
+import voltskiya.apple.utilities.util.gui.InventoryGui;
 
 public class TMWGui extends InventoryGui {
     private final Player player;

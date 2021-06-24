@@ -1,10 +1,9 @@
-package voltskiya.apple.game_mechanics.util;
+package voltskiya.apple.utilities.util;
 
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
-import voltskiya.apple.game_mechanics.util.data_structures.Pair;
+import voltskiya.apple.utilities.util.data_structures.Pair;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.function.Consumer;

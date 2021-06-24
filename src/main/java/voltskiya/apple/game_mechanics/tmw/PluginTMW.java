@@ -1,7 +1,11 @@
 package voltskiya.apple.game_mechanics.tmw;
 
 import voltskiya.apple.game_mechanics.VoltskiyaModule;
-import voltskiya.apple.game_mechanics.tmw.tmw_world.biomes.BiomeWatchPlayerListener;
+import voltskiya.apple.game_mechanics.tmw.sql.TmwSqlVerifyDatabase;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobListener;
+
+import java.sql.SQLException;
 
 public class PluginTMW extends VoltskiyaModule {
     private static PluginTMW instance;
@@ -13,8 +17,14 @@ public class PluginTMW extends VoltskiyaModule {
     @Override
     public void enable() {
         instance = this;
+        try {
+            TmwSqlVerifyDatabase.connect();
+        } catch (ClassNotFoundException | SQLException e) {
+            e.printStackTrace();
+        }
         new TMWCommand();
-        new BiomeWatchPlayerListener();
+        new MobListener();
+        new WatchPlayerListener();
     }
 
     @Override

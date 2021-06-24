@@ -7,7 +7,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
-import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
+import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 import java.util.HashMap;
 import java.util.List;

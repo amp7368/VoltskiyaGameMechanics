@@ -4,7 +4,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotScrollable;
+import voltskiya.apple.utilities.util.gui.InventoryGuiSlotScrollable;
 
 public class BiomeTypeInventorySlot extends InventoryGuiSlotScrollable {
     private BiomeType biome;

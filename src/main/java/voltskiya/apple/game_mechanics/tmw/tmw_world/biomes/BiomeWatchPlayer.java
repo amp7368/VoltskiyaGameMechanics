@@ -11,7 +11,8 @@ import voltskiya.apple.game_mechanics.temperature.chunks.TemperatureChunk;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeTypeDatabase;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
-import voltskiya.apple.game_mechanics.util.data_structures.Pair;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
+import voltskiya.apple.utilities.util.data_structures.Pair;
 
 import java.util.*;
 import java.util.function.ToDoubleFunction;
@@ -33,7 +34,7 @@ public class BiomeWatchPlayer implements Runnable {
     public void run() {
         if (!this.player.isOnline()) {
             // player left the game. just let this die and tell the listener that spawned us that we're dead
-            BiomeWatchPlayerListener.get().leave(player.getUniqueId());
+            WatchPlayerListener.get().leave(player.getUniqueId());
             return;
         }
         final Location playerLocation = player.getLocation();

@@ -1,10 +1,9 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.gui;
 
-import com.mysql.jdbc.UpdatableResultSet;
-import net.minecraft.server.v1_16_R3.EntityTypes;
-import net.minecraft.server.v1_16_R3.NBTTagCompound;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.world.entity.EntityTypes;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_16_R3.inventory.CraftItemStack;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.entity.EntityType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -12,11 +11,11 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobTypeDatabase;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGui;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiPageSimple;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotGeneric;
-import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
-import voltskiya.apple.game_mechanics.util.minecraft.NbtUtils;
+import voltskiya.apple.utilities.util.gui.InventoryGui;
+import voltskiya.apple.utilities.util.gui.InventoryGuiPageSimple;
+import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
+import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
+import voltskiya.apple.utilities.util.minecraft.NbtUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -107,7 +106,7 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
                 List<String> lore = im.getLore();
 
                 // get the entityTag nbt
-                net.minecraft.server.v1_16_R3.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
+                net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
                 NBTTagCompound nbt = nmsItem.save(new NBTTagCompound());
                 nbt = nbt.hasKey(NbtUtils.ENTITY_TAG_NBT) ? nbt.getCompound(NbtUtils.ENTITY_TAG_NBT) : new NBTTagCompound();
                 Optional<EntityTypes<?>> entityTypesFromNbt = EntityTypes.a(nbt);
@@ -198,12 +197,13 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
     private class TimeToSpawnSlot implements InventoryGui.InventoryGuiSlot {
         @Override
         public void dealWithClick(InventoryClickEvent event) {
-
+            mobTypeGui.setTempInventory(new MobTypeGuiTimeToSpawnPage(mobTypeGui, mob.getTimeToSpawn()));
+            update();
         }
 
         @Override
         public ItemStack getItem() {
-            return InventoryUtils.makeItem(Material.APPLE, 1, (String) null, null);
+            return InventoryUtils.makeItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "Time to spawn", null);
         }
     }
 

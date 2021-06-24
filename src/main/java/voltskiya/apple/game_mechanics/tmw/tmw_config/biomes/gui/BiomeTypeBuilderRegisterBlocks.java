@@ -10,7 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
-import voltskiya.apple.game_mechanics.util.data_structures.Pair;
+import voltskiya.apple.utilities.util.data_structures.Pair;
 
 import java.util.*;
 
