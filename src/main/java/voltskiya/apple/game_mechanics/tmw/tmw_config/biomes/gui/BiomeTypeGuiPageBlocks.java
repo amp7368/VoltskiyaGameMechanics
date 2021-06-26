@@ -38,9 +38,7 @@ public class BiomeTypeGuiPageBlocks extends InventoryGuiPageScrollable {
     private void addBlocks() {
         clear();
         final Map<Material, Double> materials = biome.getMaterials();
-        System.out.println(materials);
         if (materials == null) return;
-        System.out.println(materials.size());
         List<Map.Entry<Material, Double>> blockTypes = new ArrayList<>(materials.entrySet());
         blockTypes.sort((o1, o2) -> (int) (o2.getValue() - o1.getValue()));
         for (Map.Entry<Material, Double> blockType : blockTypes) {

@@ -43,8 +43,58 @@ public class TmwSqlVerifyDatabase {
             WORLD_UUID,
             WORLD_MY_UID
     );
+    private static final String BUILD_TABLE_CONTOUR = String.format("""
+                    CREATE TABLE IF NOT EXISTS %s
+                    (
+                        %s            BIGINT  NOT NULL,
+                        %s        INTEGER NOT NULL,
+                        %s        INTEGER NOT NULL,
+                        %s BIGINT,
+                        %s BIGINT,
+                        %s BIGINT,
+                        %s BIGINT,
+                        %s       INTEGER,
+                        %s       INTEGER,
+                        %s       INTEGER,
+                        PRIMARY KEY (%s),
+                        UNIQUE (%s,%s)
+                    );""",
+            Contour.TABLE_CONTOUR,
+            Contour.CHUNK_UID,
+            Contour.CHUNK_X,
+            Contour.CHUNK_Z,
+            Contour.BRIDGE_X_POS,
+            Contour.BRIDGE_X_NEG,
+            Contour.BRIDGE_Z_POS,
+            Contour.BRIDGE_Z_NEG,
+            Contour.MIDDLE_X,
+            Contour.MIDDLE_Y,
+            Contour.MIDDLE_Z,
+            Contour.CHUNK_UID,
+            Contour.CHUNK_X,
+            Contour.CHUNK_Z
+    );
+    private static final String BUILD_TABLE_CHUNK_KILL = String.format("""
+                    CREATE TABLE IF NOT EXISTS %s
+                    (
+                        %s BIGINT   NOT NULL,
+                        %s TIMESTAMP NOT NULL,
+                        PRIMARY KEY (%s, %s),
+                        FOREIGN KEY (%s) REFERENCES %s
+                    );""",
+            Kills.TABLE_CHUNK_KILL,
+            Contour.CHUNK_UID,
+            Kills.TIME,
+            Contour.CHUNK_UID,
+            Kills.TIME,
+            Contour.CHUNK_UID,
+            Contour.TABLE_CONTOUR
+
+
+    );
     public static Connection database;
     private static long currentMobMyUid;
+    private static long currentChunkUid;
 
     static {
         DATABASE_FILENAME = new File(PluginTMW.get().getDataFolder().getPath(), "tmwDatabase.db");
@@ -62,11 +112,18 @@ public class TmwSqlVerifyDatabase {
         Statement statement = database.createStatement();
         statement.execute(TABLE_STORED_MOBS);
         statement.execute(BUILD_TABLE_WORLD);
+        statement.execute(BUILD_TABLE_CONTOUR);
+        statement.execute(BUILD_TABLE_CHUNK_KILL);
         currentMobMyUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", SqlVariableNames.MOB_MY_UID, SqlVariableNames.TABLE_STORED_MOB)).getLong(1);
+        currentChunkUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", Contour.CHUNK_UID, Contour.TABLE_CONTOUR)).getLong(1);
         statement.close();
     }
 
     public synchronized static long getMobMyUid() {
         return currentMobMyUid++;
+    }
+
+    public synchronized static long getChunkUid() {
+        return currentChunkUid++;
     }
 }

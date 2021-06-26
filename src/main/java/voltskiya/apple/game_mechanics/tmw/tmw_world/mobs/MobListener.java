@@ -53,10 +53,6 @@ public class MobListener implements Listener {
                 }
             }
         }
-        try {
-            MobSqlStorage.insertMob(mobsToSave);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        MobSqlStorage.insertMob(mobsToSave);
     }
 }

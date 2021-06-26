@@ -21,7 +21,7 @@ import java.util.function.Consumer;
 import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.*;
 
 public class MobSqlStorage {
-    public static void insertMob(List<StoredMob> mobs) throws SQLException {
+    public static void insertMob(List<StoredMob> mobs) {
         new Thread(() -> {
             try {
                 insertThreaded(mobs);

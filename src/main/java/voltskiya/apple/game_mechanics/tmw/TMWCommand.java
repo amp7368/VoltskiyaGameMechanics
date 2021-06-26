@@ -43,7 +43,7 @@ public class TMWCommand extends BaseCommand {
     }
 
     @Subcommand("map world please")
-    @CommandCompletion("x1 z1 x1 z2")
+    @CommandCompletion("x1 z1 x2 z2")
     public void map(Player player, int x1, int z1, int x2, int z2) {
         if (player.getGameMode() == GameMode.SPECTATOR) {
             player.sendMessage("Please stand on the surface you want to scan in a different gamemode");
