@@ -12,10 +12,18 @@ import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.blocks.TempBlockType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.blocks.TemperatureBlocksDatabase;
 import voltskiya.apple.utilities.util.DistanceUtils;
+import voltskiya.apple.utilities.util.data_structures.Triple;
+import voltskiya.apple.utilities.util.minecraft.MaterialUtils;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 public class TemperatureChecks {
 
     public static final int SOURCES_DISTANCE = 7;
+    private static final int MAX_DEPTH_INSIDENESS = 12;
+    public static final double INSIDE_MAX_SCANABLE = Math.pow(MAX_DEPTH_INSIDENESS, 3) / 2;
 
     /**
      * @param location the location to check around
@@ -23,6 +31,55 @@ public class TemperatureChecks {
      * 0 represents outside completely, 1 represents inside completely
      */
     public static double insideness(Location location) {
+        location.getWorld();
+        Set<Triple<Integer, Integer, Integer>> alreadyScanned = new HashSet<>();
+        Collection<Triple<Integer, Integer, Integer>> edges = new HashSet<>();
+        int count = scanInsideness(location, alreadyScanned, MAX_DEPTH_INSIDENESS / 2, edges);
+        count -= edges.size();
+        alreadyScanned.removeAll(edges);
+        for (Triple<Integer, Integer, Integer> edge : edges) {
+            count += scanInsideness(location.clone().set(edge.getX(), edge.getY(), edge.getZ()),
+                    alreadyScanned,
+                    MAX_DEPTH_INSIDENESS / 2,
+                    new HashSet<>());
+        }
+        System.out.println(count);
+        return 1 - Math.min(1, Math.max(0, -.2 + count / INSIDE_MAX_SCANABLE));
+    }
+
+    private static int scanInsideness(Location location, Set<Triple<Integer, Integer, Integer>> alreadyScanned, int depthToScan, Collection<Triple<Integer, Integer, Integer>> edges) {
+        @NotNull Block block = location.getBlock();
+        final Triple<Integer, Integer, Integer> coords = new Triple<>(location.getBlockX(), location.getBlockY(), location.getBlockZ());
+        if (alreadyScanned.add(coords)) {
+            if (MaterialUtils.isPassable(block.getType())) {
+                if (depthToScan == 0) {
+                    edges.add(coords);
+                    return 1;
+                } else {
+                    // recurse
+                    int airCounter = 1;
+                    Location clone = location.clone();
+                    clone.setY(location.getY() + 1);
+                    airCounter += scanInsideness(clone, alreadyScanned, depthToScan - 1, edges);
+                    clone = location.clone();
+                    clone.setX(location.getX() + 1);
+                    airCounter += scanInsideness(clone, alreadyScanned, depthToScan - 1, edges);
+                    clone = location.clone();
+                    clone.setX(location.getX() - 1);
+                    airCounter += scanInsideness(clone, alreadyScanned, depthToScan - 1, edges);
+                    clone = location.clone();
+                    clone.setZ(location.getZ() + 1);
+                    airCounter += scanInsideness(clone, alreadyScanned, depthToScan - 1, edges);
+                    clone = location.clone();
+                    clone.setZ(location.getZ() - 1);
+                    airCounter += scanInsideness(clone, alreadyScanned, depthToScan - 1, edges);
+                    // dont do y - 1
+                    return airCounter;
+                }
+            } else {
+                return 0;
+            }
+        }
         return 0;
     }
 

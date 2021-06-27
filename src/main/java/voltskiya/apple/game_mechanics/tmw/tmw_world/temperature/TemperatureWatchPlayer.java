@@ -34,6 +34,7 @@ public class TemperatureWatchPlayer implements Runnable {
         @Nullable BiomeType currentBiome = watchPlayer.getBiomeWatch().getCurrentGuess();
         double airTemp = currentBiome == null ? 0 : currentBiome.getTypicalTempNow(location.getWorld().getTime());
         double insideness = TemperatureChecks.insideness(location);
+        System.out.println(insideness);
         double blockHeatSource = TemperatureChecks.sources(location);
         double wind = TemperatureChecks.wind(location);
         ClothingTemperature clothing = TemperatureChecks.clothing(player);
