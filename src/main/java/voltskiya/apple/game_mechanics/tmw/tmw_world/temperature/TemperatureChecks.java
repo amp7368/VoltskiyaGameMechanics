@@ -75,7 +75,8 @@ public class TemperatureChecks {
             return coldResistance;
         }
 
-        private void addArmor(@NotNull ItemStack item) {
+        private void addArmor(@Nullable ItemStack item) {
+            if (item == null) return;
             @NotNull PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
         }
     }

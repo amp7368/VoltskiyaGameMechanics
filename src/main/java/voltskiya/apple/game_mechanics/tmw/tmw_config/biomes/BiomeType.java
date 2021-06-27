@@ -28,6 +28,8 @@ public class BiomeType {
     private final int importanceOfHeightVariance;
     private final int importanceOfBiomes;
     private final boolean isYBoundsMatters;
+    private final HashMap<TemperatureTime, TemperatureInfo> dailyTemperatures;
+    private final WindInfo windInfo;
 
     public BiomeType(BiomeTypeBuilder builder) {
         this.icon = builder.icon;
@@ -43,6 +45,8 @@ public class BiomeType {
         this.importanceOfBiomes = builder.importanceOfBiomes;
         this.isYBoundsMatters = builder.yBoundsToggle;
         this.mobs = builder.mobs;
+        this.dailyTemperatures = builder.dailyTemperatures;
+        this.windInfo = builder.windInfo;
     }
 
     public ItemStack toItem() {
@@ -104,6 +108,13 @@ public class BiomeType {
         return icon == null ? null : icon.getName();
     }
 
+    public enum TemperatureTime {
+        MORNING,
+        NOON,
+        EVENING,
+        MIDNIGHT
+    }
+
     public static class BiomeTypeBuilder {
         public HashMap<MobType, Integer> mobs = new HashMap<>();
         private BiomeTypeBuilderRegisterBlocks registerBlocks = null;
@@ -119,6 +130,8 @@ public class BiomeType {
         private HashMap<Material, Double> materials;
         private HashMap<Biome, Double> biomes;
         private boolean yBoundsToggle = true;
+        private HashMap<TemperatureTime, TemperatureInfo> dailyTemperatures = new HashMap<>();
+        private WindInfo windInfo;
 
         public BiomeTypeBuilder(BiomeType real) {
             this.icon = real.icon;
@@ -134,6 +147,13 @@ public class BiomeType {
             this.importanceOfBiomes = real.importanceOfBiomes;
             this.yBoundsToggle = real.isYBoundsMatters;
             this.mobs = real.mobs;
+            this.dailyTemperatures = real.dailyTemperatures;
+            this.windInfo = real.windInfo;
+            if (this.windInfo == null) this.windInfo = new WindInfo();
+            if (this.dailyTemperatures == null) this.dailyTemperatures = new HashMap<>();
+            for (TemperatureTime time : TemperatureTime.values())
+                this.dailyTemperatures.putIfAbsent(time, new TemperatureInfo());
+
         }
 
         public BiomeTypeBuilder() {
@@ -274,6 +294,14 @@ public class BiomeType {
             this.mobs.putIfAbsent(mob, 1);
         }
 
+        public HashMap<TemperatureTime, TemperatureInfo> getDailyTemperatures() {
+            return this.dailyTemperatures;
+        }
+
+        public WindInfo getWind() {
+            return this.windInfo;
+        }
+
         public static class BiomeIcon {
             private final String name;
             private final Material material;
@@ -298,5 +326,16 @@ public class BiomeType {
                 return name;
             }
         }
+
+
+    }
+
+    public static class TemperatureInfo {
+        public int degrees = 0;
+    }
+
+    public static class WindInfo {
+        public int kphMin = 0;
+        public int kphMax = 0;
     }
 }

@@ -29,7 +29,7 @@ public class BiomeTypeDatabase {
         try {
             if (biomesFile.exists()) {
                 try (BufferedReader reader = new BufferedReader(new FileReader(biomesFile))) {
-                    instance =gson.fromJson(reader, BiomeTypeDatabase.class);
+                    instance = gson.fromJson(reader, BiomeTypeDatabase.class);
                 }
             } else {
                 biomesFile.createNewFile();
@@ -53,7 +53,7 @@ public class BiomeTypeDatabase {
 
     private static void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(biomesFile))) {
-           gson.toJson(get(), writer);
+            gson.toJson(get(), writer);
         } catch (IOException e) {
             e.printStackTrace();
         }
