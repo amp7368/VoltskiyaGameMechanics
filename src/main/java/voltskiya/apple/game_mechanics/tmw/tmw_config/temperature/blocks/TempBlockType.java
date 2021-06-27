@@ -5,7 +5,7 @@ import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 public class TempBlockType {
-    private final int temperature;
+    private final double temperature;
     private final Material material;
 
     public TempBlockType(TempBlockTypeBuilder builder) {
@@ -21,17 +21,17 @@ public class TempBlockType {
         return new TempBlockTypeBuilder(this);
     }
 
-    public int getTemperature() {
+    public double getTemperature() {
         return this.temperature;
     }
 
     public ItemStack toItem() {
-        return InventoryUtils.makeItem(material, 1, (String) null, null);
+        return InventoryUtils.makeItem(material.isItem() ? material : Material.BLACK_CONCRETE, 1, material.name(), null);
     }
 
     public static class TempBlockTypeBuilder {
         private Material material = Material.AIR;
-        private int temperature = 0;
+        private double temperature = 0;
 
         private TempBlockTypeBuilder(TempBlockType real) {
             this.material = real.material;
@@ -57,7 +57,7 @@ public class TempBlockType {
             return material;
         }
 
-        public int getTemperature() {
+        public double getTemperature() {
             return temperature;
         }
     }

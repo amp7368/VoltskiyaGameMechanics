@@ -2,6 +2,8 @@ package voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.blocks;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.bukkit.Material;
+import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 
 import java.io.*;
@@ -60,6 +62,11 @@ public class TemperatureBlocksDatabase {
 
     public static List<TempBlockType> getAll() {
         return new ArrayList<>(get().tempBlocks.values());
+    }
+
+    @Nullable
+    public static TempBlockType get(Material type) {
+        return get().tempBlocks.get(type.name());
     }
 }
 

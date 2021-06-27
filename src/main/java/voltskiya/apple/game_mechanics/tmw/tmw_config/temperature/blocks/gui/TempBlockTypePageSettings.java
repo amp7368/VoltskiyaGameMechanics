@@ -43,13 +43,14 @@ public class TempBlockTypePageSettings extends InventoryGuiPageSimple {
     }
 
     private void setSlots() {
+        final Material material = blockType.getMaterial();
         setSlot(new InventoryGuiSlotGeneric(
                 e -> {
                 }, InventoryUtils.makeItem(
-                blockType.getMaterial(),
+                material.isItem() ? material : Material.BLACK_CONCRETE,
                 1,
-                (String) null,
-                Collections.singletonList(String.format("%d output", blockType.getTemperature()))
+                material.name(),
+                Collections.singletonList(String.format("%.2f output", blockType.getTemperature()))
         )
         ), 0);
     }

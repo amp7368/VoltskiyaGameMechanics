@@ -37,7 +37,6 @@ public class TemperatureWatchPlayer implements Runnable {
         double blockHeatSource = TemperatureChecks.sources(location);
         double wind = TemperatureChecks.wind(location);
         ClothingTemperature clothing = TemperatureChecks.clothing(player);
-
         double finalBlockHeatSource = (1 + insideness) * blockHeatSource;
         double finalWind = clothing.resistWind(wind * insideness);
         double finalAirTemp = airTemp * (1 - insideness) + finalBlockHeatSource;
