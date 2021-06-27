@@ -74,6 +74,30 @@ public class TmwSqlVerifyDatabase {
             Contour.CHUNK_X,
             Contour.CHUNK_Z
     );
+    private static final String BUILD_TABLE_BIOME = String.format("""
+                    CREATE TABLE IF NOT EXISTS %s
+                    (
+                        %s INTEGER NOT NULL PRIMARY KEY
+                    );""",
+            BiomeSql.TABLE_BIOME,
+            BiomeSql.BIOME_UID
+    );
+    private static final String BUILD_TABLE_CHUNK = String.format("""
+                    CREATE TABLE IF NOT EXISTS %s
+                    (
+                        %s            BIGINT  NOT NULL PRIMARY KEY,
+                        %s      INTEGER NOT NULL,
+                        %s DOUBLE  NOT NULL,
+                        FOREIGN KEY (%s) REFERENCES %s (%s)
+                    );""",
+            ChunkSql.TABLE_CHUNK,
+            ChunkSql.CHUNK_UID,
+            ChunkSql.BIOME_GUESS_UID,
+            ChunkSql.TEMPERATURE_MODIFIER,
+            ChunkSql.BIOME_GUESS_UID,
+            BiomeSql.TABLE_BIOME,
+            BiomeSql.BIOME_UID
+    );
     private static final String BUILD_TABLE_CHUNK_KILL = String.format("""
                     CREATE TABLE IF NOT EXISTS %s
                     (
@@ -89,8 +113,6 @@ public class TmwSqlVerifyDatabase {
             Kills.TIME,
             Contour.CHUNK_UID,
             Contour.TABLE_CONTOUR
-
-
     );
     public static Connection database;
     private static long currentMobMyUid;
@@ -110,7 +132,8 @@ public class TmwSqlVerifyDatabase {
 
     private synchronized static void verify() throws SQLException {
         Statement statement = database.createStatement();
-        statement.execute(TABLE_STORED_MOBS);
+        statement.execute(BUILD_TABLE_BIOME);
+        statement.execute(BUILD_TABLE_CHUNK);
         statement.execute(BUILD_TABLE_WORLD);
         statement.execute(BUILD_TABLE_CONTOUR);
         statement.execute(BUILD_TABLE_CHUNK_KILL);
