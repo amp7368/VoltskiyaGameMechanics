@@ -1,9 +1,9 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config;
 
 import org.bukkit.Material;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiPageScrollable;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotGeneric;
-import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
+import voltskiya.apple.utilities.util.gui.InventoryGuiPageScrollable;
+import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
+import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 public class TMWGuiWeatherPage extends InventoryGuiPageScrollable {
     private TMWGui tmwGui;
@@ -11,6 +11,7 @@ public class TMWGuiWeatherPage extends InventoryGuiPageScrollable {
     public TMWGuiWeatherPage(TMWGui tmwGui) {
         super(tmwGui);
         this.tmwGui = tmwGui;
+        setSlots();
     }
     @Override
     public void setSlots() {

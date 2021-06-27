@@ -1,12 +1,13 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.gui;
 
 import org.bukkit.Material;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiPageScrollable;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotGeneric;
-import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
+import voltskiya.apple.utilities.util.gui.InventoryGuiPageScrollable;
+import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
+import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 public class MobTypeGuiPageSpawnConditions extends InventoryGuiPageScrollable {
-    public MobTypeGuiPageSpawnConditions(MobTypeGui mobTypeGui, MobTypeBuilder mob) {
+    public MobTypeGuiPageSpawnConditions(MobTypeGui mobTypeGui, MobType.MobTypeBuilder mob) {
         super(mobTypeGui);
         setSlot(new InventoryGuiSlotGeneric((e) -> mobTypeGui.nextPage(-1), InventoryUtils.makeItem(Material.RED_TERRACOTTA, 1, "Previous Page", null)
         ), 0);

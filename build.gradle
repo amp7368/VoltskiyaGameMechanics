@@ -6,6 +6,7 @@ plugins {
 group 'org.example'
 version '1.0-SNAPSHOT'
 
+
 repositories {
     mavenCentral()
     mavenLocal()
@@ -13,7 +14,10 @@ repositories {
         url 'https://papermc.io/repo/repository/maven-public/'
     }
     maven {
-        url = 'https://repo.aikar.co/content/groups/aikar/'
+        url  'https://repo.aikar.co/content/groups/aikar/'
+    }
+    flatDir {
+        dirs 'lib'
     }
 }
 
@@ -25,9 +29,11 @@ task download(type: Copy) {
     into 'lib'
 }
 dependencies {
+    implementation('apple.nms.decoding:VoltskiyaUtilities:1.1.BUILD-SNAPSHOT')
+    implementation('apple.voltskiya.utilities:DecodingNms:1.1.BUILD-SNAPSHOT')
     implementation 'org.jetbrains:annotations:20.1.0'
-    compileOnly 'com.destroystokyo.paper:paper-api:1.16.5-R0.1-SNAPSHOT'
-    compileOnly 'org.spigotmc:spigot:1.16.5-R0.1-SNAPSHOT'
+    compileOnly 'io.papermc.paper:paper-api:1.17-R0.1-SNAPSHOT'
+    compileOnly 'org.spigotmc:spigot:1.17-R0.1-SNAPSHOT'
     // The full Spigot server with no shadowing. Requires mavenLocal.
     compileOnly 'co.aikar:acf-paper:0.5.0-SNAPSHOT'
     compileOnly 'net.luckperms:api:5.0'

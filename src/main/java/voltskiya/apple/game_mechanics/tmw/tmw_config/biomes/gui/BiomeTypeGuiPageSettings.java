@@ -12,10 +12,10 @@ import voltskiya.apple.game_mechanics.tmw.TMWCommand;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeTypeDatabase;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGui;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiPageSimple;
-import voltskiya.apple.game_mechanics.util.gui.InventoryGuiSlotGeneric;
-import voltskiya.apple.game_mechanics.util.minecraft.InventoryUtils;
+import voltskiya.apple.utilities.util.gui.InventoryGui;
+import voltskiya.apple.utilities.util.gui.InventoryGuiPageSimple;
+import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
+import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -156,7 +156,6 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
                 List<String> lore = im.getLore();
 
                 biome.setIcon(new BiomeType.BiomeTypeBuilder.BiomeIcon(name, material, lore));
-
                 setSlot(new InventoryGuiSlotGeneric(e -> {
                 }, biome.getIconItem()), 0);
                 update();

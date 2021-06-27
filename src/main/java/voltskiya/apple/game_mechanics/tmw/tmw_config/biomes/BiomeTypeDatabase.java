@@ -1,7 +1,9 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.biomes;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -9,6 +11,7 @@ import java.util.HashMap;
 import java.util.List;
 
 public class BiomeTypeDatabase {
+    private static Gson gson;
     private final HashMap<String, BiomeType> biomes = new HashMap<>();
 
     private static final String BIOMES_FOLDER = "biomes";
@@ -17,6 +20,11 @@ public class BiomeTypeDatabase {
     private static final File biomesFile;
 
     static {
+        final GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(MobType.class, new MobType.MobTypeSerializer());
+        gsonBuilder.registerTypeAdapter(MobType.class, new MobType.MobTypeDeSerializer());
+        gson = gsonBuilder.create();
+
         // get the biomes from our db
         File biomesFolder = new File(PluginTMW.get().getDataFolder(), BIOMES_FOLDER);
         biomesFolder.mkdirs();
@@ -24,7 +32,7 @@ public class BiomeTypeDatabase {
         try {
             if (biomesFile.exists()) {
                 try (BufferedReader reader = new BufferedReader(new FileReader(biomesFile))) {
-                    instance = new Gson().fromJson(reader, BiomeTypeDatabase.class);
+                    instance =gson.fromJson(reader, BiomeTypeDatabase.class);
                 }
             } else {
                 biomesFile.createNewFile();
@@ -48,7 +56,7 @@ public class BiomeTypeDatabase {
 
     private static void save() {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(biomesFile))) {
-            new Gson().toJson(get(), writer);
+           gson.toJson(get(), writer);
         } catch (IOException e) {
             e.printStackTrace();
         }
