@@ -20,7 +20,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class TemperatureChecks {
-
     public static final int SOURCES_DISTANCE = 7;
     private static final int MAX_DEPTH_INSIDENESS = 12;
     public static final double INSIDE_MAX_SCANABLE = Math.pow(MAX_DEPTH_INSIDENESS, 3) / 2;
@@ -43,7 +42,6 @@ public class TemperatureChecks {
                     MAX_DEPTH_INSIDENESS / 2,
                     new HashSet<>());
         }
-        System.out.println(count);
         return 1 - Math.min(1, Math.max(0, -.2 + count / INSIDE_MAX_SCANABLE));
     }
 

@@ -3,6 +3,8 @@ package voltskiya.apple.game_mechanics.tmw.tmw_world;
 import org.bukkit.entity.Player;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.biomes.BiomeWatchPlayer;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobWatchPlayer;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.PlayerTemperature;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.PlayerTemperatureDatabase;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.TemperatureWatchPlayer;
 
 public class WatchPlayer {
@@ -10,8 +12,10 @@ public class WatchPlayer {
     private final BiomeWatchPlayer biomeWatch;
     private final MobWatchPlayer mobWatch;
     private final TemperatureWatchPlayer temperatureWatch;
+    private final PlayerTemperature playerInfo;
 
     public WatchPlayer(Player player) {
+        this.playerInfo = PlayerTemperatureDatabase.get(player.getUniqueId());
         this.player = player;
         this.biomeWatch = new BiomeWatchPlayer(player, this);
         this.mobWatch = new MobWatchPlayer(player, this);
@@ -34,5 +38,9 @@ public class WatchPlayer {
 
     public TemperatureWatchPlayer getTemperatureWatch() {
         return temperatureWatch;
+    }
+
+    public PlayerTemperature getPlayerInfo() {
+        return playerInfo;
     }
 }
