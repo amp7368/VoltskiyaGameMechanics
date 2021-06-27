@@ -5,10 +5,10 @@ import net.minecraft.world.entity.EntityTypes;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
-import org.bukkit.World;
 import org.bukkit.entity.Player;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.sql.MobSqlStorage;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayer;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
 
 import java.sql.SQLException;
@@ -24,7 +24,7 @@ public class MobWatchPlayer implements Runnable {
     private static final long CHECK_INTERVAL = 60;
     private final Player player;
 
-    public MobWatchPlayer(Player player) {
+    public MobWatchPlayer(Player player, WatchPlayer watchPlayer) {
         this.player = player;
         Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this);
     }
@@ -37,7 +37,6 @@ public class MobWatchPlayer implements Runnable {
             return;
         }
         final Location playerLocation = player.getLocation();
-        final World world = playerLocation.getWorld();
         final Chunk centerChunk = playerLocation.getChunk();
         int x = centerChunk.getX();
         int z = centerChunk.getZ();

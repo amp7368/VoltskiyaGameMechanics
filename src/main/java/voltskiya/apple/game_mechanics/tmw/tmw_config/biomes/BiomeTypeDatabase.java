@@ -3,7 +3,6 @@ package voltskiya.apple.game_mechanics.tmw.tmw_config.biomes;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
-import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -21,8 +20,6 @@ public class BiomeTypeDatabase {
 
     static {
         final GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(MobType.class, new MobType.MobTypeSerializer());
-        gsonBuilder.registerTypeAdapter(MobType.class, new MobType.MobTypeDeSerializer());
         gson = gsonBuilder.create();
 
         // get the biomes from our db
