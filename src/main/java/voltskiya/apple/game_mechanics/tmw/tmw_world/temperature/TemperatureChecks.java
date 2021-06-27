@@ -79,5 +79,13 @@ public class TemperatureChecks {
             if (item == null) return;
             @NotNull PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
         }
+
+        public double resistWind(double wind) {
+            return wind;
+        }
+
+        public double resistTemp(double feelsLikeOutside) {
+            return feelsLikeOutside;
+        }
     }
 }

@@ -1,4 +1,4 @@
-package voltskiya.apple.game_mechanics.tmw.tmw_config.clothing;
+package voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.clothing;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;

@@ -1,6 +1,5 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world.biomes;
 
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -21,6 +20,7 @@ public class BiomeWatchPlayer implements Runnable {
     private static final int PREVIOUS_BIOMES_COUNT = (int) (20 * 60 / WATCH_PLAYER_INTERVAL);
     private final Player player;
     private final List<ComputedBiomeChunk> previousBiomes = new ArrayList<>();
+    @Nullable
     private BiomeType currentGuess;
 
     public BiomeWatchPlayer(Player player, WatchPlayer watchPlayer) {
@@ -42,9 +42,6 @@ public class BiomeWatchPlayer implements Runnable {
         );
         while (previousBiomes.size() > PREVIOUS_BIOMES_COUNT) previousBiomes.remove(0);
         this.currentGuess = finalizeGuesses();
-        TextComponent msg = new TextComponent();
-        msg.setText(currentGuess == null ? "null" : currentGuess.getName());
-        player.sendActionBar(msg);
         Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this, WATCH_PLAYER_INTERVAL);
     }
 
@@ -72,6 +69,7 @@ public class BiomeWatchPlayer implements Runnable {
         return bestBiome;
     }
 
+    @Nullable
     public BiomeType getCurrentGuess() {
         return this.currentGuess;
     }

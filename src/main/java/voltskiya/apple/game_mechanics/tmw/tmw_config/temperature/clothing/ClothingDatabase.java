@@ -1,4 +1,4 @@
-package voltskiya.apple.game_mechanics.tmw.tmw_config.clothing;
+package voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.clothing;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;

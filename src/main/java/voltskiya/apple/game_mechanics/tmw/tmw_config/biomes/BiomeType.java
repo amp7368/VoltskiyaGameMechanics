@@ -108,11 +108,23 @@ public class BiomeType {
         return icon == null ? null : icon.getName();
     }
 
+    public int getTypicalTempNow(long time) {
+        final TemperatureInfo temperatureInfo = dailyTemperatures.get(TemperatureTime.getTime(time));
+        return temperatureInfo == null ? -100 : temperatureInfo.degrees; // null should be impossible
+    }
+
     public enum TemperatureTime {
         MORNING,
         NOON,
         EVENING,
-        MIDNIGHT
+        MIDNIGHT;
+
+        public static TemperatureTime getTime(long time) {
+            if (time < 3000) return MIDNIGHT;
+            else if (time < 9000) return MORNING;
+            else if (time < 16000) return NOON;
+            else return EVENING;
+        }
     }
 
     public static class BiomeTypeBuilder {
