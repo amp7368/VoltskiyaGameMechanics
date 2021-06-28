@@ -41,9 +41,13 @@ public class TemperatureWatchPlayer implements Runnable {
         double insideness = TemperatureChecks.insideness(location);
         double blockHeatSource = TemperatureChecks.sources(location);
         double wind = TemperatureChecks.wind(location);
+        double wetness = TemperatureChecks.wetness(player);
+
         ClothingTemperature clothing = TemperatureChecks.clothing(player);
         double finalBlockHeatSource = (1 + insideness) * blockHeatSource;
         double finalWind = clothing.resistWind(wind * insideness);
+        double finalWetness = clothing.resistWet(wetness);
+        double playerWetness = playerInfo.doWetTick(finalWetness);
         double finalAirTemp = airTemp * (1 - insideness) + finalBlockHeatSource;
         double feelsLikeTemp = clothing.resistTemp(finalAirTemp * (.5 + finalWind)); //todo .5 is arbitrary
 

@@ -2,6 +2,9 @@ package voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.clothing;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 
 import java.io.*;
@@ -60,5 +63,11 @@ public class ClothingDatabase {
 
     public static List<ClothingType> getAll() {
         return new ArrayList<>(get().clothings.values());
+    }
+
+    @Nullable
+    public static ClothingType get(@NotNull ItemStack item) {
+        String name = ClothingType.getName(item);
+        return get().clothings.get(name);
     }
 }

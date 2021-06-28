@@ -1,6 +1,7 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world.temperature;
 
 import org.bukkit.Location;
+import org.bukkit.WeatherType;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -11,6 +12,8 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.blocks.TempBlockType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.blocks.TemperatureBlocksDatabase;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.clothing.ClothingDatabase;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.clothing.ClothingType;
 import voltskiya.apple.utilities.util.DistanceUtils;
 import voltskiya.apple.utilities.util.data_structures.Triple;
 import voltskiya.apple.utilities.util.minecraft.MaterialUtils;
@@ -21,7 +24,7 @@ import java.util.Set;
 
 public class TemperatureChecks {
     public static final int SOURCES_DISTANCE = 7;
-    private static final int MAX_DEPTH_INSIDENESS = 12;
+    private static final int MAX_DEPTH_INSIDENESS = 8;
     public static final double INSIDE_MAX_SCANABLE = Math.pow(MAX_DEPTH_INSIDENESS, 3) / 2;
 
     /**
@@ -135,10 +138,23 @@ public class TemperatureChecks {
         return clothing;
     }
 
+    /**
+     * @param player
+     * @return a positive value
+     * 0 means not wet, the higher the value the more wetness
+     */
+    public static double wetness(Player player) {
+        @Nullable WeatherType weather = player.getPlayerWeather();
+        if (weather == null) return 0;
+        return switch (weather) {
+            case CLEAR -> 0;
+            case DOWNFALL -> 1;
+        };
+    }
+
     public static class ClothingTemperature {
         private double windProtection = 0;
         private double wetProtection = 0;
-        private double wetness = 0;
         private double heatResistance = 0;
         private double coldResistance = 0;
 
@@ -148,10 +164,6 @@ public class TemperatureChecks {
 
         public double getWetProtection() {
             return wetProtection;
-        }
-
-        public double getWetness() {
-            return wetness;
         }
 
         public double getHeatResistance() {
@@ -165,14 +177,29 @@ public class TemperatureChecks {
         private void addArmor(@Nullable ItemStack item) {
             if (item == null) return;
             @NotNull PersistentDataContainer dataContainer = item.getItemMeta().getPersistentDataContainer();
+            @Nullable ClothingType clothing = ClothingDatabase.get(item);
+            if (clothing != null) {
+                this.windProtection += clothing.getWindProtection();
+                this.wetProtection += clothing.getWetProtection();
+                this.heatResistance += clothing.getHeatResistance();
+                this.coldResistance += clothing.getColdResistance();
+            }
         }
 
         public double resistWind(double wind) {
-            return wind;
+            return wind / this.windProtection;
         }
 
         public double resistTemp(double feelsLikeOutside) {
-            return feelsLikeOutside;
+            if (feelsLikeOutside < 0) {
+                return feelsLikeOutside / this.coldResistance;
+            } else {
+                return feelsLikeOutside / this.heatResistance;
+            }
+        }
+
+        public double resistWet(double wetness) {
+            return wetness / this.wetProtection;
         }
     }
 }

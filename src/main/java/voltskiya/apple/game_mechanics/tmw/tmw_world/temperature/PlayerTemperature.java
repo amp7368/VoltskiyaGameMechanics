@@ -32,4 +32,8 @@ public class PlayerTemperature {
             e.printStackTrace();
         }
     }
+
+    public double doWetTick(double finalWetness) {
+        return this.wetness += (this.wetness - finalWetness) / 50;
+    }
 }
