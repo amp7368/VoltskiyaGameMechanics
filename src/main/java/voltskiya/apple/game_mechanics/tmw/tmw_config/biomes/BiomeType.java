@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
@@ -73,8 +74,9 @@ public class BiomeType {
     public double guess(double heightVariance, double typicalY, Map<Material, Double> materials, Map<Biome, Double> biomes) {
         // this will be incorrect 0.3% of the time
         // if the typicalY is way off, say this isn't happening
-        if (this.isYBoundsMatters && (typicalY + heightVariance * 3 < this.typicalY || typicalY - heightVariance * 3 > this.typicalY))
+        if (this.isYBoundsMatters && (typicalY + this.heightVariance * 3 < this.typicalY || typicalY - this.heightVariance * 3 > this.typicalY)) {
             return 0;
+        }
 
         // percent error of height variation
         // a number between 0 and 1
@@ -113,6 +115,10 @@ public class BiomeType {
         return temperatureInfo == null ? -100 : temperatureInfo.degrees; // null should be impossible
     }
 
+    public double getWind() {
+        return (windInfo.kphMax + windInfo.kphMin) / 2d;
+    }
+
     public enum TemperatureTime {
         MORNING,
         NOON,
@@ -120,6 +126,7 @@ public class BiomeType {
         MIDNIGHT;
 
         public static TemperatureTime getTime(long time) {
+            time += 6000;
             if (time < 3000) return MIDNIGHT;
             else if (time < 9000) return MORNING;
             else if (time < 16000) return NOON;
@@ -170,6 +177,9 @@ public class BiomeType {
 
         public BiomeTypeBuilder() {
             icon = null;
+            this.windInfo = new WindInfo();
+            for (TemperatureTime time : TemperatureTime.values())
+                this.dailyTemperatures.putIfAbsent(time, new TemperatureInfo());
         }
 
         public void setIcon(BiomeIcon icon) {
@@ -312,6 +322,11 @@ public class BiomeType {
 
         public WindInfo getWind() {
             return this.windInfo;
+        }
+
+        @Nullable
+        public String getName() {
+            return icon == null ? null : icon.getName();
         }
 
         public static class BiomeIcon {

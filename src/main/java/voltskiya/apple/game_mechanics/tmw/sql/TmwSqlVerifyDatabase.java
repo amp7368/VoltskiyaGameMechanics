@@ -136,6 +136,7 @@ public class TmwSqlVerifyDatabase {
         statement.execute(BUILD_TABLE_CHUNK);
         statement.execute(BUILD_TABLE_WORLD);
         statement.execute(BUILD_TABLE_CONTOUR);
+        statement.execute(TABLE_STORED_MOBS);
         statement.execute(BUILD_TABLE_CHUNK_KILL);
         currentMobMyUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", SqlVariableNames.MOB_MY_UID, SqlVariableNames.TABLE_STORED_MOB)).getLong(1);
         currentChunkUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", Contour.CHUNK_UID, Contour.TABLE_CONTOUR)).getLong(1);

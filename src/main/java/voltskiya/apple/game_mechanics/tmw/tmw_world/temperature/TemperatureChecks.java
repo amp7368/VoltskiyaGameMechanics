@@ -10,6 +10,7 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.persistence.PersistentDataContainer;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.blocks.TempBlockType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.blocks.TemperatureBlocksDatabase;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.clothing.ClothingDatabase;
@@ -117,11 +118,13 @@ public class TemperatureChecks {
     }
 
     /**
-     * @param location the location to check around
+     * @param currentBiome the biome to check in
+     * @param location     the location to check around
      * @return the wind of the chunk regardless of whether we are inside
      */
-    public static double wind(Location location) {
-        return 0;
+    public static double wind(@Nullable BiomeType currentBiome, Location location) {
+        if (currentBiome == null) return 0;
+        return currentBiome.getWind();
     }
 
     public static ClothingTemperature clothing(Player player) {
@@ -139,7 +142,7 @@ public class TemperatureChecks {
     }
 
     /**
-     * @param player
+     * @param player the player to check
      * @return a positive value
      * 0 means not wet, the higher the value the more wetness
      */
@@ -187,19 +190,35 @@ public class TemperatureChecks {
         }
 
         public double resistWind(double wind) {
-            return wind / this.windProtection;
+            if (this.windProtection < 0) {
+                return Math.abs(wind / (-1 + this.windProtection));
+            } else {
+                return Math.abs(wind / (1 + this.windProtection));
+            }
         }
 
         public double resistTemp(double feelsLikeOutside) {
             if (feelsLikeOutside < 0) {
-                return feelsLikeOutside / this.coldResistance;
+                if (this.coldResistance < 0) {
+                    return feelsLikeOutside / (-1 + this.coldResistance);
+                } else {
+                    return feelsLikeOutside / (1 + this.coldResistance);
+                }
             } else {
-                return feelsLikeOutside / this.heatResistance;
+                if (this.heatResistance < 0) {
+                    return feelsLikeOutside / (-1 + this.heatResistance);
+                } else {
+                    return feelsLikeOutside / (1 + this.heatResistance);
+                }
             }
         }
 
         public double resistWet(double wetness) {
-            return wetness / this.wetProtection;
+            if (this.wetProtection < 0) {
+                return wetness / (-1 + this.wetProtection);
+            } else {
+                return wetness / (1 + this.wetProtection);
+            }
         }
     }
 }

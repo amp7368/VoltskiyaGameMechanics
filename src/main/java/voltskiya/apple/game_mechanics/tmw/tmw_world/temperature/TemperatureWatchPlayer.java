@@ -13,7 +13,7 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.TemperatureCheck
 
 public class TemperatureWatchPlayer implements Runnable {
     private static final long WATCH_PLAYER_INTERVAL = 20;
-    private static final double TIME_TO_HEAT_CHANGE = 40;
+    private static final double TIME_TO_HEAT_CHANGE = 10;
     private final Player player;
     private final WatchPlayer watchPlayer;
     private static final int SAVE_INTERVAL = 10;
@@ -40,7 +40,7 @@ public class TemperatureWatchPlayer implements Runnable {
         double airTemp = currentBiome == null ? 0 : currentBiome.getTypicalTempNow(location.getWorld().getTime());
         double insideness = TemperatureChecks.insideness(location);
         double blockHeatSource = TemperatureChecks.sources(location);
-        double wind = TemperatureChecks.wind(location);
+        double wind = TemperatureChecks.wind(currentBiome, location);
         double wetness = TemperatureChecks.wetness(player);
 
         ClothingTemperature clothing = TemperatureChecks.clothing(player);
@@ -49,9 +49,8 @@ public class TemperatureWatchPlayer implements Runnable {
         double finalWetness = clothing.resistWet(wetness);
         double playerWetness = playerInfo.doWetTick(finalWetness);
         double finalAirTemp = airTemp * (1 - insideness) + finalBlockHeatSource;
-        double feelsLikeTemp = clothing.resistTemp(finalAirTemp * (.5 + finalWind)); //todo .5 is arbitrary
-
-        this.playerInfo.temperature += (feelsLikeTemp - this.playerInfo.temperature) / TIME_TO_HEAT_CHANGE;
+        double feelsLikeTemp = clothing.resistTemp(finalAirTemp); //todo .5 is arbitrary
+        this.playerInfo.temperature += (feelsLikeTemp - this.playerInfo.temperature) / TIME_TO_HEAT_CHANGE * (1 + finalWind);
 
         TextComponent msg = new TextComponent();
         msg.setText(String.format("final temp - %.2f, biome - %s", this.playerInfo.temperature, currentBiome == null ? "null" : currentBiome.getName()));

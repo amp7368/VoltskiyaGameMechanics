@@ -55,7 +55,6 @@ public class MobPageGet extends InventoryGuiPageScrollable {
 
         public MobTypeChooseSlot(MobType mob) {
             this.mob = mob;
-            System.out.println(mob);
         }
 
         @Override

@@ -62,4 +62,10 @@ public class BiomeTypeDatabase {
     public static List<BiomeType> getAll() {
         return new ArrayList<>(get().biomes.values());
     }
+
+    public static void removeBiome(BiomeType.BiomeTypeBuilder biome) {
+        final String key = biome.getName();
+        if (key != null)
+            get().biomes.remove(key);
+    }
 }

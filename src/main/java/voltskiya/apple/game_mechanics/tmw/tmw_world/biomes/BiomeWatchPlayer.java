@@ -10,6 +10,7 @@ import voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayer;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
 import voltskiya.apple.utilities.util.data_structures.Pair;
 
 import java.util.*;
@@ -30,6 +31,10 @@ public class BiomeWatchPlayer implements Runnable {
 
     @Override
     public void run() {
+        if (!this.player.isOnline()) {
+            WatchPlayerListener.get().leave(this.player.getUniqueId());
+            return;
+        }
         final Location playerLocation = player.getLocation();
         Chunk chunk = playerLocation.getChunk();
         previousBiomes.add(new ComputedBiomeChunk(BiomeTypeBuilderRegisterBlocks.compute(

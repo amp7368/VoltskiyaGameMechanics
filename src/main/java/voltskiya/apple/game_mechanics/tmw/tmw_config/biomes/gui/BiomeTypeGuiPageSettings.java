@@ -51,7 +51,7 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
         setSlot(new RegisterTimeTempSlot(BiomeType.TemperatureTime.EVENING), 11);
         setSlot(new RegisterTimeTempSlot(BiomeType.TemperatureTime.MIDNIGHT), 12);
         setSlot(new RegisterWindSlot(), 18);
-
+        setSlot(new DeleteSlot(), 2);
         setSlot(new ImportanceChangeSlot(
                 biome::incrementBlocksImportance, 1, 5,
                 InventoryUtils.makeItem(Material.STONE_BUTTON, 1, "Increase blocks importance", Arrays.asList(
@@ -250,7 +250,7 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
             if (registerBlocks == null) {
                 player.sendMessage(ChatColor.AQUA + "When you're finished, run main gui command again and click the Register Blocks Slot.");
                 player.closeInventory(InventoryCloseEvent.Reason.PLUGIN);
-                biome.setRegisterBlocks(new BiomeTypeBuilderRegisterBlocks(player, biome));
+                biome.setRegisterBlocks(new BiomeTypeBuilderRegisterBlocks(player));
                 TMWCommand.addOpenMeNext(player.getUniqueId(), BiomeTypeGuiPageSettings.this);
             } else {
                 biome.updateFromRegisterBlocks();
@@ -545,6 +545,26 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
             public int size() {
                 return 9;
             }
+        }
+    }
+
+    private class DeleteSlot implements InventoryGui.InventoryGuiSlot {
+        private int deleteCount = 5;
+
+        @Override
+        public void dealWithClick(InventoryClickEvent event) {
+            if (deleteCount-- == 0) {
+                BiomeTypeDatabase.removeBiome(biome);
+                callbackGui.update(null);
+                event.getWhoClicked().openInventory(callbackGui.getInventory());
+            }
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.RED_TERRACOTTA, 1, "CLICK 5 TIMES TO DELETE", List.of(
+                    "Note: to simply not save changes,", "just exit your inventory."
+            ));
         }
     }
 }

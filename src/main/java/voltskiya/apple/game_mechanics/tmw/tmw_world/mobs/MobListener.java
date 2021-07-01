@@ -46,7 +46,6 @@ public class MobListener implements Listener {
                     try {
                         mobsToSave.add(new MobSqlStorage.StoredMob(x, y, z, location.getWorld().getUID(), entityNbt, despawnAtTime));
                         entity.remove();
-                        System.out.println("de3spawned");
                     } catch (SQLException e) {
                         e.printStackTrace();
                     }
