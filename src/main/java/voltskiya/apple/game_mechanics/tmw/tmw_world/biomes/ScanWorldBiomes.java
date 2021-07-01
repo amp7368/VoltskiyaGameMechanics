@@ -148,10 +148,6 @@ public class ScanWorldBiomes {
                     middle = chunkComputed.middle();
                 }
             }
-            if (middle == null) {
-                System.out.println(chunksToBeComputed.size());
-                System.out.println(chunksComputed.size());
-            }
             this.processedChunksToStoreInDB.put(new Pair<>(
                             chunkToProcess.centerX(),
                             chunkToProcess.centerZ()),

@@ -4,6 +4,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Biome;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
@@ -28,6 +29,8 @@ public class BiomeType {
     private final int importanceOfHeightVariance;
     private final int importanceOfBiomes;
     private final boolean isYBoundsMatters;
+    private final HashMap<TemperatureTime, TemperatureInfo> dailyTemperatures;
+    private final WindInfo windInfo;
 
     public BiomeType(BiomeTypeBuilder builder) {
         this.icon = builder.icon;
@@ -43,6 +46,8 @@ public class BiomeType {
         this.importanceOfBiomes = builder.importanceOfBiomes;
         this.isYBoundsMatters = builder.yBoundsToggle;
         this.mobs = builder.mobs;
+        this.dailyTemperatures = builder.dailyTemperatures;
+        this.windInfo = builder.windInfo;
     }
 
     public ItemStack toItem() {
@@ -69,8 +74,9 @@ public class BiomeType {
     public double guess(double heightVariance, double typicalY, Map<Material, Double> materials, Map<Biome, Double> biomes) {
         // this will be incorrect 0.3% of the time
         // if the typicalY is way off, say this isn't happening
-        if (this.isYBoundsMatters && (typicalY + heightVariance * 3 < this.typicalY || typicalY - heightVariance * 3 > this.typicalY))
+        if (this.isYBoundsMatters && (typicalY + this.heightVariance * 3 < this.typicalY || typicalY - this.heightVariance * 3 > this.typicalY)) {
             return 0;
+        }
 
         // percent error of height variation
         // a number between 0 and 1
@@ -104,6 +110,30 @@ public class BiomeType {
         return icon == null ? null : icon.getName();
     }
 
+    public int getTypicalTempNow(long time) {
+        final TemperatureInfo temperatureInfo = dailyTemperatures.get(TemperatureTime.getTime(time));
+        return temperatureInfo == null ? -100 : temperatureInfo.degrees; // null should be impossible
+    }
+
+    public double getWind() {
+        return (windInfo.kphMax + windInfo.kphMin) / 2d;
+    }
+
+    public enum TemperatureTime {
+        MORNING,
+        NOON,
+        EVENING,
+        MIDNIGHT;
+
+        public static TemperatureTime getTime(long time) {
+            time += 6000;
+            if (time < 3000) return MIDNIGHT;
+            else if (time < 9000) return MORNING;
+            else if (time < 16000) return NOON;
+            else return EVENING;
+        }
+    }
+
     public static class BiomeTypeBuilder {
         public HashMap<MobType, Integer> mobs = new HashMap<>();
         private BiomeTypeBuilderRegisterBlocks registerBlocks = null;
@@ -119,6 +149,8 @@ public class BiomeType {
         private HashMap<Material, Double> materials;
         private HashMap<Biome, Double> biomes;
         private boolean yBoundsToggle = true;
+        private HashMap<TemperatureTime, TemperatureInfo> dailyTemperatures = new HashMap<>();
+        private WindInfo windInfo;
 
         public BiomeTypeBuilder(BiomeType real) {
             this.icon = real.icon;
@@ -134,10 +166,20 @@ public class BiomeType {
             this.importanceOfBiomes = real.importanceOfBiomes;
             this.yBoundsToggle = real.isYBoundsMatters;
             this.mobs = real.mobs;
+            this.dailyTemperatures = real.dailyTemperatures;
+            this.windInfo = real.windInfo;
+            if (this.windInfo == null) this.windInfo = new WindInfo();
+            if (this.dailyTemperatures == null) this.dailyTemperatures = new HashMap<>();
+            for (TemperatureTime time : TemperatureTime.values())
+                this.dailyTemperatures.putIfAbsent(time, new TemperatureInfo());
+
         }
 
         public BiomeTypeBuilder() {
             icon = null;
+            this.windInfo = new WindInfo();
+            for (TemperatureTime time : TemperatureTime.values())
+                this.dailyTemperatures.putIfAbsent(time, new TemperatureInfo());
         }
 
         public void setIcon(BiomeIcon icon) {
@@ -274,6 +316,19 @@ public class BiomeType {
             this.mobs.putIfAbsent(mob, 1);
         }
 
+        public HashMap<TemperatureTime, TemperatureInfo> getDailyTemperatures() {
+            return this.dailyTemperatures;
+        }
+
+        public WindInfo getWind() {
+            return this.windInfo;
+        }
+
+        @Nullable
+        public String getName() {
+            return icon == null ? null : icon.getName();
+        }
+
         public static class BiomeIcon {
             private final String name;
             private final Material material;
@@ -298,5 +353,16 @@ public class BiomeType {
                 return name;
             }
         }
+
+
+    }
+
+    public static class TemperatureInfo {
+        public int degrees = 0;
+    }
+
+    public static class WindInfo {
+        public int kphMin = 0;
+        public int kphMax = 0;
     }
 }
