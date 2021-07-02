@@ -7,7 +7,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Collection;
 
+import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.ChunkSql;
 import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.Contour.*;
+import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.WORLD_MY_UID;
 
 public class BiomeSqlStorage {
     public static void insert(Collection<ProcessedChunk> processedChunks) {
@@ -71,7 +73,7 @@ public class BiomeSqlStorage {
                                 MIDDLE_X,
                                 MIDDLE_Y,
                                 MIDDLE_Z,
-                                TmwSqlVerifyDatabase.getChunkUid(),
+                                chunk.chunkUid = TmwSqlVerifyDatabase.getChunkUid(),
                                 chunk.x(),
                                 chunk.z(),
                                 getChunkSql(chunk.getNeighborXPos().middle()),
@@ -83,6 +85,19 @@ public class BiomeSqlStorage {
                                 chunk.middle().getZ()
                         )
                 );
+            }
+            statemnt.executeBatch();
+            for (ProcessedChunk chunk : processedChunks) {
+                statemnt.addBatch(String.format("INSERT INTO %s (%s, %s, %s)\n" +
+                                "VALUES (%d, %d, %d)",
+                        ChunkSql.TABLE_CHUNK,
+                        ChunkSql.CHUNK_UID,
+                        ChunkSql.BIOME_GUESS_UID,
+                        WORLD_MY_UID,
+                        chunk.chunkUid,
+                        chunk.computedBiomeChunk().getGuessedBiomes().get(0).getKey().getUid(),
+                        chunk.worldMyUid()
+                ));
             }
             statemnt.executeBatch();
             statemnt.close();

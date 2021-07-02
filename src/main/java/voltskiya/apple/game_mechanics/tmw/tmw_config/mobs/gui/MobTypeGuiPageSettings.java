@@ -1,6 +1,7 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.gui;
 
 import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.nbt.NBTTagString;
 import net.minecraft.world.entity.EntityTypes;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
@@ -114,7 +115,10 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
 
                 Optional<EntityTypes<?>> entityTypes = entityTypesFromNbt.isPresent() ? entityTypesFromNbt : entityTypesFromMaterial;
                 if (entityTypes.isEmpty()) return;
-                mob.setIcon(new MobType.MobTypeBuilder.MobIcon(name, material, lore, nbt, entityTypes.get()));
+                NBTTagCompound entityTag = new NBTTagCompound();
+                entityTag.set("id", NBTTagString.a("minecraft:" + entityTypes.get().i()));
+                nbt.set(NbtUtils.ENTITY_TAG_NBT, entityTag);
+                mob.setIcon(new MobType.MobTypeBuilder.MobIcon(name, material, lore, nbt));
 
                 setSlot(new InventoryGuiSlotGeneric(e -> {
                 }, mob.getIconItem()), 0);

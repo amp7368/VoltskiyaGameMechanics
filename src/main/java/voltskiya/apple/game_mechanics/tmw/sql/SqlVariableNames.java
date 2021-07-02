@@ -4,7 +4,7 @@ public class SqlVariableNames {
     public static final String X = "x";
     public static final String Y = "y";
     public static final String Z = "z";
-    public static final String NBT = "nbt";
+    public static final String MOB_UNIQUE_NAME = "unique_name";
     public static final String DESPAWN_TIME = "despawn_time";
     public static final String TABLE_STORED_MOB = "stored_mob";
     public static final String WORLD_MY_UID = "world_my_uid";
@@ -12,20 +12,10 @@ public class SqlVariableNames {
     public static final String TABLE_WORLD = "world";
     public static final String MOB_MY_UID = "mob_my_uid";
 
-    public static String nullOrDefault(Object o, int i) {
-        return o == null ? "'null'" : String.valueOf(i);
-    }
-
-    public static class BiomeSql {
-        public static final String TABLE_BIOME = "biome";
-        public static final String BIOME_UID = "biome_uid";
-    }
-
     public static class ChunkSql {
         public static final String TABLE_CHUNK = "chunk";
         public static final String CHUNK_UID = "chunk_uid";
         public static final String BIOME_GUESS_UID = "biome_guess_uid";
-        public static final String TEMPERATURE_MODIFIER = "temperature_modifier";
     }
 
     public static class Contour {

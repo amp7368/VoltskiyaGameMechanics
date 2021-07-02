@@ -9,9 +9,11 @@ import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.sql.BiomeSqlStorage;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks.TopBlock;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SqlWorldGet;
 import voltskiya.apple.utilities.util.data_structures.Pair;
 import voltskiya.apple.utilities.util.data_structures.Triple;
 
+import java.sql.SQLException;
 import java.util.*;
 
 import static voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk.BLOCKS_IN_A_CHUNK;
@@ -148,20 +150,25 @@ public class ScanWorldBiomes {
                     middle = chunkComputed.middle();
                 }
             }
-            this.processedChunksToStoreInDB.put(new Pair<>(
-                            chunkToProcess.centerX(),
-                            chunkToProcess.centerZ()),
-                    new ProcessedChunk(
-                            chunkToProcess.centerX(),
-                            chunkToProcess.centerZ(),
-                            new ComputedBiomeChunk(BiomeTypeBuilderRegisterBlocks.compute(allBlocks)),
-                            bridgeXPos,
-                            bridgeZPos,
-                            bridgeXNeg,
-                            bridgeZNeg,
-                            middle
-                    )
-            );
+            try {
+                this.processedChunksToStoreInDB.put(new Pair<>(
+                                chunkToProcess.centerX(),
+                                chunkToProcess.centerZ()),
+                        new ProcessedChunk(
+                                chunkToProcess.centerX(),
+                                chunkToProcess.centerZ(),
+                                new ComputedBiomeChunk(BiomeTypeBuilderRegisterBlocks.compute(allBlocks)),
+                                bridgeXPos,
+                                bridgeZPos,
+                                bridgeXNeg,
+                                bridgeZNeg,
+                                middle,
+                                SqlWorldGet.getMyWorldUid(world.getUID())
+                        )
+                );
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
         }
     }
 
@@ -368,6 +375,7 @@ public class ScanWorldBiomes {
     }
 
     public class ProcessedChunk {
+        private final int worldMyUid;
         private final int x;
         private final int z;
         private final ComputedBiomeChunk computedBiomeChunk;
@@ -376,6 +384,7 @@ public class ScanWorldBiomes {
         private final Triple<Integer, Integer, Integer> bridgeXNeg;
         private final Triple<Integer, Integer, Integer> bridgeZNeg;
         private final Triple<Integer, Integer, Integer> middle;
+        public long chunkUid;
         private ProcessedChunk neighborXPos = null;
         private ProcessedChunk neighborZPos = null;
         private ProcessedChunk neighborXNeg = null;
@@ -388,7 +397,8 @@ public class ScanWorldBiomes {
                               Triple<Integer, Integer, Integer> bridgeZPos,
                               Triple<Integer, Integer, Integer> bridgeXNeg,
                               Triple<Integer, Integer, Integer> bridgeZNeg,
-                              Triple<Integer, Integer, Integer> middle
+                              Triple<Integer, Integer, Integer> middle,
+                              int worldMyUid
         ) {
             this.x = x;
             this.z = z;
@@ -398,6 +408,7 @@ public class ScanWorldBiomes {
             this.bridgeXNeg = bridgeXNeg;
             this.bridgeZNeg = bridgeZNeg;
             this.middle = middle;
+            this.worldMyUid = worldMyUid;
         }
 
         public int x() {
@@ -459,6 +470,10 @@ public class ScanWorldBiomes {
             if (this.neighborXNeg != null) this.neighborXNeg.neighborXPos = this;
             if (this.neighborZNeg != null) this.neighborZNeg.neighborZPos = this;
             return this.neighborXPos != null && this.neighborZPos != null && this.neighborXNeg != null && this.neighborZNeg != null;
+        }
+
+        public int worldMyUid() {
+            return worldMyUid;
         }
     }
 }

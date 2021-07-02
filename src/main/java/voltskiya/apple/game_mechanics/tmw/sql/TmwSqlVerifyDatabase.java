@@ -21,7 +21,7 @@ public class TmwSqlVerifyDatabase {
                         %s            SMALLINT,
                         %s            SMALLINT,
                         %s TINYINT,
-                        %s          TEXT,
+                        %s VARCHAR(60),
                         %s TIMESTAMP
                     )
                     """,
@@ -31,7 +31,7 @@ public class TmwSqlVerifyDatabase {
             SqlVariableNames.Y,
             SqlVariableNames.Z,
             SqlVariableNames.WORLD_MY_UID,
-            SqlVariableNames.NBT,
+            SqlVariableNames.MOB_UNIQUE_NAME,
             SqlVariableNames.DESPAWN_TIME);
     private static final String BUILD_TABLE_WORLD = String.format("""
                     CREATE TABLE IF NOT EXISTS %s
@@ -74,29 +74,17 @@ public class TmwSqlVerifyDatabase {
             Contour.CHUNK_X,
             Contour.CHUNK_Z
     );
-    private static final String BUILD_TABLE_BIOME = String.format("""
-                    CREATE TABLE IF NOT EXISTS %s
-                    (
-                        %s INTEGER NOT NULL PRIMARY KEY
-                    );""",
-            BiomeSql.TABLE_BIOME,
-            BiomeSql.BIOME_UID
-    );
     private static final String BUILD_TABLE_CHUNK = String.format("""
                     CREATE TABLE IF NOT EXISTS %s
                     (
                         %s            BIGINT  NOT NULL PRIMARY KEY,
                         %s      INTEGER NOT NULL,
-                        %s DOUBLE  NOT NULL,
-                        FOREIGN KEY (%s) REFERENCES %s (%s)
+                        %s      INTEGER NOT NULL
                     );""",
             ChunkSql.TABLE_CHUNK,
             ChunkSql.CHUNK_UID,
             ChunkSql.BIOME_GUESS_UID,
-            ChunkSql.TEMPERATURE_MODIFIER,
-            ChunkSql.BIOME_GUESS_UID,
-            BiomeSql.TABLE_BIOME,
-            BiomeSql.BIOME_UID
+            WORLD_MY_UID
     );
     private static final String BUILD_TABLE_CHUNK_KILL = String.format("""
                     CREATE TABLE IF NOT EXISTS %s
@@ -132,7 +120,6 @@ public class TmwSqlVerifyDatabase {
 
     private synchronized static void verify() throws SQLException {
         Statement statement = database.createStatement();
-        statement.execute(BUILD_TABLE_BIOME);
         statement.execute(BUILD_TABLE_CHUNK);
         statement.execute(BUILD_TABLE_WORLD);
         statement.execute(BUILD_TABLE_CONTOUR);

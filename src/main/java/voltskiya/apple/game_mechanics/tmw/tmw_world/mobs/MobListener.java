@@ -1,10 +1,7 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world.mobs;
 
-import apple.nms.decoding.entity.DecodeEntity;
-import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
-import org.bukkit.craftbukkit.v1_17_R1.entity.CraftEntity;
 import org.bukkit.entity.Entity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -42,16 +39,19 @@ public class MobListener implements Listener {
                     int x = location.getBlockX();
                     int y = location.getBlockY();
                     int z = location.getBlockZ();
-                    NBTTagCompound entityNbt = DecodeEntity.saveWithId(((CraftEntity) entity).getHandle());
-                    try {
-                        mobsToSave.add(new MobSqlStorage.StoredMob(x, y, z, location.getWorld().getUID(), entityNbt, despawnAtTime));
-                        entity.remove();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+                    String uniqueName = MobSqlStorage.StoredMob.getUniqueName(entity.getScoreboardTags());
+                    if (uniqueName != null) {
+                        try {
+                            mobsToSave.add(new MobSqlStorage.StoredMob(x, y, z, location.getWorld().getUID(), uniqueName, despawnAtTime));
+                            System.out.println("save " + uniqueName);
+                            entity.remove();
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
         }
-        MobSqlStorage.insertMob(mobsToSave);
+        MobSqlStorage.insertMobs(mobsToSave);
     }
 }

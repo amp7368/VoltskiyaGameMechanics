@@ -2,7 +2,9 @@ package voltskiya.apple.game_mechanics.tmw.tmw_config.biomes;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -10,16 +12,13 @@ import java.util.HashMap;
 import java.util.List;
 
 public class BiomeTypeDatabase {
-    private static Gson gson;
+    private static final Gson gson;
     private final HashMap<String, BiomeType> biomes = new HashMap<>();
-
-    private static final String BIOMES_FOLDER = "biomes";
-    private static BiomeTypeDatabase instance;
-
-    private static final File biomesFile;
 
     static {
         final GsonBuilder gsonBuilder = new GsonBuilder();
+        gsonBuilder.registerTypeAdapter(MobType.class, new MobType.MobTypeSerializer());
+        gsonBuilder.registerTypeAdapter(MobType.class, new MobType.MobTypeDeSerializer());
         gson = gsonBuilder.create();
 
         // get the biomes from our db
@@ -36,11 +35,24 @@ public class BiomeTypeDatabase {
                 instance = new BiomeTypeDatabase();
                 save();
             }
+            for (BiomeType biome : instance.biomes.values()) {
+                instance.currentBiomeUid = Math.max(instance.currentBiomeUid, biome.getUid());
+            }
+            for (BiomeType biome : instance.biomes.values()) {
+                biome.validateUid();
+            }
         } catch (IOException e) {
             instance = null;
             e.printStackTrace();
         }
     }
+
+    private static final String BIOMES_FOLDER = "biomes";
+    private static BiomeTypeDatabase instance;
+
+    private static final File biomesFile;
+
+    private int currentBiomeUid = 1;
 
     public static BiomeTypeDatabase get() {
         return instance;
@@ -67,5 +79,19 @@ public class BiomeTypeDatabase {
         final String key = biome.getName();
         if (key != null)
             get().biomes.remove(key);
+    }
+
+    public static int getCurrentBiomeUid() {
+        return get().currentBiomeUid++;
+    }
+
+    @Nullable
+    public static BiomeType get(int currentBiomeUid) {
+        for (BiomeType biome : getAll()) {
+            if (biome.getUid() == currentBiomeUid) {
+                return biome;
+            }
+        }
+        return null;
     }
 }

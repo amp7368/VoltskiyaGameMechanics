@@ -234,6 +234,11 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
     private class SpawnRateSlot implements InventoryGui.InventoryGuiSlot {
         @Override
         public void dealWithClick(InventoryClickEvent event) {
+            if (event.getClick().isLeftClick())
+                biome.incrementSpawnRate(1);
+            else
+                biome.incrementSpawnRate(-1);
+            update();
         }
 
         @Override

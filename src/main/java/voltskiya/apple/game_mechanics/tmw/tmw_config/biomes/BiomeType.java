@@ -31,6 +31,7 @@ public class BiomeType {
     private final boolean isYBoundsMatters;
     private final HashMap<TemperatureTime, TemperatureInfo> dailyTemperatures;
     private final WindInfo windInfo;
+    private int biomeUid;
 
     public BiomeType(BiomeTypeBuilder builder) {
         this.icon = builder.icon;
@@ -48,6 +49,7 @@ public class BiomeType {
         this.mobs = builder.mobs;
         this.dailyTemperatures = builder.dailyTemperatures;
         this.windInfo = builder.windInfo;
+        this.biomeUid = builder.biomeUid <= 0 ? BiomeTypeDatabase.getCurrentBiomeUid() : builder.biomeUid;
     }
 
     public ItemStack toItem() {
@@ -119,6 +121,34 @@ public class BiomeType {
         return (windInfo.kphMax + windInfo.kphMin) / 2d;
     }
 
+    public int getUid() {
+        return biomeUid;
+    }
+
+    public void validateUid() {
+        if (this.biomeUid <= 0) this.biomeUid = BiomeTypeDatabase.getCurrentBiomeUid();
+    }
+
+    public double getUsefulSpawnRate() {
+        return spawnRate / 10d;
+    }
+
+    public Map<MobType, Integer> getSpawns() {
+        return this.mobs;
+    }
+
+    public Map<MobType, Double> getSpawnPercentages() {
+        double mobCount = 0;
+        for (Integer mob : this.mobs.values()) {
+            mobCount += mob;
+        }
+        Map<MobType, Double> percentages = new HashMap<>();
+        for (Map.Entry<MobType, Integer> mob : this.mobs.entrySet()) {
+            percentages.put(mob.getKey(), mob.getValue() / mobCount);
+        }
+        return percentages;
+    }
+
     public enum TemperatureTime {
         MORNING,
         NOON,
@@ -136,6 +166,7 @@ public class BiomeType {
 
     public static class BiomeTypeBuilder {
         public HashMap<MobType, Integer> mobs = new HashMap<>();
+        public int biomeUid = -1;
         private BiomeTypeBuilderRegisterBlocks registerBlocks = null;
         private BiomeIcon icon;
         private int highestY = -1;
@@ -168,6 +199,7 @@ public class BiomeType {
             this.mobs = real.mobs;
             this.dailyTemperatures = real.dailyTemperatures;
             this.windInfo = real.windInfo;
+            this.biomeUid = real.biomeUid;
             if (this.windInfo == null) this.windInfo = new WindInfo();
             if (this.dailyTemperatures == null) this.dailyTemperatures = new HashMap<>();
             for (TemperatureTime time : TemperatureTime.values())
@@ -327,6 +359,10 @@ public class BiomeType {
         @Nullable
         public String getName() {
             return icon == null ? null : icon.getName();
+        }
+
+        public void incrementSpawnRate(int i) {
+            this.spawnRate += i;
         }
 
         public static class BiomeIcon {

@@ -1,12 +1,15 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.mobs;
 
 import com.google.gson.*;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import net.minecraft.nbt.MojangsonParser;
 import net.minecraft.nbt.NBTTagCompound;
-import net.minecraft.world.entity.EntityTypes;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
+import voltskiya.apple.utilities.util.minecraft.NbtUtils;
 
 import java.lang.reflect.Type;
 import java.util.List;
@@ -55,6 +58,61 @@ public class MobType {
     @Override
     public String toString() {
         return this.icon.getName();
+    }
+
+    public boolean isPersistent() {
+        return isPersistent;
+    }
+
+    public double getDespawnsAfterHours() {
+        return despawnsAfterHours;
+    }
+
+    public boolean isSpawnWithLineOfSight() {
+        return isSpawnWithLineOfSight;
+    }
+
+    public int getHighestYLevel() {
+        return highestYLevel;
+    }
+
+    public int getLowestYLevel() {
+        return lowestYLevel;
+    }
+
+    public TimeToSpawn getTimeToSpawn() {
+        return timeToSpawn;
+    }
+
+    public int getMeanGroup() {
+        // todo
+        return 1;
+    }
+
+    public boolean canSpawn(BiomeTypeBuilderRegisterBlocks.TopBlock topBlock) {
+        // todo
+        return true;
+    }
+
+    public int getGroup() {
+        // todo
+        return 1;
+    }
+
+    public long getDespawnAt() {
+        return (long) (System.currentTimeMillis() + this.despawnsAfterHours * 60 * 1000);
+    }
+
+    public NBTTagCompound getEnitityNbt() {
+        return getNbt().getCompound(NbtUtils.ENTITY_TAG_NBT);
+    }
+
+    public NBTTagCompound getNbt() {
+        try {
+            return MojangsonParser.parse(icon.nbt);
+        } catch (CommandSyntaxException e) {
+            return new NBTTagCompound();
+        }
     }
 
     public static class MobTypeSerializer implements JsonSerializer<MobType> {
@@ -159,13 +217,13 @@ public class MobType {
             private final String name;
             private final Material material;
             private final List<String> lore;
-            private final NBTTagCompound nbt;
+            private final String nbt;
 
-            public MobIcon(String name, Material material, List<String> lore, NBTTagCompound nbt, EntityTypes<?> entityTypes) {
+            public MobIcon(String name, Material material, List<String> lore, NBTTagCompound nbt) {
                 this.name = name;
                 this.material = material;
                 this.lore = lore;
-                this.nbt = nbt;
+                this.nbt = nbt.asString();
             }
 
             public ItemStack toItem() {

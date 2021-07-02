@@ -4,6 +4,7 @@ import voltskiya.apple.game_mechanics.VoltskiyaModule;
 import voltskiya.apple.game_mechanics.tmw.sql.TmwSqlVerifyDatabase;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobListener;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobRegen;
 
 import java.sql.SQLException;
 
@@ -25,6 +26,7 @@ public class PluginTMW extends VoltskiyaModule {
         new TMWCommand();
         new MobListener();
         new WatchPlayerListener();
+        new MobRegen();
     }
 
     @Override

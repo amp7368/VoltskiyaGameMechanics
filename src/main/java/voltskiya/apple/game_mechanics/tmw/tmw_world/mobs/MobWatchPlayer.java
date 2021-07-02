@@ -8,6 +8,8 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.sql.MobSqlStorage;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobTypeDatabase;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayer;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
 
@@ -56,17 +58,18 @@ public class MobWatchPlayer implements Runnable {
 
     public void spawnMobs(List<MobSqlStorage.StoredMob> mobsToSpawn) {
         List<Long> mobsToRemove = new ArrayList<>();
-        for (MobSqlStorage.StoredMob mob : mobsToSpawn) {
-            Optional<EntityTypes<?>> entityTypes = EntityTypes.a(mob.nbt);
+        for (MobSqlStorage.StoredMob storedMob : mobsToSpawn) {
+            MobType mobType = MobTypeDatabase.getMob(storedMob.uniqueName);
+            Optional<EntityTypes<?>> entityTypes = EntityTypes.a(mobType.getEnitityNbt());
             if (entityTypes.isPresent()) {
-                Entity entity = entityTypes.get().a(mob.getNmsWorld());
+                Entity entity = entityTypes.get().a(storedMob.getNmsWorld());
                 if (entity != null) {
-                    entity.load(mob.nbt);
-                    System.out.printf("%d, %d, %d, %s\n", mob.x, mob.y, mob.z, mob.getNmsWorld());
-                    mob.getNmsWorld().addAllEntitiesSafely(entity);
-                    entity.teleportAndSync(mob.x, mob.y, mob.z);
-                    mobsToRemove.add(mob.uid);
-                    System.out.println("spawned");
+                    entity.load(mobType.getNbt());
+                    entity.addScoreboardTag(storedMob.uniqueName);
+                    System.out.printf("spawned at %d, %d, %d, %s\n", storedMob.x, storedMob.y, storedMob.z, storedMob.getNmsWorld());
+                    storedMob.getNmsWorld().addAllEntitiesSafely(entity);
+                    entity.teleportAndSync(storedMob.x, storedMob.y, storedMob.z);
+                    mobsToRemove.add(storedMob.uid);
                 }
             }
         }
