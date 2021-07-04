@@ -2,7 +2,7 @@ package voltskiya.apple.game_mechanics.deleteme_later.chunks;
 
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;
-import voltskiya.apple.utilities.util.GetChunksRequest;
+import voltskiya.apple.game_mechanics.util.GetChunksRequest;
 import voltskiya.apple.utilities.util.data_structures.Pair;
 import voltskiya.apple.utilities.util.data_structures.Triple;
 

@@ -15,6 +15,11 @@ public class BiomeTypeDatabase {
     private static final Gson gson;
     private final HashMap<String, BiomeType> biomes = new HashMap<>();
 
+    private static final String BIOMES_FOLDER = "biomes";
+    private static final File biomesFile;
+    private static BiomeTypeDatabase instance;
+    private int currentBiomeUid = 1;
+
     static {
         final GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeAdapter(MobType.class, new MobType.MobTypeSerializer());
@@ -46,13 +51,6 @@ public class BiomeTypeDatabase {
             e.printStackTrace();
         }
     }
-
-    private static final String BIOMES_FOLDER = "biomes";
-    private static BiomeTypeDatabase instance;
-
-    private static final File biomesFile;
-
-    private int currentBiomeUid = 1;
 
     public static BiomeTypeDatabase get() {
         return instance;

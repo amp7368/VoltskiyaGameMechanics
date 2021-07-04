@@ -9,8 +9,9 @@ import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
+import voltskiya.apple.game_mechanics.decay.PluginDecay;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
-import voltskiya.apple.utilities.util.PluginUtils;
+import voltskiya.apple.game_mechanics.util.PluginUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -58,7 +59,8 @@ public class VoltskiyaPlugin extends JavaPlugin {
     private void manuallyLoadModules() {
         final VoltskiyaModule[] modules = new VoltskiyaModule[]{
                 new PluginUtils(),
-                new PluginTMW()
+                new PluginTMW(),
+                new PluginDecay()
         };
         for (VoltskiyaModule module : modules) {
             registerModule(module);

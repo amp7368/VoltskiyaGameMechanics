@@ -1,4 +1,4 @@
-package voltskiya.apple.utilities.util;
+package voltskiya.apple.game_mechanics.util;
 
 
 import voltskiya.apple.game_mechanics.VoltskiyaModule;

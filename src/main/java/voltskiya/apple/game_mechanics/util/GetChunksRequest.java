@@ -1,4 +1,4 @@
-package voltskiya.apple.utilities.util;
+package voltskiya.apple.game_mechanics.util;
 
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Location;

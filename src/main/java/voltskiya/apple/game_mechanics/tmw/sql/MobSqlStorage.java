@@ -29,6 +29,8 @@ import static voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeType
 import static voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks.scanNearby;
 
 public class MobSqlStorage {
+    private static final double MOB_TYPE_VARIATION = .5;
+
     public static void insertMobs(List<StoredMob> mobs) {
         new Thread(() -> {
             try {
@@ -249,7 +251,7 @@ public class MobSqlStorage {
         private final int middleZ;
         private final HashMap<String, Integer> mobNames = new HashMap<>();
         private double mobCount = 0;
-        private List<MobType> mobsToSpawn = new ArrayList<>();
+        private final List<MobType> mobsToSpawn = new ArrayList<>();
 
         public SpawnPercentages(
                 @NotNull BiomeType biome,
@@ -270,7 +272,6 @@ public class MobSqlStorage {
         }
 
         public void add(String mobName, int mobCount) {
-            System.out.println(mobName);
             this.mobNames.put(mobName, mobCount);
             this.mobCount += mobCount;
         }
@@ -284,7 +285,7 @@ public class MobSqlStorage {
                 MobType bestMob = null;
                 double mostPerc = Double.MIN_VALUE;
                 for (Map.Entry<MobType, Double> shouldBeMob : shouldBeMobSpawns.entrySet()) {
-                    if (shouldBeMob.getValue() - mobSpawns.getOrDefault(shouldBeMob.getKey().getName(), 0d) > mostPerc) {
+                    if (shouldBeMob.getValue() * (1 - Math.random() * MOB_TYPE_VARIATION) - mobSpawns.getOrDefault(shouldBeMob.getKey().getName(), 0d) > mostPerc) {
                         bestMob = shouldBeMob.getKey();
                     }
                 }
@@ -346,7 +347,7 @@ public class MobSqlStorage {
                             System.out.println(topBlock);
                             final StoredMob storedMob = new StoredMob(topBlock.x() + chunkX * BLOCKS_IN_A_CHUNK, topBlock.y() + 1, topBlock.z() + chunkZ * BLOCKS_IN_A_CHUNK, worldMyUid, mobType);
                             mobsToSave.add(storedMob);
-                            System.out.printf("spawn o.o %d, %d, %d\n", storedMob.x, storedMob.y, storedMob.z);
+                            System.out.printf("spawn %s %d, %d, %d\n", storedMob.uniqueName, storedMob.x, storedMob.y, storedMob.z);
                         }
                         topBlocks.remove(i);
                         break;
