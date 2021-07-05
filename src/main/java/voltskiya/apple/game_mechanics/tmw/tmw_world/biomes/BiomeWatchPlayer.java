@@ -32,6 +32,7 @@ public class BiomeWatchPlayer implements Runnable {
     @Override
     public void run() {
         if (!this.player.isOnline()) {
+            this.previousBiomes.clear();
             WatchPlayerListener.get().leave(this.player.getUniqueId());
             return;
         }

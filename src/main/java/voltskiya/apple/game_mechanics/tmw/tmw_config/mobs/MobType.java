@@ -12,7 +12,9 @@ import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 import voltskiya.apple.utilities.util.minecraft.NbtUtils;
 
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 public class MobType {
     private final MobTypeBuilder.MobIcon icon;
@@ -22,6 +24,8 @@ public class MobType {
     private final int highestYLevel;
     private final int lowestYLevel;
     private final TimeToSpawn timeToSpawn;
+    private static final Random random = new Random();
+    private final ArrayList<Integer> groups;
 
     public MobType(MobTypeBuilder builder) {
         this.icon = builder.icon;
@@ -31,6 +35,7 @@ public class MobType {
         this.highestYLevel = builder.highestYLevel;
         this.lowestYLevel = builder.lowestYLevel;
         this.timeToSpawn = builder.timeToSpawn;
+        this.groups = builder.groups;
     }
 
     public ItemStack toItem() {
@@ -84,19 +89,23 @@ public class MobType {
         return timeToSpawn;
     }
 
-    public int getMeanGroup() {
-        // todo
-        return 1;
+    public double getMeanGroup() {
+        int total = 0;
+        for (int group : groups) {
+            total += group;
+        }
+
+        return total / (double) groups.size();
     }
 
     public boolean canSpawn(BiomeTypeBuilderRegisterBlocks.TopBlock topBlock) {
-        // todo
+        //todo
         return true;
     }
 
     public int getGroup() {
-        // todo
-        return 1;
+        if (groups.isEmpty()) return 0;
+        return groups.get(random.nextInt(groups.size()));
     }
 
     public long getDespawnAt() {
@@ -104,7 +113,7 @@ public class MobType {
     }
 
     public NBTTagCompound getEnitityNbt() {
-        return getNbt().getCompound(NbtUtils.ENTITY_TAG_NBT);
+        return getNbt().getCompound(NbtUtils.ITEM_TAG).getCompound(NbtUtils.ENTITY_TAG_NBT);
     }
 
     public NBTTagCompound getNbt() {
@@ -130,6 +139,9 @@ public class MobType {
     }
 
     public static class MobTypeBuilder {
+        public ArrayList<Integer> groups = new ArrayList<>() {{
+            add(1);
+        }};
         private MobIcon icon;
         private boolean isPersistent = false;
         private double despawnsAfterHours = 0;
@@ -146,6 +158,7 @@ public class MobType {
             this.highestYLevel = real.highestYLevel;
             this.lowestYLevel = real.lowestYLevel;
             this.timeToSpawn = real.timeToSpawn;
+            this.groups = real.groups;
         }
 
         public MobTypeBuilder() {
@@ -211,6 +224,20 @@ public class MobType {
         public TimeToSpawn getTimeToSpawn() {
             if (timeToSpawn == null) timeToSpawn = new TimeToSpawn();
             return timeToSpawn;
+        }
+
+        public void addGroup() {
+            this.groups.add(1);
+        }
+
+        public void groupIncrement(int index, int amount) {
+            if (index < this.groups.size()) {
+                this.groups.set(index, this.groups.get(index) + amount);
+            }
+        }
+
+        public boolean isDone() {
+            return !icon.name.isBlank();
         }
 
         public static class MobIcon {

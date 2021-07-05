@@ -13,7 +13,6 @@ import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobTypeDatabase;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayer;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
 
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -21,7 +20,7 @@ import java.util.Optional;
 import static voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk.BLOCKS_IN_A_CHUNK;
 
 public class MobWatchPlayer implements Runnable {
-    private static final int CHUNK_SIGHT = 7;
+    private static final int CHUNK_SIGHT = 6;
     //todo change interval
     private static final long CHECK_INTERVAL = 60;
     private final Player player;
@@ -48,8 +47,8 @@ public class MobWatchPlayer implements Runnable {
         int upperZ = z + CHUNK_SIGHT;
         MobSqlStorage.getMobs(
                 lowerX * BLOCKS_IN_A_CHUNK,
-                upperX * BLOCKS_IN_A_CHUNK,
-                (1 + lowerZ) * BLOCKS_IN_A_CHUNK,
+                (1 + upperX) * BLOCKS_IN_A_CHUNK,
+                lowerZ * BLOCKS_IN_A_CHUNK,
                 (1 + upperZ) * BLOCKS_IN_A_CHUNK,
                 this::spawnMobs
         );
@@ -64,8 +63,8 @@ public class MobWatchPlayer implements Runnable {
             if (entityTypes.isPresent()) {
                 Entity entity = entityTypes.get().a(storedMob.getNmsWorld());
                 if (entity != null) {
-                    entity.load(mobType.getNbt());
-                    entity.addScoreboardTag(storedMob.uniqueName);
+                    entity.load(mobType.getEnitityNbt());
+                    entity.addScoreboardTag(MobSqlStorage.StoredMob.getTag(storedMob.uniqueName));
                     System.out.printf("spawned at %d, %d, %d, %s\n", storedMob.x, storedMob.y, storedMob.z, storedMob.getNmsWorld());
                     storedMob.getNmsWorld().addAllEntitiesSafely(entity);
                     entity.teleportAndSync(storedMob.x, storedMob.y, storedMob.z);
@@ -73,10 +72,6 @@ public class MobWatchPlayer implements Runnable {
                 }
             }
         }
-        try {
-            MobSqlStorage.removeMobs(mobsToRemove);
-        } catch (SQLException throwables) {
-            throwables.printStackTrace();
-        }
+        MobSqlStorage.removeMobs(mobsToRemove);
     }
 }

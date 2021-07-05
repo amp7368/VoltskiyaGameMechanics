@@ -112,7 +112,18 @@ public class MobSqlStorage {
         }
     }
 
-    public static void removeMobs(Collection<Long> mobsToDelete) throws SQLException {
+    public static void removeMobs(Collection<Long> mobsToDelete) {
+        new Thread(() -> {
+            try {
+                removeMobsThreaded(mobsToDelete);
+            } catch (SQLException throwables) {
+                throwables.printStackTrace();
+            }
+        }).start();
+    }
+
+
+    public static void removeMobsThreaded(Collection<Long> mobsToDelete) throws SQLException {
         if (mobsToDelete.isEmpty()) return;
         synchronized (TmwSqlVerifyDatabase.syncDB) {
             Statement statement = TmwSqlVerifyDatabase.database.createStatement();
@@ -161,6 +172,15 @@ public class MobSqlStorage {
                                                                  center.%s,
                                                                  center.%s
                                                                 )
+                                              INNER JOIN %s bridge2
+                                                         ON bridge2.%s
+                                                             IN (
+                                                                 bridge.%s,
+                                                                 bridge.%s,
+                                                                 bridge.%s,
+                                                                 bridge.%s,
+                                                                 bridge.%s
+                                                                )
                                  ) nearby
                                      LEFT JOIN %s
                                                 ON floor(%s.%s / 16) = nearby.%s AND floor(%s.%s / 16) = nearby.%s
@@ -188,6 +208,13 @@ public class MobSqlStorage {
                     ChunkSql.TABLE_CHUNK,
                     ChunkSql.CHUNK_UID,
                     ChunkSql.CHUNK_UID,
+                    Contour.TABLE_CONTOUR,
+                    Contour.CHUNK_UID,
+                    Contour.BRIDGE_X_NEG,
+                    Contour.BRIDGE_X_POS,
+                    Contour.BRIDGE_Z_NEG,
+                    Contour.BRIDGE_Z_POS,
+                    Contour.CHUNK_UID,
                     Contour.TABLE_CONTOUR,
                     Contour.CHUNK_UID,
                     Contour.BRIDGE_X_NEG,
@@ -277,6 +304,18 @@ public class MobSqlStorage {
         }
 
         public void spawn() {
+            @Nullable UUID worldUUID = SqlWorldGet.getWorldUUID(worldMyUid);
+            if (worldUUID == null) {
+                return;
+            } else {
+                @Nullable World world = Bukkit.getWorld(worldUUID);
+                if (world == null) {
+                    return;
+                } else if (world.isChunkLoaded(chunkX, chunkZ)) {
+                    return;
+                }
+            }
+
             while (!this.mobCountHigh()) {
                 Map<MobType, Double> shouldBeMobSpawns = biome.getSpawnPercentages();
                 Map<String, Double> mobSpawns = new HashMap<>();
@@ -344,7 +383,7 @@ public class MobSqlStorage {
                     if (mobType.canSpawn(topBlock)) {
                         final int group = mobType.getGroup();
                         for (int mobCount = 0; mobCount < group; mobCount++) {
-                            System.out.println(topBlock);
+                            System.out.println("plop");
                             final StoredMob storedMob = new StoredMob(topBlock.x() + chunkX * BLOCKS_IN_A_CHUNK, topBlock.y() + 1, topBlock.z() + chunkZ * BLOCKS_IN_A_CHUNK, worldMyUid, mobType);
                             mobsToSave.add(storedMob);
                             System.out.printf("spawn %s %d, %d, %d\n", storedMob.uniqueName, storedMob.x, storedMob.y, storedMob.z);
@@ -411,6 +450,10 @@ public class MobSqlStorage {
                 }
             }
             return null;
+        }
+
+        public static String getTag(String uniqueName) {
+            return VOLT_MOB + uniqueName;
         }
 
         public WorldServer getNmsWorld() {

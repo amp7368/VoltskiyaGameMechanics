@@ -365,6 +365,10 @@ public class BiomeType {
             this.spawnRate += i;
         }
 
+        public void removeMob(MobType mob) {
+            this.mobs.remove(mob);
+        }
+
         public static class BiomeIcon {
             private final String name;
             private final Material material;

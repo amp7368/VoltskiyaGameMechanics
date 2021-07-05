@@ -132,7 +132,8 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
                 super(biomeTypeGui);
                 setSlot(new InventoryGuiSlotGeneric(e -> {
                 }, biome.getIconItem()), 0);
-                setSlot(new InventoryGuiSlotGeneric(e -> biomeTypeGui.setTempInventory(null), new ItemStack(Material.GREEN_TERRACOTTA)), 8);
+                setSlot(new InventoryGuiSlotGeneric(e -> biomeTypeGui.setTempInventory(null),
+                        InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Save", null)), 8);
             }
 
             @Override

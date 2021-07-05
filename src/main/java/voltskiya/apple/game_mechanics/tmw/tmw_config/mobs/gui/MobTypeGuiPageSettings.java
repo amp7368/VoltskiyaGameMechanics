@@ -12,9 +12,7 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobTypeDatabase;
-import voltskiya.apple.utilities.util.gui.InventoryGui;
-import voltskiya.apple.utilities.util.gui.InventoryGuiPageSimple;
-import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
+import voltskiya.apple.utilities.util.gui.*;
 import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 import voltskiya.apple.utilities.util.minecraft.NbtUtils;
 
@@ -43,6 +41,7 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
         setSlot(new TimeToSpawnSlot(), 49);
         setSlot(new HighestYValue(), 44);
         setSlot(new LowestYValue(), 53);
+        setSlot(new GroupSlot(), 46);
     }
 
     @Override
@@ -108,8 +107,9 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
 
                 // get the entityTag nbt
                 net.minecraft.world.item.ItemStack nmsItem = CraftItemStack.asNMSCopy(item);
-                NBTTagCompound nbt = nmsItem.save(new NBTTagCompound());
-                nbt = nbt.hasKey(NbtUtils.ENTITY_TAG_NBT) ? nbt.getCompound(NbtUtils.ENTITY_TAG_NBT) : new NBTTagCompound();
+                NBTTagCompound fullnbt = nmsItem.save(new NBTTagCompound());
+                NBTTagCompound itemnbt = fullnbt.hasKey(NbtUtils.ITEM_TAG) ? fullnbt.getCompound(NbtUtils.ITEM_TAG) : new NBTTagCompound();
+                NBTTagCompound nbt = itemnbt.hasKey(NbtUtils.ENTITY_TAG_NBT) ? itemnbt.getCompound(NbtUtils.ENTITY_TAG_NBT) : new NBTTagCompound();
                 Optional<EntityTypes<?>> entityTypesFromNbt = EntityTypes.a(nbt);
 
 
@@ -117,8 +117,10 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
                 if (entityTypes.isEmpty()) return;
                 NBTTagCompound entityTag = new NBTTagCompound();
                 entityTag.set("id", NBTTagString.a("minecraft:" + entityTypes.get().i()));
-                nbt.set(NbtUtils.ENTITY_TAG_NBT, entityTag);
-                mob.setIcon(new MobType.MobTypeBuilder.MobIcon(name, material, lore, nbt));
+                nbt.a(entityTag); //merge nbt
+                itemnbt.set(NbtUtils.ENTITY_TAG_NBT, nbt);
+                fullnbt.set(NbtUtils.ITEM_TAG, itemnbt);
+                mob.setIcon(new MobType.MobTypeBuilder.MobIcon(name, material, lore, fullnbt));
 
                 setSlot(new InventoryGuiSlotGeneric(e -> {
                 }, mob.getIconItem()), 0);
@@ -130,9 +132,13 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
     private class SaveSlot implements InventoryGui.InventoryGuiSlot {
         @Override
         public void dealWithClick(InventoryClickEvent event) {
-            MobTypeDatabase.addMob(mob.build());
-            callbackGui.update(null);
-            event.getWhoClicked().openInventory(callbackGui.getInventory());
+            if (mob.isDone()) {
+                MobTypeDatabase.addMob(mob.build());
+                callbackGui.update(null);
+                event.getWhoClicked().openInventory(callbackGui.getInventory());
+            } else {
+                event.getWhoClicked().sendMessage("Make sure the mob has a name on the egg");
+            }
         }
 
         @Override
@@ -268,6 +274,82 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
                     "Shift right click: -5",
                     "Normal right click: -1"
             ));
+        }
+    }
+
+    private class GroupSlot implements InventoryGui.InventoryGuiSlot {
+        @Override
+        public void dealWithClick(InventoryClickEvent inventoryClickEvent) {
+            mobTypeGui.setTempInventory(new GroupSlotGuiPage());
+        }
+
+        @Override
+        public ItemStack getItem() {
+            return InventoryUtils.makeItem(Material.MELON_SEEDS, 1, "Groups", null);
+        }
+
+        private class GroupSlotGuiPage extends InventoryGuiPageScrollable {
+            public GroupSlotGuiPage() {
+                super(mobTypeGui);
+                setSlot(new InventoryGuiSlotGeneric(e -> {
+                    mobTypeGui.setTempInventory(null);
+                }, InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Go back", null)), 4);
+                setSlot(new InventoryGuiSlotGeneric(e -> {
+                    mob.addGroup();
+                    update();
+                }, InventoryUtils.makeItem(Material.MELON_SEEDS, 1, "Add a new group possibility", null)), 0);
+                addGroups();
+                setSlots();
+            }
+
+            private void addGroups() {
+                clear();
+                for (int i = 0; i < mob.groups.size(); i++) {
+                    int finalI = i;
+                    int group = mob.groups.get(finalI);
+                    add(new InventoryGuiSlotGenericScrollable(e -> {
+                        if (e.getClick().isShiftClick()) {
+                            mob.groups.remove(finalI);
+                        } else if (e.getClick().isLeftClick()) {
+                            mob.groupIncrement(finalI, 1);
+                        } else {
+                            mob.groupIncrement(finalI, -1);
+                        }
+                        update();
+                    }, InventoryUtils.makeItem(Material.MELON_SLICE, group, "Equal chance for " + group + " grouping", Arrays.asList(
+                            "Left click to increment",
+                            "Right click to decrement",
+                            "Shift click to remove"
+                    ))));
+                }
+            }
+
+            @Override
+            public void setSlots() {
+                super.setSlots();
+            }
+
+            @Override
+            public void fillInventory() {
+                addGroups();
+                setSlots();
+                super.fillInventory();
+            }
+
+            @Override
+            public String getName() {
+                return "Mob Groups";
+            }
+
+            @Override
+            protected int getScrollIncrement() {
+                return 8;
+            }
+
+            @Override
+            public int size() {
+                return 36;
+            }
         }
     }
 }
