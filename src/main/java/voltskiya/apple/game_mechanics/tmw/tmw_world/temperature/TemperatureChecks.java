@@ -1,7 +1,6 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world.temperature;
 
 import org.bukkit.Location;
-import org.bukkit.WeatherType;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
@@ -27,6 +26,8 @@ public class TemperatureChecks {
     public static final int SOURCES_DISTANCE = 7;
     private static final int MAX_DEPTH_INSIDENESS = 8;
     public static final double INSIDE_MAX_SCANABLE = Math.pow(MAX_DEPTH_INSIDENESS, 3) / 2;
+    private static final double importanceWind = 0.3;
+    private static final double importanceWet = 0.7;
 
     /**
      * @param location the location to check around
@@ -147,12 +148,11 @@ public class TemperatureChecks {
      * 0 means not wet, the higher the value the more wetness
      */
     public static double wetness(Player player) {
-        @Nullable WeatherType weather = player.getPlayerWeather();
-        if (weather == null) return 0;
-        return switch (weather) {
-            case CLEAR -> 0;
-            case DOWNFALL -> 1;
-        };
+        return player.isInWaterOrRain() ? 50 : 0;
+    }
+
+    public static double fluidFactor(double wind, double wetness) {
+        return Math.pow(importanceWind * Math.pow(Math.abs(wind), .25) + importanceWet * Math.pow(Math.abs(wetness), .25), 2);
     }
 
     public static class ClothingTemperature {
@@ -189,36 +189,23 @@ public class TemperatureChecks {
             }
         }
 
-        public double resistWind(double wind) {
-            if (this.windProtection < 0) {
-                return Math.abs(wind / (-1 + this.windProtection));
-            } else {
-                return Math.abs(wind / (1 + this.windProtection));
-            }
-        }
-
         public double resistTemp(double feelsLikeOutside) {
-            if (feelsLikeOutside < 0) {
-                if (this.coldResistance < 0) {
-                    return feelsLikeOutside / (-1 + this.coldResistance);
-                } else {
-                    return feelsLikeOutside / (1 + this.coldResistance);
-                }
-            } else {
-                if (this.heatResistance < 0) {
-                    return feelsLikeOutside / (-1 + this.heatResistance);
-                } else {
-                    return feelsLikeOutside / (1 + this.heatResistance);
-                }
-            }
+            double resistance = feelsLikeOutside < 0 ? this.coldResistance : this.heatResistance;
+            double resisted = Math.pow(Math.abs(feelsLikeOutside), 1 / Math.pow(resistance < 0 ? -1 / resistance : resistance + 1, .25));
+            return feelsLikeOutside < 0 ? -resisted : resisted;
         }
 
         public double resistWet(double wetness) {
-            if (this.wetProtection < 0) {
-                return wetness / (-1 + this.wetProtection);
-            } else {
-                return wetness / (1 + this.wetProtection);
-            }
+            double resistance = this.wetProtection;
+            double resisted = Math.pow(Math.abs(wetness), 1 / Math.pow(resistance < 0 ? -1 / resistance + 1 : resistance + 1, .25));
+            return wetness < 0 ? 0 : resisted;
         }
+
+        public double resistWind(double wind) {
+            double resistance = this.windProtection;
+            double resisted = Math.pow(Math.abs(wind), 1 / Math.pow(resistance < 0 ? -1 / resistance + 1 : resistance + 1, .25));
+            return wind < 0 ? 0 : resisted;
+        }
+
     }
 }

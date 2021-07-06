@@ -45,12 +45,20 @@ public class TemperatureWatchPlayer implements Runnable {
 
         ClothingTemperature clothing = TemperatureChecks.clothing(player);
         double finalBlockHeatSource = (1 + insideness) * blockHeatSource;
-        double finalWind = clothing.resistWind(wind * insideness);
+        double finalWind = clothing.resistWind(wind * (1 - insideness));
         double finalWetness = clothing.resistWet(wetness);
-        double playerWetness = playerInfo.doWetTick(finalWetness);
-        double finalAirTemp = airTemp * (1 - insideness) + finalBlockHeatSource;
-        double feelsLikeTemp = clothing.resistTemp(finalAirTemp); //todo .5 is arbitrary
-        this.playerInfo.temperature += (feelsLikeTemp - this.playerInfo.temperature) / TIME_TO_HEAT_CHANGE * (1 + finalWind);
+        double playerWetness = this.playerInfo.doWetTick(finalWetness);
+
+        double airTemp2 = airTemp + finalBlockHeatSource;
+
+        double fluidFactor = TemperatureChecks.fluidFactor(finalWind, playerWetness);
+        double boundaries = 150;
+        double airTemp3 = airTemp2 - ((boundaries / (1 + Math.pow(Math.E, (-airTemp2 / boundaries)))) * fluidFactor / 10);
+
+        double feltTemperature = clothing.resistTemp(airTemp3);
+        double heatTransferConstant = 0.01;
+        double surfaceArea = 7;
+        this.playerInfo.temperature += feltTemperature * surfaceArea * heatTransferConstant - surfaceArea * heatTransferConstant * this.playerInfo.temperature;
 
         TextComponent msg = new TextComponent();
         msg.setText(String.format("final temp - %.2f, biome - %s", this.playerInfo.temperature, currentBiome == null ? "null" : currentBiome.getName()));

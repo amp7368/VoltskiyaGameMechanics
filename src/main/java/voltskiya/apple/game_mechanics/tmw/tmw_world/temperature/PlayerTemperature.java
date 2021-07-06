@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.util.UUID;
 
 public class PlayerTemperature {
+    private static final double MODIFIER = .06;
     private final UUID uuid;
     public double temperature = 0;
     public double wetness = 0;
@@ -34,6 +35,6 @@ public class PlayerTemperature {
     }
 
     public double doWetTick(double finalWetness) {
-        return this.wetness += (this.wetness - finalWetness) / 50;
+        return this.wetness += finalWetness * MODIFIER - MODIFIER * this.wetness;
     }
 }
