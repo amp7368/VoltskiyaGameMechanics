@@ -169,9 +169,11 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
     private class SaveSlot implements InventoryGui.InventoryGuiSlot {
         @Override
         public void dealWithClick(InventoryClickEvent event) {
-            BiomeTypeDatabase.addBiome(biome.build());
-            callbackGui.update(null);
-            event.getWhoClicked().openInventory(callbackGui.getInventory());
+            if (biome.isBuildable()) {
+                BiomeTypeDatabase.addBiome(biome.build());
+                callbackGui.update(null);
+                event.getWhoClicked().openInventory(callbackGui.getInventory());
+            }
         }
 
         @Override

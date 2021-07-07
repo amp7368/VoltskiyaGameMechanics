@@ -13,13 +13,15 @@ public class WatchPlayer {
     private final MobWatchPlayer mobWatch;
     private final TemperatureWatchPlayer temperatureWatch;
     private final PlayerTemperature playerInfo;
+    private final PlayerTemperatureVisual playerVisual;
 
     public WatchPlayer(Player player) {
         this.playerInfo = PlayerTemperatureDatabase.get(player.getUniqueId());
         this.player = player;
+        this.playerVisual = new PlayerTemperatureVisual(player);
         this.biomeWatch = new BiomeWatchPlayer(player, this);
         this.mobWatch = new MobWatchPlayer(player, this);
-        this.temperatureWatch = new TemperatureWatchPlayer(player, this);
+        this.temperatureWatch = new TemperatureWatchPlayer(player, this.playerVisual, this);
         // for watching the specifics of a chunk in our DB
 //        this.chunkWatch = new ChunkWatchPlayer(player,this);
     }

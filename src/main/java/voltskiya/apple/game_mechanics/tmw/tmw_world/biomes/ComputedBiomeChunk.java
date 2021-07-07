@@ -19,7 +19,13 @@ public class ComputedBiomeChunk {
             return;
         }
         List<Pair<BiomeType, Double>> guesses = new ArrayList<>();
+        List<BiomeType> goodBiomes = new ArrayList<>();
         for (BiomeType biome : BiomeTypeDatabase.getAll()) {
+            if (biome.isCorrectBiome(blocksInfo.getBiomes())) {
+                goodBiomes.add(biome);
+            }
+        }
+        for (BiomeType biome : goodBiomes.isEmpty() ? BiomeTypeDatabase.getAll() : goodBiomes) {
             guesses.add(
                     new Pair<>(
                             biome,

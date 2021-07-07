@@ -2,6 +2,7 @@ package voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.effects;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
@@ -29,6 +30,26 @@ public class TemperatureEffect {
 
     }
 
+    public double getTemperatureStart() {
+        return temperatureStart;
+    }
+
+    public int getLevel() {
+        return level;
+    }
+
+    public int getInterval() {
+        return interval;
+    }
+
+    public int getLasting() {
+        return lasting;
+    }
+
+    public String getPotionEffect() {
+        return potionEffectType;
+    }
+
     public UUID getUUID() {
         return UUID.fromString(uuid);
     }
@@ -47,6 +68,11 @@ public class TemperatureEffect {
                         String.format("Start: %.1f", temperatureStart)
                 )
         );
+    }
+
+    public PotionEffect getPotionData() {
+        PotionEffectType type = PotionEffectType.getByName(potionEffectType);
+        return type == null ? null : new PotionEffect(type, lasting, level, true);
     }
 
     public static class TemperatureEffectBuilder {

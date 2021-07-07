@@ -186,7 +186,7 @@ public class MobSqlStorage {
                                                 ON floor(%s.%s / 16) = nearby.%s AND floor(%s.%s / 16) = nearby.%s
                             GROUP BY %s.%s, nearby.cchunk_uid
                             ORDER BY random()
-                            LIMIT 10
+                            LIMIT 5
                             """,
                     TABLE_STORED_MOB,
                     MOB_UNIQUE_NAME,

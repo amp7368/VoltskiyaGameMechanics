@@ -5,15 +5,12 @@ import com.google.gson.GsonBuilder;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class TemperatureEffectsDatabase {
     private static final String EFFECTS_FOLDER = "effect";
     private static final File EFFECTS_FILE;
-    private static Gson gson;
+    private static final Gson gson;
     private static TemperatureEffectsDatabase instance;
 
     static {
@@ -41,6 +38,8 @@ public class TemperatureEffectsDatabase {
     }
 
     private final HashMap<UUID, TemperatureEffect> effects = new HashMap<>();
+    private List<TemperatureEffect> coldEffects = null;
+    private List<TemperatureEffect> hotEffects = null;
 
     public synchronized static void addEffect(TemperatureEffect effect) {
         get().effects.put(effect.getUUID(), effect);
@@ -61,5 +60,49 @@ public class TemperatureEffectsDatabase {
 
     public static List<TemperatureEffect> getAll() {
         return new ArrayList<>(get().effects.values());
+    }
+
+
+    private static void verifyCache() {
+        if (get().coldEffects == null || get().hotEffects == null) {
+            Collection<TemperatureEffect> temperatureEffects = get().effects.values();
+            get().coldEffects = new ArrayList<>() {{
+                for (TemperatureEffect temperatureEffect : temperatureEffects) {
+                    if (temperatureEffect.getTemperatureStart() < 0) {
+                        add(temperatureEffect);
+                    }
+                }
+            }};
+            get().coldEffects.sort((o1, o2) -> compareEffects(o2, o1));
+            get().hotEffects = new ArrayList<>() {{
+                for (TemperatureEffect temperatureEffect : temperatureEffects) {
+                    if (temperatureEffect.getTemperatureStart() > 0) {
+                        add(temperatureEffect);
+                    }
+                }
+            }};
+            get().hotEffects.sort(TemperatureEffectsDatabase::compareEffects);
+        }
+    }
+
+    public static List<TemperatureEffect> getAllHot() {
+        verifyCache();
+        return get().hotEffects;
+    }
+
+    public static List<TemperatureEffect> getAllCold() {
+        verifyCache();
+        return get().coldEffects;
+    }
+
+    private static int compareEffects(TemperatureEffect o1, TemperatureEffect o2) {
+        double difference = o2.getTemperatureStart() - o1.getTemperatureStart();
+        if (difference == 0) {
+            return o1.getPotionEffect().compareTo(o2.getPotionEffect());
+        } else if (difference < 0) {
+            return -1;
+        } else {
+            return 1;
+        }
     }
 }

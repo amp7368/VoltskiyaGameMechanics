@@ -149,6 +149,13 @@ public class BiomeType {
         return percentages;
     }
 
+    public boolean isCorrectBiome(Map<Biome, Double> biomes) {
+        for (Map.Entry<Biome, Double> myBiome : this.biomes.entrySet()) {
+            if (myBiome.getValue() > .25 && biomes.getOrDefault(myBiome.getKey(), 0d) > .25) return true;
+        }
+        return false;
+    }
+
     public enum TemperatureTime {
         MORNING,
         NOON,
@@ -368,6 +375,10 @@ public class BiomeType {
 
         public void removeMob(MobType mob) {
             this.mobs.remove(mob);
+        }
+
+        public boolean isBuildable() {
+            return this.biomes != null;
         }
 
         public static class BiomeIcon {
