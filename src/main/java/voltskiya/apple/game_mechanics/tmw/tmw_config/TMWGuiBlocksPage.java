@@ -49,6 +49,12 @@ public class TMWGuiBlocksPage extends InventoryGuiPageScrollable {
     }
 
     @Override
+    public void fillInventory() {
+        addBlocks();
+        super.fillInventory();
+    }
+
+    @Override
     protected int getScrollIncrement() {
         return 8;
     }

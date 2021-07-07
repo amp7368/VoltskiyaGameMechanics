@@ -13,6 +13,11 @@ public class TMWGuiWeatherPage extends InventoryGuiPageScrollable {
         this.tmwGui = tmwGui;
         setSlots();
     }
+
+    private void addWeathers() {
+
+    }
+
     @Override
     public void setSlots() {
         super.setSlots();
@@ -21,6 +26,13 @@ public class TMWGuiWeatherPage extends InventoryGuiPageScrollable {
         setSlot(new InventoryGuiSlotGeneric((e1) -> tmwGui.nextPage(1), InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)
         ), 8);
     }
+
+    @Override
+    public void fillInventory() {
+        addWeathers();
+        super.fillInventory();
+    }
+
     @Override
     public String getName() {
         return "All Weather Events";

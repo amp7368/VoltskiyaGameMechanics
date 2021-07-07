@@ -13,7 +13,8 @@ public class TMWGui extends InventoryGui {
                 new TMWGuiBiomesPage(this),
                 new TMWGuiWeatherPage(this),
                 new TMWGuiBlocksPage(this),
-                new TMWGuiClothingPage(this)
+                new TMWGuiClothingPage(this),
+                new TMWGuiEffectsPage(this)
         );
     }
 

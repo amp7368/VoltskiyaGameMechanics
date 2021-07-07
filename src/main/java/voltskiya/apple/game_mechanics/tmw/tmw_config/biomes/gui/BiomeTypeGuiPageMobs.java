@@ -1,8 +1,10 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui;
 
 import org.bukkit.Material;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
@@ -11,6 +13,8 @@ import voltskiya.apple.utilities.util.gui.InventoryGuiPageScrollable;
 import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
 import voltskiya.apple.utilities.util.gui.InventoryGuiSlotScrollable;
 import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
+
+import java.util.Arrays;
 
 public class BiomeTypeGuiPageMobs extends InventoryGuiPageScrollable {
     private final BiomeTypeGui biomeTypeGui;
@@ -49,6 +53,7 @@ public class BiomeTypeGuiPageMobs extends InventoryGuiPageScrollable {
     public void fillInventory() {
         clear();
         addMobs();
+        setSlots();
         super.fillInventory();
     }
 
@@ -85,8 +90,14 @@ public class BiomeTypeGuiPageMobs extends InventoryGuiPageScrollable {
 
         @Override
         public void dealWithClick(InventoryClickEvent event) {
-            if (event.getClick().isShiftClick()) {
-                if (event.getClick().isLeftClick()) {
+            ClickType click = event.getClick();
+            if (click.isKeyboardClick()) {
+                biome.removeMob(mob);
+                update();
+                return;
+            }
+            if (click.isShiftClick()) {
+                if (click.isLeftClick()) {
                     biome.incrementMob(mob, 1);
                 } else {
                     biome.incrementMob(mob, -1);
@@ -100,7 +111,15 @@ public class BiomeTypeGuiPageMobs extends InventoryGuiPageScrollable {
         @Override
         public ItemStack getItem() {
             final ItemStack item = mob.toItem();
-            item.setAmount(biome.getMob(mob));
+            item.setAmount(Math.max(1, biome.getMob(mob)));
+            ItemMeta itemMeta = item.getItemMeta();
+            itemMeta.setLore(Arrays.asList(
+                    "Shift left click - increment mob ratio",
+                    "Shift right click - decrement mob ratio",
+                    "Keyboard click - remove mob",
+                    "Normal click - access mob info"
+            ));
+            item.setItemMeta(itemMeta);
             return item;
         }
     }

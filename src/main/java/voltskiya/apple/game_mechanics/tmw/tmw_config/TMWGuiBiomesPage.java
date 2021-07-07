@@ -21,6 +21,7 @@ public class TMWGuiBiomesPage extends InventoryGuiPageScrollable {
 
 
     private void addBiomes() {
+        clear();
         for (BiomeType biome : BiomeTypeDatabase.getAll()) {
             add(new BiomeTypeInventorySlot(biome, tmwGui));
         }
@@ -34,7 +35,13 @@ public class TMWGuiBiomesPage extends InventoryGuiPageScrollable {
         setSlot(new InventoryGuiSlotGeneric((e1) -> tmwGui.nextPage(1), InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)
         ), 8);
         setSlot(new InventoryGuiSlotGeneric(e -> e.getWhoClicked().openInventory(new BiomeTypeGui(tmwGui, new BiomeType.BiomeTypeBuilder()).getInventory()),
-                InventoryUtils.makeItem(Material.DARK_OAK_SAPLING, 1, "Add a biome", null)),4);
+                InventoryUtils.makeItem(Material.DARK_OAK_SAPLING, 1, "Add a biome", null)), 4);
+    }
+
+    @Override
+    public void fillInventory() {
+        addBiomes();
+        super.fillInventory();
     }
 
     @Override

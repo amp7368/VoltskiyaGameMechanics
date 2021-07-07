@@ -43,8 +43,8 @@ public class MobListener implements Listener {
                     if (uniqueName != null) {
                         try {
                             mobsToSave.add(new MobSqlStorage.StoredMob(x, y, z, location.getWorld().getUID(), uniqueName, despawnAtTime));
-                            System.out.println("save " + uniqueName);
                             entity.remove();
+                            break;
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }

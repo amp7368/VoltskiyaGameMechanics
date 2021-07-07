@@ -48,6 +48,12 @@ public class TMWGuiClothingPage extends InventoryGuiPageScrollable {
     }
 
     @Override
+    public void fillInventory() {
+        addClothing();
+        super.fillInventory();
+    }
+
+    @Override
     protected int getScrollIncrement() {
         return 8;
     }

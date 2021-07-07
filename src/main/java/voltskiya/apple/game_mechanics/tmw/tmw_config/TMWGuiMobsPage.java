@@ -22,6 +22,7 @@ public class TMWGuiMobsPage extends InventoryGuiPageScrollable {
     }
 
     private void addMobs() {
+        clear();
         for (MobType mob : MobTypeDatabase.getAll()) {
             add(new MobTypeInventorySlot(mob, tmwGui));
         }
@@ -33,7 +34,13 @@ public class TMWGuiMobsPage extends InventoryGuiPageScrollable {
         setSlot(new InventoryGuiSlotGeneric((e1) -> tmwGui.nextPage(1), InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)
         ), 8);
         setSlot(new InventoryGuiSlotGeneric(e -> e.getWhoClicked().openInventory(new MobTypeGui(tmwGui, new MobType.MobTypeBuilder()).getInventory()),
-                InventoryUtils.makeItem(Material.DARK_OAK_SAPLING, 1, "Add a mob", null)),4);
+                InventoryUtils.makeItem(Material.DARK_OAK_SAPLING, 1, "Add a mob", null)), 4);
+    }
+
+    @Override
+    public void fillInventory() {
+        addMobs();
+        super.fillInventory();
     }
 
     @Override
@@ -63,7 +70,7 @@ public class TMWGuiMobsPage extends InventoryGuiPageScrollable {
         @Override
         public void dealWithClick(InventoryClickEvent event) {
             event.getWhoClicked().openInventory(
-                    new MobTypeGui(tmwGui,mob.toBuilder()).getInventory()
+                    new MobTypeGui(tmwGui, mob.toBuilder()).getInventory()
             );
         }
 
