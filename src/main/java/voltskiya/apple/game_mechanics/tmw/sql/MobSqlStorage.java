@@ -137,12 +137,15 @@ public class MobSqlStorage {
     }
 
     public static void getRegen(Consumer<Map<Long, SpawnPercentages>> afterRun) {
-        try {
-            afterRun.accept(getRegen());
-        } catch (SQLException e) {
-            e.printStackTrace();
-            afterRun.accept(null);
-        }
+        new Thread(() -> {
+            try {
+                afterRun.accept(getRegen());
+            } catch (SQLException e) {
+                e.printStackTrace();
+                afterRun.accept(null);
+            }
+        }).start();
+
     }
 
     public static Map<Long, SpawnPercentages> getRegen() throws SQLException {

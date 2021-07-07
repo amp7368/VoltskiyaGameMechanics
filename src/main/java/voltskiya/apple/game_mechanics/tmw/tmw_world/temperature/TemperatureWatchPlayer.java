@@ -39,7 +39,7 @@ public class TemperatureWatchPlayer implements Runnable {
             WatchPlayerListener.get().leave(this.player.getUniqueId());
             return;
         }
-        if (this.player.getGameMode() == GameMode.SURVIVAL) {
+        if (this.player.getGameMode() == GameMode.SURVIVAL && PlayerTemperatureCommand.getTemperature()) {
             Location location = this.player.getLocation();
             @Nullable BiomeType currentBiome = watchPlayer.getBiomeWatch().getCurrentGuess();
             double airTemp = currentBiome == null ? 0 : currentBiome.getTypicalTempNow(location.getWorld().getTime());
