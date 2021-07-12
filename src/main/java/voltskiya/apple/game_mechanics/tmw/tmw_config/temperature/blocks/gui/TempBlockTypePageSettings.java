@@ -28,6 +28,8 @@ public class TempBlockTypePageSettings extends InventoryGuiPageSimple {
                 }, InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Save", null)
         ), 8);
 
+        setSlot(new InventoryGuiSlotGeneric((e1) -> e1.getWhoClicked().openInventory(tmwGui.getInventory()), InventoryUtils.makeItem(Material.LIGHT_BLUE_TERRACOTTA, 1, "Back", null)
+        ), 6);
         setSlot(new InventoryGuiSlotGeneric(e -> {
             if (e.getClick().isLeftClick()) {
                 blockType.incrementTemp(-1);

@@ -18,6 +18,15 @@ public class SqlVariableNames {
         public static final String BIOME_GUESS_UID = "biome_guess_uid";
     }
 
+    public static class Weather {
+
+        public static final String WEATHER_UID = "weather_uid";
+        public static final String IMPACT = "impact";
+        public static final String IMPACT_VELOCITY = "impact_velocity";
+        public static final String IMPACT_ACCELERATION = "impact_acceleration";
+        public static final String TABLE_WEATHER = "weather";
+    }
+
     public static class Contour {
         public static final String TABLE_CONTOUR = "contour";
         public static final String CHUNK_UID = "chunk_uid";

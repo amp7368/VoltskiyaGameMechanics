@@ -52,6 +52,8 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
         setSlot(new RegisterTimeTempSlot(BiomeType.TemperatureTime.MIDNIGHT), 12);
         setSlot(new RegisterWindSlot(), 18);
         setSlot(new DeleteSlot(), 2);
+        setSlot(new InventoryGuiSlotGeneric((e1) -> e1.getWhoClicked().openInventory(callbackGui.getInventory()), InventoryUtils.makeItem(Material.LIGHT_BLUE_TERRACOTTA, 1, "Back", null)
+        ), 6);
         setSlot(new ImportanceChangeSlot(
                 biome::incrementBlocksImportance, 1, 5,
                 InventoryUtils.makeItem(Material.STONE_BUTTON, 1, "Increase blocks importance", Arrays.asList(

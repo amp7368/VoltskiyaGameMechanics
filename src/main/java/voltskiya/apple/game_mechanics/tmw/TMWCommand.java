@@ -5,15 +5,20 @@ import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.Subcommand;
 import org.bukkit.GameMode;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
+import voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.biomes.ComputedBiomeChunk;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.biomes.ScanWorldBiomes;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobRegen;
+import voltskiya.apple.utilities.util.data_structures.Pair;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @CommandAlias("tmw")
 public class TMWCommand extends BaseCommand {
@@ -40,6 +45,24 @@ public class TMWCommand extends BaseCommand {
             }
         }
         player.openInventory(new TMWGui(player).getInventory());
+    }
+
+    @Subcommand("mobs pause")
+    public void pause(CommandSender sender) {
+        sender.sendMessage("mob spawning is " + (MobRegen.pause() ? "on" : "off"));
+
+    }
+
+    @Subcommand("biome")
+    public void biome(Player player) {
+        List<Pair<BiomeType, Double>> guess = new ComputedBiomeChunk(BiomeTypeBuilderRegisterBlocks.compute(player.getChunk(), new HashSet<>()
+                , player.getLocation().getBlockX() - player.getChunk().getX() * TemperatureChunk.BLOCKS_IN_A_CHUNK
+                , player.getLocation().getBlockY()
+                , player.getLocation().getBlockZ() - player.getChunk().getZ() * TemperatureChunk.BLOCKS_IN_A_CHUNK
+        )).getGuessedBiomes();
+        for (Pair<BiomeType, Double> biomes : guess) {
+            player.sendMessage(String.format("%s - %.3f", biomes.getKey().getName(), biomes.getValue()));
+        }
     }
 
     @Subcommand("map world please")

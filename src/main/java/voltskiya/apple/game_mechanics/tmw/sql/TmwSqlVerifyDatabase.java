@@ -13,8 +13,29 @@ import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.*;
 public class TmwSqlVerifyDatabase {
     public static final Object syncDB = new Object();
     private static final File DATABASE_FILENAME;
-    private static final String TABLE_STORED_MOBS = String.format("""
+    private static final String BUILD_TABLE_WEATHER = String.format("""
                     CREATE TABLE IF NOT EXISTS %s
+                    (
+                        %s           BIGINT  NOT NULL,
+                        %s         INTEGER NOT NULL,
+                        %s              FLOAT   NOT NULL,
+                        %s     FLOAT   NOT NULL,
+                        %s FLOAT   NOT NULL,
+                       \s
+                        PRIMARY KEY (%s, %s)
+                                
+                    )""",
+            Weather.TABLE_WEATHER,
+            ChunkSql.CHUNK_UID,
+            Weather.WEATHER_UID,
+            Weather.IMPACT,
+            Weather.IMPACT_VELOCITY,
+            Weather.IMPACT_ACCELERATION,
+            ChunkSql.CHUNK_UID,
+            Weather.WEATHER_UID
+    );
+    private static final String TABLE_STORED_MOBS = String.format("""
+                                    CREATE TABLE IF NOT EXISTS %s
                     (
                         %s     BIGINT PRIMARY KEY,
                         %s            SMALLINT,
@@ -125,6 +146,7 @@ public class TmwSqlVerifyDatabase {
         statement.execute(BUILD_TABLE_CONTOUR);
         statement.execute(TABLE_STORED_MOBS);
         statement.execute(BUILD_TABLE_CHUNK_KILL);
+        statement.execute(BUILD_TABLE_WEATHER);
         currentMobMyUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", SqlVariableNames.MOB_MY_UID, SqlVariableNames.TABLE_STORED_MOB)).getLong(1);
         currentChunkUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", Contour.CHUNK_UID, Contour.TABLE_CONTOUR)).getLong(1);
         statement.close();

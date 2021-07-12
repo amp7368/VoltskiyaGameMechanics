@@ -30,6 +30,8 @@ public class TemperatureEffectGui extends InventoryGuiPageSimple {
             TemperatureEffectsDatabase.addEffect(temperatureEffect.build());
             tmwGui.setTempInventory(null);
         }, InventoryUtils.makeItem(Material.LIME_TERRACOTTA, 1, "Save", null)), 4);
+        setSlot(new InventoryGuiSlotGeneric((e1) -> e1.getWhoClicked().openInventory(tmwGui.getInventory()), InventoryUtils.makeItem(Material.LIGHT_BLUE_TERRACOTTA, 1, "Back", null)
+        ), 6);
         setSlots();
     }
 

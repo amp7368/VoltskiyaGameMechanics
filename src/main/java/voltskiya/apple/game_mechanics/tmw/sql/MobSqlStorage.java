@@ -30,6 +30,7 @@ import static voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeType
 
 public class MobSqlStorage {
     private static final double MOB_TYPE_VARIATION = .5;
+    private static final int MOB_COUNT_PER_TICK = 40;
 
     public static void insertMobs(List<StoredMob> mobs) {
         new Thread(() -> {
@@ -164,7 +165,10 @@ public class MobSqlStorage {
                                             center.%s,
                                             center.%s,
                                             bridge.%s as bridge_uid
-                                     FROM %s center
+                                     FROM (SELECT *
+                                           FROM %s
+                                           ORDER BY random()
+                                           LIMIT %d) center
                                               INNER JOIN %s ON %s.%s = center.%s
                                               INNER JOIN %s bridge
                                                          ON bridge.%s
@@ -207,6 +211,7 @@ public class MobSqlStorage {
                     Contour.MIDDLE_Z,
                     Contour.CHUNK_UID,
                     Contour.TABLE_CONTOUR,
+                    MOB_COUNT_PER_TICK,
                     ChunkSql.TABLE_CHUNK,
                     ChunkSql.TABLE_CHUNK,
                     ChunkSql.CHUNK_UID,
@@ -324,18 +329,28 @@ public class MobSqlStorage {
                 Map<String, Double> mobSpawns = new HashMap<>();
                 for (Map.Entry<String, Integer> mob : this.mobNames.entrySet())
                     mobSpawns.put(mob.getKey(), mob.getValue() / this.mobCount);
-                MobType bestMob = null;
-                double mostPerc = Double.MIN_VALUE;
+
+                double totalPerc = 0;
+                Map<MobType, Double> shouldBe = new HashMap<>();
                 for (Map.Entry<MobType, Double> shouldBeMob : shouldBeMobSpawns.entrySet()) {
-                    if (shouldBeMob.getValue() * (1 - Math.random() * MOB_TYPE_VARIATION) - mobSpawns.getOrDefault(shouldBeMob.getKey().getName(), 0d) > mostPerc) {
-                        bestMob = shouldBeMob.getKey();
+                    double shouldBeNess = shouldBeMob.getValue() - mobSpawns.getOrDefault(shouldBeMob.getKey().getName(), 0d);
+                    shouldBe.put(shouldBeMob.getKey(), shouldBeNess);
+                    totalPerc += shouldBeNess;
+                }
+                // randomly choose a mob but with correct distribution
+                totalPerc *= Math.random();
+                boolean wasSet = false;
+                for (Map.Entry<MobType, Double> mob : shouldBe.entrySet()) {
+                    totalPerc -= mob.getValue();
+                    if (totalPerc < 0) {
+                        this.mobCount += mob.getKey().getMeanGroup();
+                        this.mobsToSpawn.add(mob.getKey());
+                        wasSet = true;
+                        break;
                     }
                 }
-                if (bestMob == null) {
-                    break;
-                }
-                this.mobCount += bestMob.getMeanGroup();
-                this.mobsToSpawn.add(bestMob);
+                // just as a failsafe to make sure progress is made
+                if (!wasSet) this.mobCount++;
             }
         }
 
@@ -386,7 +401,6 @@ public class MobSqlStorage {
                     if (mobType.canSpawn(topBlock)) {
                         final int group = mobType.getGroup();
                         for (int mobCount = 0; mobCount < group; mobCount++) {
-                            System.out.println("plop");
                             final StoredMob storedMob = new StoredMob(topBlock.x() + chunkX * BLOCKS_IN_A_CHUNK, topBlock.y() + 1, topBlock.z() + chunkZ * BLOCKS_IN_A_CHUNK, worldMyUid, mobType);
                             mobsToSave.add(storedMob);
                             System.out.printf("spawn %s %d, %d, %d\n", storedMob.uniqueName, storedMob.x, storedMob.y, storedMob.z);

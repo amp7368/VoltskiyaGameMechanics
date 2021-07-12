@@ -65,7 +65,6 @@ public class MobWatchPlayer implements Runnable {
                 if (entity != null) {
                     entity.load(mobType.getEnitityNbt());
                     entity.addScoreboardTag(MobSqlStorage.StoredMob.getTag(storedMob.uniqueName));
-                    System.out.printf("spawned at %d, %d, %d, %s\n", storedMob.x, storedMob.y, storedMob.z, storedMob.getNmsWorld());
                     storedMob.getNmsWorld().addAllEntitiesSafely(entity);
                     entity.teleportAndSync(storedMob.x, storedMob.y, storedMob.z);
                     mobsToRemove.add(storedMob.uid);

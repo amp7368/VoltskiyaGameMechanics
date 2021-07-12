@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.utilities.util.data_structures.Pair;
+import voltskiya.apple.utilities.util.minecraft.MaterialUtils;
 
 import java.util.*;
 
@@ -62,9 +63,9 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
             // scan the block and walk to nearby blocks
             Block block = chunk.getBlock(x, y, z);
             boolean shouldScanNext = false;
-            if (block.getType().isAir()) {
+            if (isIgnored(block.getType())) {
                 // go down
-                while (--y > 0 && (block = chunk.getBlock(x, y, z)).getType().isAir()) ;
+                while (--y > 0 && isIgnored((block = chunk.getBlock(x, y, z)).getType())) ;
 
                 if (y >= 0) {
                     // register the top blocks (key letter block's')
@@ -78,14 +79,14 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
                 }
             } else {
                 // go up
-                while (++y < BUILD_HEIGHT && !chunk.getBlock(x, y, z).getType().isAir()) ;
+                while (++y < BUILD_HEIGHT && !isIgnored(chunk.getBlock(x, y, z).getType())) ;
 
                 if (y < BUILD_HEIGHT) {
                     block = chunk.getBlock(x, y - 1, z);
                     // register the top blocks (key letter block's')
                     Block lowerBlock = block;
 
-                    for (int yi = 0; yi < BLOCKS_TO_COUNT_DOWN && !lowerBlock.getType().isAir() && y - yi >= 0; yi++) {
+                    for (int yi = 0; yi < BLOCKS_TO_COUNT_DOWN && !isIgnored(lowerBlock.getType()) && y - yi >= 0; yi++) {
                         topBlocksLocal.add(new TopBlock(lowerBlock.getType(), yi == 0, x, y, z, lowerBlock.getBiome()));
                         lowerBlock = chunk.getBlock(x, y, z);
                     }
@@ -102,6 +103,10 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
         return topBlocksLocal;
     }
 
+    private static boolean isIgnored(Material type) {
+        return type.isAir() || type == Material.WATER || type == Material.LAVA || MaterialUtils.isTree(type);
+    }
+
     public void setShouldStop() {
         shouldStop = true;
     }
@@ -114,8 +119,6 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
     @Nullable
     public static BlocksInfo compute(List<TopBlock> topBlocks) {
         if (topBlocks.isEmpty()) return null;
-        Map<Material, Double> materials = new HashMap<>();
-        Map<Biome, Double> biomes = new HashMap<>();
         int ySum = 0;
         int averageHeight = 0;
         int lowestHeight = Integer.MAX_VALUE;
@@ -139,6 +142,8 @@ public class BiomeTypeBuilderRegisterBlocks implements Runnable {
 
         int blocksInThisChunk = 0;
         // if you aren't within 2 standard deviation, you are probably a random pillar
+        Map<Material, Double> materials = new HashMap<>();
+        Map<Biome, Double> biomes = new HashMap<>();
         for (TopBlock topBlock : topBlocks) {
             if (topBlock.y <= maxY && topBlock.y >= minY) {
                 blocksInThisChunk++;

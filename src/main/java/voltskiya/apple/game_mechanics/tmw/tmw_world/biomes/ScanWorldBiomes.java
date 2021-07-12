@@ -81,13 +81,13 @@ public class ScanWorldBiomes {
         System.out.println("scan");
         // determine if we should increase or decrease our chunk loading speed
         final double tps = Bukkit.getTPS()[0];
-        if (tps > 19.75) {
+        if (tps > 14) {
             this.chunksPerStep++;
-        } else if (tps < 19) {
+        } else if (tps < 10) {
             this.chunksPerStep--;
         }
         if (chunksPerStep == 0) {
-            Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this::scan, 10);
+            Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this::scan, 5);
             return;
         }
         if (this.chunksToScan.isEmpty()) {
@@ -109,7 +109,7 @@ public class ScanWorldBiomes {
         cleanUp();
 
         // schedule ourselves again
-        Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this::scan, 5);
+        Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this::scan, 2);
     }
 
     private void process(List<PrepareChunks> chunksToProcess) {

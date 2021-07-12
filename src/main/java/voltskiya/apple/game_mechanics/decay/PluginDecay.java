@@ -7,6 +7,7 @@ public class PluginDecay extends VoltskiyaModule {
     @Override
     public void enable() {
         new WatchBlockBreak();
+        new DecayCommand();
     }
 
     @Override
