@@ -11,6 +11,9 @@ public class SqlVariableNames {
     public static final String WORLD_UUID = "world_uuid";
     public static final String TABLE_WORLD = "world";
     public static final String MOB_MY_UID = "mob_my_uid";
+    public static final String MATERIAL = "name";
+    public static final String MATERIAL_MY_UID = "material_my_uid";
+    public static final String TABLE_MATERIAL = "material";
 
     public static class ChunkSql {
         public static final String TABLE_CHUNK = "chunk";
@@ -44,5 +47,21 @@ public class SqlVariableNames {
     public static class Kills {
         public static final String TABLE_CHUNK_KILL = "chunk_kill";
         public static final String TIME = "time_of_kill";
+    }
+
+    public static class Decay {
+        public static final String TABLE_DECAY_BLOCK = "decay_block";
+        public static final String TABLE_BASE = "base";
+        public static final String BASE_UID = "base_uid";
+        public static final String X = "x";
+        public static final String Y = "y";
+        public static final String Z = "z";
+        public static final String NEW_MATERIAL = "new_material";
+        public static final String ORIGINAL_MATERIAL = "original_material";
+        public static final String DAMAGE = "damage";
+        public static final String BASE_CENTER_X = "x_center";
+        public static final String BASE_CENTER_Y = "y_center";
+        public static final String BASE_CENTER_Z = "z_center";
+        public static final String IS_DECAY = "is_decay";
     }
 }

@@ -54,6 +54,12 @@ public class TmwSqlVerifyDatabase {
             SqlVariableNames.WORLD_MY_UID,
             SqlVariableNames.MOB_UNIQUE_NAME,
             SqlVariableNames.DESPAWN_TIME);
+    private static final String BUILD_TABLE_MATERIAL = String.format("""
+            CREATE TABLE IF NOT EXISTS %s
+            (
+                %s        VARCHAR(50) NOT NULL,
+                %s INTEGER     NOT NULL PRIMARY KEY
+            )""", TABLE_MATERIAL, MATERIAL, MATERIAL_MY_UID);
     private static final String BUILD_TABLE_WORLD = String.format("""
                     CREATE TABLE IF NOT EXISTS %s
                     (
@@ -123,9 +129,41 @@ public class TmwSqlVerifyDatabase {
             Contour.CHUNK_UID,
             Contour.TABLE_CONTOUR
     );
+    private static final String BUILD_TABLE_BLOCK = String.format("""
+                    CREATE TABLE IF NOT EXISTS %s
+                    (
+                        %s            INTEGER NOT NULL,
+                        %s            INTEGER NOT NULL,
+                        %s            INTEGER NOT NULL,
+                        %s INTEGER NOT NULL,
+                        %s      BOOLEAN NOT NULL,
+                        %s        FLOAT   NOT NULL,
+                        %s INTEGER,
+                        %s INTEGER,
+                        PRIMARY KEY (%s, %s, %s, %s),
+                        FOREIGN KEY (%s) REFERENCES %s
+                    );""",
+            Decay.TABLE_DECAY_BLOCK,
+            Decay.X,
+            Decay.Y,
+            Decay.Z,
+            WORLD_MY_UID,
+            Decay.IS_DECAY,
+            Decay.DAMAGE,
+            Decay.NEW_MATERIAL,
+            Decay.ORIGINAL_MATERIAL,
+            Decay.X,
+            Decay.Y,
+            Decay.Z,
+            WORLD_MY_UID,
+            WORLD_MY_UID,
+            TABLE_WORLD
+    );
+
     public static Connection database;
     private static long currentMobMyUid;
     private static long currentChunkUid;
+    private static int currentMaterialUid;
 
     static {
         DATABASE_FILENAME = new File(PluginTMW.get().getDataFolder().getPath(), "tmwDatabase.db");
@@ -143,12 +181,15 @@ public class TmwSqlVerifyDatabase {
         Statement statement = database.createStatement();
         statement.execute(BUILD_TABLE_CHUNK);
         statement.execute(BUILD_TABLE_WORLD);
+        statement.execute(BUILD_TABLE_MATERIAL);
         statement.execute(BUILD_TABLE_CONTOUR);
         statement.execute(TABLE_STORED_MOBS);
         statement.execute(BUILD_TABLE_CHUNK_KILL);
         statement.execute(BUILD_TABLE_WEATHER);
+        statement.execute(BUILD_TABLE_BLOCK);
         currentMobMyUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", SqlVariableNames.MOB_MY_UID, SqlVariableNames.TABLE_STORED_MOB)).getLong(1);
         currentChunkUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", Contour.CHUNK_UID, Contour.TABLE_CONTOUR)).getLong(1);
+        currentMaterialUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", MATERIAL_MY_UID, TABLE_MATERIAL)).getInt(1);
         statement.close();
     }
 
@@ -158,5 +199,9 @@ public class TmwSqlVerifyDatabase {
 
     public synchronized static long getChunkUid() {
         return currentChunkUid++;
+    }
+
+    public synchronized static int getMaterialUid() {
+        return currentMaterialUid++;
     }
 }

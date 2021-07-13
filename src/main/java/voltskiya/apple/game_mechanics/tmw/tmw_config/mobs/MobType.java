@@ -47,7 +47,7 @@ public class MobType {
     }
 
     public String getName() {
-        return icon.getName();
+        return icon == null ? "" : icon.getName();
     }
 
     @Override
@@ -238,6 +238,10 @@ public class MobType {
 
         public boolean isDone() {
             return !icon.name.isBlank();
+        }
+
+        public String getName() {
+            return icon == null ? "" : icon.getName();
         }
 
         public static class MobIcon {

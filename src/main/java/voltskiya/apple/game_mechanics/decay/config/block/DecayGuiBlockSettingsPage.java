@@ -5,25 +5,30 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.decay.config.DecayGui;
 import voltskiya.apple.game_mechanics.decay.config.DecayGuiBlocksPage;
-import voltskiya.apple.utilities.util.gui.InventoryGuiPageSimple;
+import voltskiya.apple.utilities.util.gui.InventoryGuiPageScrollable;
 import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
+import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGenericScrollable;
 import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 
-public class DecayGuiBlockSettingsPage extends InventoryGuiPageSimple {
-    private DecayBlock.DecayBlockBuilder block;
+public class DecayGuiBlockSettingsPage extends InventoryGuiPageScrollable {
+    private final DecayBlock.DecayBlockBuilder block;
 
     public DecayGuiBlockSettingsPage(DecayGui decayGui, DecayGuiBlocksPage decayGuiBlocksPage, DecayBlock.DecayBlockBuilder block) {
         super(decayGui);
         this.block = block;
         setSlot(new InventoryGuiSlotGeneric(e -> {
-        }, InventoryUtils.makeItem(block.material, 1, "Block", null)
+        }, InventoryUtils.makeItem(block.icon, 1, "Block", null)
         ), 0);
         setSlot(new InventoryGuiSlotGeneric(e -> {
-        }, InventoryUtils.makeItem(Material.BLACK_CONCRETE, 1, "To set decay into",
-                Collections.singletonList("Click a block in your inventory"))), 2);
+        }, InventoryUtils.makeItem(Material.BLACK_CONCRETE, 1, "Info",
+                List.of("To set decay into",
+                        "Right click a block in your inventory",
+                        "To add a block",
+                        "Left click a block in your inventory"
+                ))), 5);
         setSlot(new InventoryGuiSlotGeneric(
                 e -> decayGui.setTempInventory(null),
                 InventoryUtils.makeItem(Material.RED_TERRACOTTA, 1, "Back", null)
@@ -34,11 +39,12 @@ public class DecayGuiBlockSettingsPage extends InventoryGuiPageSimple {
                     decayGuiBlocksPage.update();
                     decayGui.setTempInventory(null);
                 },
-                InventoryUtils.makeItem(Material.RED_TERRACOTTA, 1, "Save", null)
+                InventoryUtils.makeItem(Material.LIME_TERRACOTTA, 1, "Save", null)
         ), 4);
     }
 
-    private void setSlots() {
+    public void setSlots() {
+        super.setSlots();
         setSlot(new InventoryGuiSlotGeneric(e -> {
             block.incrementDurability(e.getClick().isLeftClick() ? 1 : -1);
             update();
@@ -46,6 +52,14 @@ public class DecayGuiBlockSettingsPage extends InventoryGuiPageSimple {
                 "Left click - increase by 1",
                 "Right click - decrease by 1"
         ))), 1);
+        setSlot(new InventoryGuiSlotGeneric(e -> {
+            block.incrementDamage(e.getClick().isLeftClick() ? 1 : -1);
+            update();
+        }, InventoryUtils.makeItem(Material.WOODEN_AXE, 1, "Damage " + block.getDurability(), Arrays.asList(
+                "How much durability does every item before this have",
+                "Left click - increase by 1",
+                "Right click - decrease by 1"
+        ))), 2);
         setSlot(new InventoryGuiSlotGeneric(e -> {
             block.decayInto = null;
             update();
@@ -55,16 +69,37 @@ public class DecayGuiBlockSettingsPage extends InventoryGuiPageSimple {
     }
 
     @Override
+    protected int getScrollIncrement() {
+        return 8;
+    }
+
+    @Override
     public void fillInventory() {
+        addBlocks();
         setSlots();
         super.fillInventory();
+    }
+
+    private void addBlocks() {
+        clear();
+        for (Material material : block.materials) {
+            add(new InventoryGuiSlotGenericScrollable(e -> {
+                if (block.getIcon() != material) block.materials.remove(material);
+                update();
+            }, InventoryUtils.makeItem(material, 1, (String) null, null)
+            ));
+        }
     }
 
     @Override
     public void dealWithPlayerInventoryClick(InventoryClickEvent event) {
         ItemStack currentItem = event.getCurrentItem();
         if (currentItem != null && currentItem.getType().isBlock()) {
-            block.decayInto = currentItem.getType();
+            if (event.getClick().isLeftClick()) {
+                block.addMaterial(currentItem.getType());
+            } else {
+                block.decayInto = currentItem.getType();
+            }
             update();
         }
     }
@@ -76,6 +111,6 @@ public class DecayGuiBlockSettingsPage extends InventoryGuiPageSimple {
 
     @Override
     public int size() {
-        return 9;
+        return 54;
     }
 }
