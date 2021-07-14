@@ -132,6 +132,7 @@ public class TmwSqlVerifyDatabase {
     private static final String BUILD_TABLE_BLOCK = String.format("""
                     CREATE TABLE IF NOT EXISTS %s
                     (
+                        %s            BIGINT NOT NULL,
                         %s            INTEGER NOT NULL,
                         %s            INTEGER NOT NULL,
                         %s            INTEGER NOT NULL,
@@ -144,6 +145,7 @@ public class TmwSqlVerifyDatabase {
                         FOREIGN KEY (%s) REFERENCES %s
                     );""",
             Decay.TABLE_DECAY_BLOCK,
+            Decay.BLOCK_UID,
             Decay.X,
             Decay.Y,
             Decay.Z,
@@ -164,6 +166,7 @@ public class TmwSqlVerifyDatabase {
     private static long currentMobMyUid;
     private static long currentChunkUid;
     private static int currentMaterialUid;
+    private static long currentDecayBlockUid;
 
     static {
         DATABASE_FILENAME = new File(PluginTMW.get().getDataFolder().getPath(), "tmwDatabase.db");
@@ -190,6 +193,7 @@ public class TmwSqlVerifyDatabase {
         currentMobMyUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", SqlVariableNames.MOB_MY_UID, SqlVariableNames.TABLE_STORED_MOB)).getLong(1);
         currentChunkUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", Contour.CHUNK_UID, Contour.TABLE_CONTOUR)).getLong(1);
         currentMaterialUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", MATERIAL_MY_UID, TABLE_MATERIAL)).getInt(1);
+        currentDecayBlockUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", Decay.BLOCK_UID, Decay.TABLE_DECAY_BLOCK)).getLong(1);
         statement.close();
     }
 
@@ -203,5 +207,9 @@ public class TmwSqlVerifyDatabase {
 
     public synchronized static int getMaterialUid() {
         return currentMaterialUid++;
+    }
+
+    public synchronized static long getCurrentDecayBlockUid() {
+        return currentDecayBlockUid++;
     }
 }

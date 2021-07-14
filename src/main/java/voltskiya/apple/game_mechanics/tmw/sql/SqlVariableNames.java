@@ -51,17 +51,13 @@ public class SqlVariableNames {
 
     public static class Decay {
         public static final String TABLE_DECAY_BLOCK = "decay_block";
-        public static final String TABLE_BASE = "base";
-        public static final String BASE_UID = "base_uid";
         public static final String X = "x";
         public static final String Y = "y";
         public static final String Z = "z";
         public static final String NEW_MATERIAL = "new_material";
         public static final String ORIGINAL_MATERIAL = "original_material";
         public static final String DAMAGE = "damage";
-        public static final String BASE_CENTER_X = "x_center";
-        public static final String BASE_CENTER_Y = "y_center";
-        public static final String BASE_CENTER_Z = "z_center";
         public static final String IS_DECAY = "is_decay";
+        public static final String BLOCK_UID = "block_uid";
     }
 }

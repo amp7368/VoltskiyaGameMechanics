@@ -7,8 +7,8 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.jetbrains.annotations.NotNull;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.decay.sql.DecaySqlStorage;
@@ -47,7 +47,7 @@ public class WatchBlockBreak implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onBlockBreak(BlockExplodeEvent event) {
+    public void onBlockBreak(EntityExplodeEvent event) {
         @NotNull List<Block> blockBroken = event.blockList();
         for (Block block : blockBroken) {
             DecaySqlStorage.insertPlaceUpdate(new DecaySqlStorage.BlockUpdate(
@@ -59,15 +59,6 @@ public class WatchBlockBreak implements Listener {
                     block.getWorld().getUID()
             ));
         }
-        Block block = event.getBlock();
-        DecaySqlStorage.insertPlaceUpdate(new DecaySqlStorage.BlockUpdate(
-                block.getType(),
-                null,
-                block.getX(),
-                block.getY(),
-                block.getZ(),
-                block.getWorld().getUID()
-        ));
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
