@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.reflections.Reflections;
 import org.reflections.scanners.SubTypesScanner;
 import voltskiya.apple.game_mechanics.decay.PluginDecay;
+import voltskiya.apple.game_mechanics.electricity.PluginElectricity;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.util.PluginUtils;
 
@@ -60,7 +61,8 @@ public class VoltskiyaPlugin extends JavaPlugin {
         final VoltskiyaModule[] modules = new VoltskiyaModule[]{
                 new PluginUtils(),
                 new PluginTMW(),
-                new PluginDecay()
+                new PluginDecay(),
+                new PluginElectricity()
         };
         for (VoltskiyaModule module : modules) {
             registerModule(module);
