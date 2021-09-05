@@ -1,10 +1,11 @@
 package voltskiya.apple.game_mechanics.tmw.sql;
 
+import org.hibernate.Session;
+import org.hibernate.Transaction;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.biomes.ScanWorldBiomes.ProcessedChunk;
 import voltskiya.apple.utilities.util.data_structures.Triple;
 
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.Collection;
 
 import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.ChunkSql;
@@ -13,20 +14,19 @@ import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.WORLD_MY_U
 
 public class BiomeSqlStorage {
     public static void insert(Collection<ProcessedChunk> processedChunks) {
-        new Thread(() -> {
-            try {
-                insertThreaded(processedChunks);
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
-        }).start();
+        try {
+            insertThreaded(processedChunks);
+        } catch (SQLException throwables) {
+            throwables.printStackTrace();
+        }
     }
 
     private static void insertThreaded(Collection<ProcessedChunk> processedChunks) throws SQLException {
         synchronized (TmwSqlVerifyDatabase.syncDB) {
-            Statement statemnt = TmwSqlVerifyDatabase.database.createStatement();
+            Session session = TmwSqlVerifyDatabase.sessionFactory.openSession();
+            Transaction transaction = session.beginTransaction();
             for (ProcessedChunk chunk : processedChunks) {
-                statemnt.addBatch(
+                session.createNativeQuery(
                         String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) " +
                                         "VALUES (%d, %d, %d, %s, %s, %s, %s, %d, %d, %d) " +
                                         "ON CONFLICT (%s, %s) DO NOTHING",
@@ -56,10 +56,10 @@ public class BiomeSqlStorage {
                         )
                 );
             }
-            statemnt.executeBatch();
+            transaction.commit();
             // same thing, except replace into
             for (ProcessedChunk chunk : processedChunks) {
-                statemnt.addBatch(
+                session.createNativeQuery(
                         String.format("REPLACE INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) " +
                                         "VALUES (%d, %d, %d, %s, %s, %s, %s, %d, %d, %d)",
                                 TABLE_CONTOUR,
@@ -86,9 +86,9 @@ public class BiomeSqlStorage {
                         )
                 );
             }
-            statemnt.executeBatch();
+            transaction.commit();
             for (ProcessedChunk chunk : processedChunks) {
-                statemnt.addBatch(String.format("INSERT INTO %s (%s, %s, %s)\n" +
+                session.createNativeQuery(String.format("INSERT INTO %s (%s, %s, %s)\n" +
                                 "VALUES (%d, %d, %d)",
                         ChunkSql.TABLE_CHUNK,
                         ChunkSql.CHUNK_UID,
@@ -99,8 +99,8 @@ public class BiomeSqlStorage {
                         chunk.worldMyUid()
                 ));
             }
-            statemnt.executeBatch();
-            statemnt.close();
+            transaction.commit();
+            session.close();
         }
     }
 

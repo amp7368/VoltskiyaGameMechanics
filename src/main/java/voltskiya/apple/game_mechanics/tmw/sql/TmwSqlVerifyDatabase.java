@@ -1,10 +1,11 @@
 package voltskiya.apple.game_mechanics.tmw.sql;
 
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.cfg.Configuration;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -162,7 +163,8 @@ public class TmwSqlVerifyDatabase {
             TABLE_WORLD
     );
 
-    public static Connection database;
+    public static SessionFactory sessionFactory;
+
     private static long currentMobMyUid;
     private static long currentChunkUid;
     private static int currentMaterialUid;
@@ -172,16 +174,33 @@ public class TmwSqlVerifyDatabase {
         DATABASE_FILENAME = new File(PluginTMW.get().getDataFolder().getPath(), "tmwDatabase.db");
     }
 
-    public synchronized static void connect() throws ClassNotFoundException, SQLException {
-        synchronized (syncDB) {
-            Class.forName("org.sqlite.JDBC");
-            database = DriverManager.getConnection("jdbc:sqlite:" + DATABASE_FILENAME.getPath());
-            verify();
-        }
+
+    public synchronized static void connect() {
+        // A SessionFactory is set up once for an application!
+        final Configuration cfg = new Configuration()
+                .setProperty("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver")
+                .setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect")
+                .setProperty("hibernate.connection.pool_size", "3")
+                .setProperty("hibernate.current_session_context_class", "thread")
+                .setProperty("hibernate.show_sql", "false")
+                .setProperty("hibernate.format_sql", "false")
+                .setProperty("hibernate.hbm2ddl.auto", "create")
+                .setProperty("hibernate.connection.url", "jdbc:mysql://localhost/Voltskiya")
+                .setProperty("hibernate.connection.username", "root")
+                .setProperty("hibernate.connection.password", "Apple61@32!"); //todo
+        sessionFactory = cfg.buildSessionFactory();
+        verify();
     }
 
-    private synchronized static void verify() throws SQLException {
-        Statement statement = database.createStatement();
+    private synchronized static void verify() {
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        session.getTransaction().commit();
+        session.close();
+    }
+
+    private synchronized static void old() throws SQLException {
+        Statement statement = null;
         statement.execute(BUILD_TABLE_CHUNK);
         statement.execute(BUILD_TABLE_WORLD);
         statement.execute(BUILD_TABLE_MATERIAL);

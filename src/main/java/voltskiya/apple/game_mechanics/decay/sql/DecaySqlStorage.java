@@ -5,7 +5,7 @@ import org.bukkit.Material;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames;
 import voltskiya.apple.game_mechanics.tmw.sql.TmwSqlVerifyDatabase;
-import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SqlWorldGet;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -27,7 +27,7 @@ public class DecaySqlStorage {
 
     private static void placeBlocks(Collection<BlockUpdate> blockUpdates) throws SQLException {
         synchronized (TmwSqlVerifyDatabase.syncDB) {
-            Statement statement = TmwSqlVerifyDatabase.database.createStatement();
+            Statement statement = null;//TmwSqlVerifyDatabase.database.createStatement();
             for (BlockUpdate block : blockUpdates) {
                 statement.addBatch(String.format("""
                                 INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s)
@@ -47,7 +47,7 @@ public class DecaySqlStorage {
 
     public static void doDamageTick() throws SQLException {
         synchronized (TmwSqlVerifyDatabase.syncDB) {
-            Statement statement = TmwSqlVerifyDatabase.database.createStatement();
+            Statement statement = null;//TmwSqlVerifyDatabase.database.createStatement();
             ResultSet response = statement.executeQuery(String.format("""
                     SELECT sum(nearby.damage) as nearby_damage, middle.*
                     FROM (
@@ -144,7 +144,7 @@ public class DecaySqlStorage {
         private void setMyUids() throws SQLException {
             this.oldMaterialUid = MaterialSqlStorage.get(oldMaterial);
             this.newMaterialUid = MaterialSqlStorage.get(newMaterial);
-            this.myWorldUid = SqlWorldGet.getMyWorldUid(world);
+            this.myWorldUid = SimpleWorldDatabase.getWorld(world);
         }
 
         @Override

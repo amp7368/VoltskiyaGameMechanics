@@ -7,8 +7,6 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobListener;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobRegen;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.PlayerTemperatureCommand;
 
-import java.sql.SQLException;
-
 public class PluginTMW extends VoltskiyaModule {
     private static PluginTMW instance;
 
@@ -19,11 +17,7 @@ public class PluginTMW extends VoltskiyaModule {
     @Override
     public void enable() {
         instance = this;
-        try {
-            TmwSqlVerifyDatabase.connect();
-        } catch (ClassNotFoundException | SQLException e) {
-            e.printStackTrace();
-        }
+        TmwSqlVerifyDatabase.connect();
         new TMWCommand();
         new MobListener();
         new WatchPlayerListener();

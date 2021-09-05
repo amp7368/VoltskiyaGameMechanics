@@ -13,7 +13,7 @@ import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeTypeDatabase;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
-import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SqlWorldGet;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 import voltskiya.apple.utilities.util.minecraft.MaterialUtils;
 
 import java.sql.ResultSet;
@@ -44,7 +44,7 @@ public class MobSqlStorage {
 
     private static void insertThreaded(List<StoredMob> mobs) throws SQLException {
         synchronized (TmwSqlVerifyDatabase.syncDB) {
-            Statement statement = TmwSqlVerifyDatabase.database.createStatement();
+            Statement statement = null;//TmwSqlVerifyDatabase.database.createStatement();
             for (StoredMob mob : mobs) {
                 statement.addBatch(String.format("""
                                 INSERT INTO stored_mob (%s, %s, %s, %s, %s, %s, %s)
@@ -86,15 +86,15 @@ public class MobSqlStorage {
 
     private static List<StoredMob> getMobThreaded(int lowerX, int upperX, int lowerZ, int upperZ) throws SQLException {
         synchronized (TmwSqlVerifyDatabase.syncDB) {
-            Statement statement = TmwSqlVerifyDatabase.database.createStatement();
+            Statement statement = null;//TmwSqlVerifyDatabase.database.createStatement();
             ResultSet response = statement.executeQuery(String.format("""
-                            SELECT *
-                            FROM %s
-                            WHERE %s BETWEEN %d AND %d
-                              AND %s BETWEEN %d AND %d""",
-                    TABLE_STORED_MOB,
-                    X, lowerX, upperX,
-                    Z, lowerZ, upperZ
+                                    SELECT *
+                                    FROM %s
+                                    WHERE %s BETWEEN %d AND %d
+                                      AND %s BETWEEN %d AND %d""",
+                            TABLE_STORED_MOB,
+                            X, lowerX, upperX,
+                            Z, lowerZ, upperZ
                     )
             );
             List<StoredMob> mobs = new ArrayList<>();
@@ -127,7 +127,7 @@ public class MobSqlStorage {
     public static void removeMobsThreaded(Collection<Long> mobsToDelete) throws SQLException {
         if (mobsToDelete.isEmpty()) return;
         synchronized (TmwSqlVerifyDatabase.syncDB) {
-            Statement statement = TmwSqlVerifyDatabase.database.createStatement();
+            Statement statement = null;//TmwSqlVerifyDatabase.database.createStatement();
             List<String> whereClauses = new ArrayList<>();
             for (Long mob : mobsToDelete) {
                 whereClauses.add(MOB_MY_UID + " = " + mob + " ");
@@ -152,7 +152,7 @@ public class MobSqlStorage {
     public static Map<Long, SpawnPercentages> getRegen() throws SQLException {
         Map<Long, SpawnPercentages> spawnPercentages = new HashMap<>();
         synchronized (TmwSqlVerifyDatabase.syncDB) {
-            Statement statement = TmwSqlVerifyDatabase.database.createStatement();
+            Statement statement = null;//TmwSqlVerifyDatabase.database.createStatement();
             ResultSet response = statement.executeQuery(String.format("""
                             SELECT nearby.*, %s.%s, count(%s.%s) as mob_count
                             FROM (
@@ -312,7 +312,7 @@ public class MobSqlStorage {
         }
 
         public void spawn() {
-            @Nullable UUID worldUUID = SqlWorldGet.getWorldUUID(worldMyUid);
+            @Nullable UUID worldUUID = SimpleWorldDatabase.getWorld(worldMyUid);
             if (worldUUID == null) {
                 return;
             } else {
@@ -363,7 +363,7 @@ public class MobSqlStorage {
         }
 
         public void spawnIRL() {
-            @Nullable UUID worldUUID = SqlWorldGet.getWorldUUID(worldMyUid);
+            @Nullable UUID worldUUID = SimpleWorldDatabase.getWorld(worldMyUid);
             if (worldUUID != null) {
                 @Nullable World world = Bukkit.getWorld(worldUUID);
                 if (world != null) {
@@ -431,7 +431,7 @@ public class MobSqlStorage {
             this.y = y;
             this.z = z;
             this.worldUUID = worldUUID;
-            this.myWorldUid = SqlWorldGet.getMyWorldUid(worldUUID);
+            this.myWorldUid = SimpleWorldDatabase.getWorld(worldUUID);
             this.uniqueName = uniqueName;
 
             this.despawnTime = despawnTime;
@@ -443,7 +443,7 @@ public class MobSqlStorage {
             this.y = y;
             this.z = z;
             this.myWorldUid = myWorldUid;
-            this.worldUUID = SqlWorldGet.getWorldUUID(myWorldUid);
+            this.worldUUID = SimpleWorldDatabase.getWorld(myWorldUid);
             this.uniqueName = uniqueName;
             this.despawnTime = despawnTime.getTime();
         }
@@ -454,7 +454,7 @@ public class MobSqlStorage {
             this.y = y;
             this.z = z;
             this.myWorldUid = myWorldUid;
-            this.worldUUID = SqlWorldGet.getWorldUUID(myWorldUid);
+            this.worldUUID = SimpleWorldDatabase.getWorld(myWorldUid);
             this.uniqueName = mobType.getName();
             this.despawnTime = mobType.getDespawnAt();
         }

@@ -26,7 +26,7 @@ public class MaterialSqlStorage {
         Integer result = materialToMyUid.get(material);
         if (result != null) return result;
         synchronized (TmwSqlVerifyDatabase.syncDB) {
-            Statement statement = TmwSqlVerifyDatabase.database.createStatement();
+            Statement statement = null;// TmwSqlVerifyDatabase.database.createStatement();
 
             ResultSet response = statement.executeQuery(String.format(
                     "SELECT %s FROM %s WHERE %s = '%s'",
@@ -51,7 +51,7 @@ public class MaterialSqlStorage {
         Material result = materialToMyUid.inverse().get(material);
         if (result != null) return result;
         synchronized (TmwSqlVerifyDatabase.syncDB) {
-            Statement statement = TmwSqlVerifyDatabase.database.createStatement();
+            Statement statement = null;//TmwSqlVerifyDatabase.database.createStatement();
             result = Material.matchMaterial(statement.executeQuery(String.format(
                     "SELECT %s FROM %s WHERE %s = %d",
                     MATERIAL, TABLE_MATERIAL, MATERIAL_MY_UID, material

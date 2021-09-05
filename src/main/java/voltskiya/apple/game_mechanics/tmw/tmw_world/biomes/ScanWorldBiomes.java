@@ -9,11 +9,10 @@ import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.sql.BiomeSqlStorage;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks.TopBlock;
-import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SqlWorldGet;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 import voltskiya.apple.utilities.util.data_structures.Pair;
 import voltskiya.apple.utilities.util.data_structures.Triple;
 
-import java.sql.SQLException;
 import java.util.*;
 
 import static voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk.BLOCKS_IN_A_CHUNK;
@@ -150,25 +149,21 @@ public class ScanWorldBiomes {
                     middle = chunkComputed.middle();
                 }
             }
-            try {
-                this.processedChunksToStoreInDB.put(new Pair<>(
-                                chunkToProcess.centerX(),
-                                chunkToProcess.centerZ()),
-                        new ProcessedChunk(
-                                chunkToProcess.centerX(),
-                                chunkToProcess.centerZ(),
-                                new ComputedBiomeChunk(BiomeTypeBuilderRegisterBlocks.compute(allBlocks)),
-                                bridgeXPos,
-                                bridgeZPos,
-                                bridgeXNeg,
-                                bridgeZNeg,
-                                middle,
-                                SqlWorldGet.getMyWorldUid(world.getUID())
-                        )
-                );
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
+            this.processedChunksToStoreInDB.put(new Pair<>(
+                            chunkToProcess.centerX(),
+                            chunkToProcess.centerZ()),
+                    new ProcessedChunk(
+                            chunkToProcess.centerX(),
+                            chunkToProcess.centerZ(),
+                            new ComputedBiomeChunk(BiomeTypeBuilderRegisterBlocks.compute(allBlocks)),
+                            bridgeXPos,
+                            bridgeZPos,
+                            bridgeXNeg,
+                            bridgeZNeg,
+                            middle,
+                            SimpleWorldDatabase.getWorld(world.getUID())
+                    )
+            );
         }
     }
 
