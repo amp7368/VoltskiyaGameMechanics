@@ -4,7 +4,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames;
-import voltskiya.apple.game_mechanics.tmw.sql.TmwSqlVerifyDatabase;
+import voltskiya.apple.game_mechanics.tmw.sql.VerifyDatabaseTmw;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 
 import java.sql.ResultSet;
@@ -26,7 +26,7 @@ public class DecaySqlStorage {
     }
 
     private static void placeBlocks(Collection<BlockUpdate> blockUpdates) throws SQLException {
-        synchronized (TmwSqlVerifyDatabase.syncDB) {
+        synchronized (VerifyDatabaseTmw.syncDB) {
             Statement statement = null;//TmwSqlVerifyDatabase.database.createStatement();
             for (BlockUpdate block : blockUpdates) {
                 statement.addBatch(String.format("""
@@ -36,7 +36,7 @@ public class DecaySqlStorage {
                                     DO UPDATE SET %s = %s,
                                                   %s = 0;""",
                         TABLE_DECAY_BLOCK, BLOCK_UID, X, Y, Z, SqlVariableNames.WORLD_MY_UID, IS_DECAY, DAMAGE, NEW_MATERIAL, ORIGINAL_MATERIAL,
-                        TmwSqlVerifyDatabase.getCurrentDecayBlockUid(), block.x, block.y, block.z, block.myWorldUid, false, 0, block.getNewMaterialUidString(), block.getOldMaterialUidString(),
+                        VerifyDatabaseTmw.getCurrentDecayBlockUid(), block.x, block.y, block.z, block.myWorldUid, false, 0, block.getNewMaterialUidString(), block.getOldMaterialUidString(),
                         X, Y, Z, SqlVariableNames.WORLD_MY_UID, NEW_MATERIAL, block.getNewMaterialUidString(), DAMAGE
                 ));
             }
@@ -46,7 +46,7 @@ public class DecaySqlStorage {
     }
 
     public static void doDamageTick() throws SQLException {
-        synchronized (TmwSqlVerifyDatabase.syncDB) {
+        synchronized (VerifyDatabaseTmw.syncDB) {
             Statement statement = null;//TmwSqlVerifyDatabase.database.createStatement();
             ResultSet response = statement.executeQuery(String.format("""
                     SELECT sum(nearby.damage) as nearby_damage, middle.*

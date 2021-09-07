@@ -5,10 +5,12 @@ import apple.utilities.request.AppleRequestQueue;
 import apple.utilities.request.settings.RequestSettingsBuilder;
 import apple.utilities.request.settings.RequestSettingsBuilderVoid;
 import apple.utilities.util.FileFormatting;
+import org.jetbrains.annotations.NotNull;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.util.FileIOService;
 
 import java.io.File;
+import java.util.Collection;
 
 public class WorldDatabaseManager implements AppleJsonDatabaseManager<SimpleWorldDatabase> {
     private static final WorldDatabaseManager instance = new WorldDatabaseManager();
@@ -35,5 +37,12 @@ public class WorldDatabaseManager implements AppleJsonDatabaseManager<SimpleWorl
     @Override
     public RequestSettingsBuilderVoid getSavingSettings() {
         return RequestSettingsBuilderVoid.VOID;
+    }
+
+    public void loadAllNow() {
+        @NotNull Collection<SimpleWorldDatabase> databases = loadAllNow(SimpleWorldDatabase.class);
+        if (databases.isEmpty()) {
+            new SimpleWorldDatabase();
+        }
     }
 }

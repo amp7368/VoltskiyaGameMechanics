@@ -8,6 +8,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.sql.MobSqlStorage;
+import voltskiya.apple.game_mechanics.tmw.sql.TmwStoredMob;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobTypeDatabase;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayer;
@@ -55,16 +56,16 @@ public class MobWatchPlayer implements Runnable {
         Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this, CHECK_INTERVAL);
     }
 
-    public void spawnMobs(List<MobSqlStorage.StoredMob> mobsToSpawn) {
+    public void spawnMobs(List<TmwStoredMob> mobsToSpawn) {
         List<Long> mobsToRemove = new ArrayList<>();
-        for (MobSqlStorage.StoredMob storedMob : mobsToSpawn) {
+        for (TmwStoredMob storedMob : mobsToSpawn) {
             MobType mobType = MobTypeDatabase.getMob(storedMob.uniqueName);
             Optional<EntityTypes<?>> entityTypes = EntityTypes.a(mobType.getEnitityNbt());
             if (entityTypes.isPresent()) {
                 Entity entity = entityTypes.get().a(storedMob.getNmsWorld());
                 if (entity != null) {
                     entity.load(mobType.getEnitityNbt());
-                    entity.addScoreboardTag(MobSqlStorage.StoredMob.getTag(storedMob.uniqueName));
+                    entity.addScoreboardTag(TmwStoredMob.getTag(storedMob.uniqueName));
                     storedMob.getNmsWorld().addAllEntitiesSafely(entity);
                     entity.teleportAndSync(storedMob.x, storedMob.y, storedMob.z);
 //                    System.out.printf("summon mob at %s %d, %d, %d\n", storedMob.uniqueName, storedMob.x, storedMob.y, storedMob.z);

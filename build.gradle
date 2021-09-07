@@ -56,3 +56,4 @@ jar {
 //    destinationDirectory = new File('C:\\Users\\Aaron\\Desktop\\VoltMapTMW - Copy\\plugins\\')
 //    destinationDirectory = new File('C:\\Users\\Aaron\\Desktop\\VoltMapTMW\\plugins\\')
 }
+

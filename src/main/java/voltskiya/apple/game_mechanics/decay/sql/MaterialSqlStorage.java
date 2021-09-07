@@ -4,7 +4,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
 import org.bukkit.Material;
 import org.jetbrains.annotations.Nullable;
-import voltskiya.apple.game_mechanics.tmw.sql.TmwSqlVerifyDatabase;
+import voltskiya.apple.game_mechanics.tmw.sql.VerifyDatabaseTmw;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -25,7 +25,7 @@ public class MaterialSqlStorage {
         if (material == null || material.isAir()) return null;
         Integer result = materialToMyUid.get(material);
         if (result != null) return result;
-        synchronized (TmwSqlVerifyDatabase.syncDB) {
+        synchronized (VerifyDatabaseTmw.syncDB) {
             Statement statement = null;// TmwSqlVerifyDatabase.database.createStatement();
 
             ResultSet response = statement.executeQuery(String.format(
@@ -38,7 +38,7 @@ public class MaterialSqlStorage {
                         MATERIAL,
                         MATERIAL_MY_UID,
                         material.getKey().getKey(),
-                        result = TmwSqlVerifyDatabase.getMaterialUid()));
+                        result = VerifyDatabaseTmw.getMaterialUid()));
             } else {
                 result = response.getInt(1);
             }
@@ -50,7 +50,7 @@ public class MaterialSqlStorage {
     public static Material get(int material) throws SQLException {
         Material result = materialToMyUid.inverse().get(material);
         if (result != null) return result;
-        synchronized (TmwSqlVerifyDatabase.syncDB) {
+        synchronized (VerifyDatabaseTmw.syncDB) {
             Statement statement = null;//TmwSqlVerifyDatabase.database.createStatement();
             result = Material.matchMaterial(statement.executeQuery(String.format(
                     "SELECT %s FROM %s WHERE %s = %d",

@@ -108,6 +108,19 @@ public class BiomeType {
     }
 
     @Override
+    public int hashCode() {
+        return biomeUid;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof BiomeType other) {
+            return other.biomeUid == this.biomeUid;
+        }
+        return false;
+    }
+
+    @Override
     public String toString() {
         return icon == null ? null : icon.getName();
     }

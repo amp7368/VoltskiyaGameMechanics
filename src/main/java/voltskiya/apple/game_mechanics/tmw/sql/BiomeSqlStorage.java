@@ -22,8 +22,8 @@ public class BiomeSqlStorage {
     }
 
     private static void insertThreaded(Collection<ProcessedChunk> processedChunks) throws SQLException {
-        synchronized (TmwSqlVerifyDatabase.syncDB) {
-            Session session = TmwSqlVerifyDatabase.sessionFactory.openSession();
+        synchronized (VerifyDatabaseTmw.syncDB) {
+            Session session = VerifyDatabaseTmw.sessionFactory.openSession();
             Transaction transaction = session.beginTransaction();
             for (ProcessedChunk chunk : processedChunks) {
                 session.createNativeQuery(
@@ -41,7 +41,7 @@ public class BiomeSqlStorage {
                                 MIDDLE_X,
                                 MIDDLE_Y,
                                 MIDDLE_Z,
-                                TmwSqlVerifyDatabase.getChunkUid(),
+                                VerifyDatabaseTmw.getChunkUid(),
                                 chunk.x(),
                                 chunk.z(),
                                 getChunkSql(chunk.getNeighborXPos().middle()),
@@ -73,7 +73,7 @@ public class BiomeSqlStorage {
                                 MIDDLE_X,
                                 MIDDLE_Y,
                                 MIDDLE_Z,
-                                chunk.chunkUid = TmwSqlVerifyDatabase.getChunkUid(),
+                                chunk.chunkUid = VerifyDatabaseTmw.getChunkUid(),
                                 chunk.x(),
                                 chunk.z(),
                                 getChunkSql(chunk.getNeighborXPos().middle()),
