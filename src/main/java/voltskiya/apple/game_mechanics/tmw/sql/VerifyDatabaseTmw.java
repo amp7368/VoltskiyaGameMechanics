@@ -1,6 +1,7 @@
 package voltskiya.apple.game_mechanics.tmw.sql;
 
 import org.hibernate.QueryException;
+import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.dialect.function.SQLFunction;
@@ -51,7 +52,7 @@ public class VerifyDatabaseTmw {
                                     CREATE TABLE IF NOT EXISTS %s
                     (
                         %s     BIGINT PRIMARY KEY,
-                        %s            SMALLINT,
+                        %s       Z     SMALLINT,
                         %s            SMALLINT,
                         %s            SMALLINT,
                         %s TINYINT,
@@ -165,7 +166,7 @@ public class VerifyDatabaseTmw {
             WORLD_MY_UID,
             Decay.IS_DECAY,
             Decay.DAMAGE,
-            Decay.NEW_MATERIAL,
+            Decay.CURRENT_MATERIAL,
             Decay.ORIGINAL_MATERIAL,
             Decay.X,
             Decay.Y,
@@ -194,8 +195,8 @@ public class VerifyDatabaseTmw {
                 .setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect")
                 .setProperty("hibernate.connection.pool_size", "3")
                 .setProperty("hibernate.current_session_context_class", "thread")
-                .setProperty("hibernate.show_sql", "true")
-                .setProperty("hibernate.format_sql", "true")
+                .setProperty("hibernate.show_sql", "false")
+                .setProperty("hibernate.format_sql", "false")
                 .setProperty("hibernate.hbm2ddl.auto", "create")
                 .setProperty("hibernate.connection.url", TmwDatabaseConfig.get().url)
                 .setProperty("hibernate.connection.username", TmwDatabaseConfig.get().username)
@@ -210,8 +211,15 @@ public class VerifyDatabaseTmw {
         verify();
     }
 
-    private synchronized static void verify() {
-
+    private static void verify() {
+        Session session = sessionFactory.openSession();
+        session.beginTransaction();
+        currentMobMyUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", SqlVariableNames.MOB_MY_UID, SqlVariableNames.TABLE_STORED_MOB)).getSingleResult()).longValue();
+        currentChunkUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", Contour.CHUNK_UID, Contour.TABLE_CONTOUR)).getSingleResult()).longValue();
+        currentMaterialUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", MATERIAL_MY_UID, TABLE_MATERIAL)).getSingleResult()).intValue();
+        currentDecayBlockUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", Decay.BLOCK_UID, Decay.TABLE_DECAY_BLOCK)).getSingleResult()).longValue();
+        session.getTransaction().commit();
+        session.close();
     }
 
     public static class SqlRandFunction implements SQLFunction {
@@ -246,10 +254,6 @@ public class VerifyDatabaseTmw {
         statement.execute(BUILD_TABLE_CHUNK_KILL);
         statement.execute(BUILD_TABLE_WEATHER);
         statement.execute(BUILD_TABLE_BLOCK);
-        currentMobMyUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", SqlVariableNames.MOB_MY_UID, SqlVariableNames.TABLE_STORED_MOB)).getLong(1);
-        currentChunkUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", Contour.CHUNK_UID, Contour.TABLE_CONTOUR)).getLong(1);
-        currentMaterialUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", MATERIAL_MY_UID, TABLE_MATERIAL)).getInt(1);
-        currentDecayBlockUid = statement.executeQuery(String.format("SELECT max(%s)+1 FROM %s", Decay.BLOCK_UID, Decay.TABLE_DECAY_BLOCK)).getLong(1);
         statement.close();
     }
 

@@ -3,8 +3,9 @@ package voltskiya.apple.game_mechanics.decay.config;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import voltskiya.apple.game_mechanics.decay.config.block.DecayBlock;
+import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.decay.config.block.DecayBlockDatabase;
+import voltskiya.apple.game_mechanics.decay.config.block.DecayBlockTemplate;
 import voltskiya.apple.game_mechanics.decay.config.block.DecayGuiBlockSettingsPage;
 import voltskiya.apple.utilities.util.gui.InventoryGuiPageScrollable;
 import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
@@ -30,10 +31,10 @@ public class DecayGuiBlocksPage extends InventoryGuiPageScrollable {
 
     private void addBlocks() {
         clear();
-        for (DecayBlock block : DecayBlockDatabase.getAll()) {
+        for (DecayBlockTemplate block : DecayBlockDatabase.getAll()) {
             add(new InventoryGuiSlotGenericScrollable(
-                    e -> decayGui.setTempInventory(new DecayGuiBlockSettingsPage(decayGui, this, new DecayBlock.DecayBlockBuilder(block))),
-                    InventoryUtils.makeItem(block.getMaterial(), 1, (String) null, null)
+                    e -> decayGui.setTempInventory(new DecayGuiBlockSettingsPage(decayGui, this, new DecayBlockTemplate.DecayBlockBuilderTemplate(block))),
+                    InventoryUtils.makeItem(block.getIcon(), 1, (String) null, null)
             ));
         }
     }
@@ -42,7 +43,12 @@ public class DecayGuiBlocksPage extends InventoryGuiPageScrollable {
     public void dealWithPlayerInventoryClick(InventoryClickEvent event) {
         ItemStack currentItem = event.getCurrentItem();
         if (currentItem != null && currentItem.getType().isBlock()) {
-            decayGui.setTempInventory(new DecayGuiBlockSettingsPage(decayGui, this, new DecayBlock.DecayBlockBuilder(currentItem.getType())));
+            @Nullable DecayBlockTemplate block = DecayBlockDatabase.getBlock(currentItem.getType());
+            if (block == null) {
+                decayGui.setTempInventory(new DecayGuiBlockSettingsPage(decayGui, this, new DecayBlockTemplate.DecayBlockBuilderTemplate(currentItem.getType())));
+            } else {
+                decayGui.setTempInventory(new DecayGuiBlockSettingsPage(decayGui, this, block.toBuilder()));
+            }
         }
     }
 

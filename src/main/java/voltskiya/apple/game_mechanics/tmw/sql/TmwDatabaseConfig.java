@@ -25,14 +25,14 @@ public class TmwDatabaseConfig {
         file.getParentFile().mkdirs();
         Gson gson = new Gson();
         TmwDatabaseConfig config;
-        try {
-            config = gson.fromJson(new BufferedReader(new FileReader(file)), TmwDatabaseConfig.class);
-        } catch (FileNotFoundException e) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
+            config = gson.fromJson(reader, TmwDatabaseConfig.class);
+        } catch (IOException e) {
             config = new TmwDatabaseConfig();
         }
-        try {
-            file.createNewFile();
-            gson.toJson(config, new BufferedWriter(new FileWriter(file)));
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file));) {
+            if (!file.exists()) file.createNewFile();
+            gson.toJson(config, writer);
         } catch (IOException ex) {
             ex.printStackTrace();
         }

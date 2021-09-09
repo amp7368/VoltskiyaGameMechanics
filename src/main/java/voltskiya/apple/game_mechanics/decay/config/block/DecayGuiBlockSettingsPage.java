@@ -14,9 +14,9 @@ import java.util.Arrays;
 import java.util.List;
 
 public class DecayGuiBlockSettingsPage extends InventoryGuiPageScrollable {
-    private final DecayBlock.DecayBlockBuilder block;
+    private final DecayBlockTemplate.DecayBlockBuilderTemplate block;
 
-    public DecayGuiBlockSettingsPage(DecayGui decayGui, DecayGuiBlocksPage decayGuiBlocksPage, DecayBlock.DecayBlockBuilder block) {
+    public DecayGuiBlockSettingsPage(DecayGui decayGui, DecayGuiBlocksPage decayGuiBlocksPage, DecayBlockTemplate.DecayBlockBuilderTemplate block) {
         super(decayGui);
         this.block = block;
         setSlot(new InventoryGuiSlotGeneric(e -> {
@@ -53,19 +53,13 @@ public class DecayGuiBlockSettingsPage extends InventoryGuiPageScrollable {
                 "Right click - decrease by 1"
         ))), 1);
         setSlot(new InventoryGuiSlotGeneric(e -> {
-            block.incrementDamage(e.getClick().isLeftClick() ? 1 : -1);
+            block.incrementResistance(e.getClick().isLeftClick() ? 1 : -1);
             update();
         }, InventoryUtils.makeItem(Material.WOODEN_AXE, 1, "Damage " + block.getDurability(), Arrays.asList(
-                "How much durability does every item before this have",
+                "How much resistance does this item have against decay",
                 "Left click - increase by 1",
                 "Right click - decrease by 1"
         ))), 2);
-        setSlot(new InventoryGuiSlotGeneric(e -> {
-            block.decayInto = null;
-            update();
-        }, InventoryUtils.makeItem(block.decayInto == null ? Material.PETRIFIED_OAK_SLAB : block.decayInto,
-                1, "Decay into (click to remove)", null)
-        ), 8);
     }
 
     @Override
@@ -98,7 +92,6 @@ public class DecayGuiBlockSettingsPage extends InventoryGuiPageScrollable {
             if (event.getClick().isLeftClick()) {
                 block.addMaterial(currentItem.getType());
             } else {
-                block.decayInto = currentItem.getType();
             }
             update();
         }

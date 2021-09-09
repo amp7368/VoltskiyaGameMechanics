@@ -12,7 +12,6 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.sql.SQLException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -29,16 +28,12 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
 
     public static void insertMobs(List<TmwStoredMob> mobs) {
         instance.queue("insert_mobs", () -> {
-            try {
-                insertThreaded(mobs);
-            } catch (SQLException throwables) {
-                throwables.printStackTrace();
-            }
+            insertThreaded(mobs);
             return false;
         });
     }
 
-    private static void insertThreaded(List<TmwStoredMob> mobs) throws SQLException {
+    private static void insertThreaded(List<TmwStoredMob> mobs) {
 
         Session session = VerifyDatabaseTmw.sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
@@ -94,6 +89,7 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
         instance.queue("get_mobs", () -> {
             afterRun.accept(getRegen());
             return true;
+        }, (b) -> {
         }, AppleRequestOnConflict.ADD());
 
     }
@@ -213,17 +209,17 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
 
     @Override
     public int getTimeUnitMillis() {
-        return 50;
+        return 0;
     }
 
     @Override
     public int getSafeGuardBuffer() {
-        return 50;
+        return 0;
     }
 
     @Override
     public int getLazinessMillis() {
-        return 400;
+        return 100;
     }
 
 }

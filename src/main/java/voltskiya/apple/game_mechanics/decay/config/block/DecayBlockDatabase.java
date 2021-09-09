@@ -1,67 +1,72 @@
 package voltskiya.apple.game_mechanics.decay.config.block;
 
-import com.google.gson.Gson;
+import apple.utilities.database.SaveFileable;
+import apple.utilities.database.singleton.AppleJsonDatabaseSingleton;
+import apple.utilities.util.FileFormatting;
+import com.google.gson.GsonBuilder;
 import org.bukkit.Material;
-import voltskiya.apple.game_mechanics.tmw.PluginTMW;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import voltskiya.apple.game_mechanics.decay.PluginDecay;
+import voltskiya.apple.game_mechanics.util.FileIOService;
 
-import java.io.*;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
-public class DecayBlockDatabase {
-    private static final String BLOCKS_FOLDER = "decayBlocks";
-    private static final File blocksFile;
+public class DecayBlockDatabase implements SaveFileable {
     private static DecayBlockDatabase instance;
-
-    static {
-        // get the blocks from our db
-        File blocksFolder = new File(PluginTMW.get().getDataFolder(), BLOCKS_FOLDER);
-        blocksFolder.mkdirs();
-        blocksFile = new File(blocksFolder, "decayBlocksDB.json");
-        try {
-            if (blocksFile.exists()) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(blocksFile))) {
-                    instance = new Gson().fromJson(reader, DecayBlockDatabase.class);
-                }
-            } else {
-                blocksFile.createNewFile();
-                instance = new DecayBlockDatabase();
-                save();
-            }
-        } catch (IOException e) {
-            instance = null;
-            e.printStackTrace();
-        }
-    }
-
-    private final HashMap<Material, DecayBlock> blocks = new HashMap<>();
+    private static AppleJsonDatabaseSingleton<DecayBlockDatabase> databaseManager;
+    private transient final HashMap<Material, DecayBlockTemplate> allBlocks = new HashMap<>();
+    private final HashMap<Material, DecayBlockTemplate> blocks = new HashMap<>();
+    private int defaultResistance = 1;
     private int decayRate = 10;
     private int durability = 10;
+
+    public static void load() {
+        databaseManager = new AppleJsonDatabaseSingleton<>(
+                FileFormatting.fileWithChildren(PluginDecay.get().getDataFolder(), "decayBlocks"),
+                FileIOService.get(),
+                new GsonBuilder()
+                        .registerTypeAdapter(DecayBlockTemplateRequiredTypeJoined.class, DecayBlockTemplateRequiredTypeJoined.getThisDeserializer())
+                        .registerTypeAdapter(DecayBlockTemplateRequiredTypeJoined.class, DecayBlockTemplateRequiredTypeJoined.getThisSerializer())
+                        .create()
+        );
+        @NotNull Collection<DecayBlockDatabase> database = databaseManager.loadAllNow(DecayBlockDatabase.class);
+        if (database.isEmpty()) {
+            instance = new DecayBlockDatabase();
+        } else {
+            instance = database.stream().findFirst().get();
+        }
+    }
 
     public static DecayBlockDatabase get() {
         return instance;
     }
 
-    public synchronized static void addBlock(DecayBlock block) {
-        get().blocks.put(block.getMaterial(), block);
+    public synchronized static void addBlock(DecayBlockTemplate block) {
+        instance.blocks.put(block.getIcon(), block);
+        for (Material material : block.getMaterials()) {
+            instance.allBlocks.put(material, block);
+        }
         save();
     }
 
-    public static List<DecayBlock> getAll() {
+    public static List<DecayBlockTemplate> getAll() {
         return new ArrayList<>(get().blocks.values());
     }
 
     private static void save() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(blocksFile))) {
-            new Gson().toJson(get(), writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        databaseManager.save(instance);
     }
 
-    public static DecayBlock getBlock(Material name) {
-        return get().blocks.get(name);
+    @Nullable
+    public static DecayBlockTemplate getBlock(Material name) {
+        if (name == null || name.isAir()) {
+            return null;
+        }
+        return get().allBlocks.getOrDefault(name, DecayBlockTemplate.DEFAULT_TEMPLATE);
     }
 
     public static void incrementDecayRate(int i) {
@@ -74,11 +79,25 @@ public class DecayBlockDatabase {
         save();
     }
 
+    public static void incrementResistance(int i) {
+        get().defaultResistance += i;
+        save();
+    }
+
     public static int getDecayRate() {
         return get().decayRate;
     }
 
     public static int getDurability() {
         return get().durability;
+    }
+
+    public static int getDefaultResistance() {
+        return get().defaultResistance;
+    }
+
+    @Override
+    public String getSaveFileName() {
+        return "decayBlocksDB.json";
     }
 }
