@@ -1,11 +1,11 @@
 package voltskiya.apple.game_mechanics.electricity;
 
-import voltskiya.apple.game_mechanics.VoltskiyaModule;
+import plugin.util.plugin.plugin.util.plugin.PluginManagedModule;
 import voltskiya.apple.game_mechanics.electricity.piping.major.ElectricityMajorLinesAll;
 import voltskiya.apple.game_mechanics.electricity.piping.simple.ElectricitySimpleLinesAll;
 import voltskiya.apple.game_mechanics.electricity.placement.PlayerInteractElectric;
 
-public class PluginElectricity extends VoltskiyaModule {
+public class PluginElectricity extends PluginManagedModule {
     private static PluginElectricity instance;
 
     public static PluginElectricity get() {

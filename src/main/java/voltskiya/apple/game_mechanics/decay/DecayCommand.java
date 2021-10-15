@@ -9,7 +9,7 @@ import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
-import voltskiya.apple.game_mechanics.decay.config.DecayGui;
+import voltskiya.apple.game_mechanics.decay.config.gui.DecayGui;
 import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 import voltskiya.apple.utilities.util.wand.WandToolList;
 

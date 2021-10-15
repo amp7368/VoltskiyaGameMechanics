@@ -36,6 +36,7 @@ public class SimpleWorldDatabase implements SaveFileable {
         Integer myUid = get().realToMyWorld.get(uid);
         if (myUid == null) {
             myUid = get().realToMyWorld.values().stream().max(Integer::compareTo).orElse(0);
+            myUid++;
             get().realToMyWorld.put(uid, myUid);
             get().realToMyWorldSaved.put(uid, myUid);
             WorldDatabaseManager.get().save(get());

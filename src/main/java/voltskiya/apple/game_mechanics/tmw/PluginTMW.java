@@ -1,6 +1,6 @@
 package voltskiya.apple.game_mechanics.tmw;
 
-import voltskiya.apple.game_mechanics.VoltskiyaModule;
+import plugin.util.plugin.plugin.util.plugin.PluginManagedModule;
 import voltskiya.apple.game_mechanics.tmw.sql.TmwDatabaseConfig;
 import voltskiya.apple.game_mechanics.tmw.sql.VerifyDatabaseTmw;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
@@ -9,7 +9,7 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobRegen;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.PlayerTemperatureCommand;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.WorldDatabaseManager;
 
-public class PluginTMW extends VoltskiyaModule {
+public class PluginTMW extends PluginManagedModule {
     private static PluginTMW instance;
 
     public static PluginTMW get() {

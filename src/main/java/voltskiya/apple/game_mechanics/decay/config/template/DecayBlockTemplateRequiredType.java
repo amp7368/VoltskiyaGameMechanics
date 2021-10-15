@@ -1,4 +1,4 @@
-package voltskiya.apple.game_mechanics.decay.config.block;
+package voltskiya.apple.game_mechanics.decay.config.template;
 
 import apple.utilities.structures.Enumable;
 import apple.utilities.util.NumberUtils;

@@ -10,7 +10,7 @@ import static voltskiya.apple.game_mechanics.tmw.sql.MobSqlStorage.getRegen;
 
 public class MobRegen implements Runnable {
     private static final long REGEN_INTERVAL = 20;
-    private static boolean regen = true;
+    private static boolean regen = false;
 
     public MobRegen() {
         Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this, 5 * 20);

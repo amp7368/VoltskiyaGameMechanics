@@ -2,10 +2,15 @@ package voltskiya.apple.game_mechanics.decay.storage;
 
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
-import voltskiya.apple.game_mechanics.decay.config.block.DecayBlockDatabase;
-import voltskiya.apple.game_mechanics.decay.config.block.DecayBlockTemplate;
-import voltskiya.apple.game_mechanics.decay.config.block.DecayBlockTemplateRequiredType;
-import voltskiya.apple.game_mechanics.decay.storage.deciders.*;
+import org.jetbrains.annotations.Nullable;
+import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDatabase;
+import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplate;
+import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateRequiredType;
+import voltskiya.apple.game_mechanics.decay.config.template.DecayInto;
+import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockContext;
+import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockDecider;
+import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockDeciderRequirements;
+import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockRequirementAbstract;
 import voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.Decay;
 import voltskiya.apple.game_mechanics.tmw.sql.VerifyDatabaseTmw;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
@@ -116,7 +121,7 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
     public void explosion(float damage, double chanceOfFire) {
         this.damage += damage;
         DecayBlockTemplate template = DecayBlockDatabase.getBlock(this.getCurrentMaterial());
-        while (template != null && this.damage > template.getDurability()) {
+        while (template != null && this.damage > template.getSettings().getDurability()) {
             doBreak(template);
             template = DecayBlockDatabase.getBlock(this.getCurrentMaterial());
         }
@@ -133,28 +138,25 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
             }
             this.estimate = Material.AIR;
         } else {
-            if (template.getMaterials().size() == 1) {
-                DecayBlockDeciderEqualRequirements deciderTemp = new DecayBlockDeciderEqualRequirements(template.getIcon());
-                for (Material material : template.getMaterials()) {
-                    deciderTemp.addChance(DecayBlockTemplateRequiredType.NONE, material);
-                }
-                this.decider = deciderTemp;
-                this.estimate = template.getIcon();
-            } else {
-                this.decider = template.toDecider();
-                this.estimate = decider.estimate();
-            }
+            this.decider = template.toDecider();
+            this.estimate = decider.estimate();
         }
     }
 
     private void doBreak(DecayBlockTemplate template) {
-        this.damage -= template.getDurability();
-        HashSet<Material> decayInto = template.getDecayInto();
-        if (decayInto.isEmpty()) decayInto.add(Material.AIR);
-        int i = random.nextInt(decayInto.size());
-        for (Material m : decayInto) {
-            if (i-- == 0) {
-                this.currentMaterial = m;
+        this.damage -= template.getSettings().getDurability();
+        HashSet<DecayInto> decayInto = template.getSettings().getDecayInto();
+        if (decayInto.isEmpty()) {
+            this.currentMaterial = null;
+        }
+        int i = 0;
+        for (DecayInto m : decayInto) {
+            i += m.getChance();
+        }
+        i = random.nextInt(decayInto.size());
+        for (DecayInto m : decayInto) {
+            if ((i -= m.getChance()) == 0) {
+                this.currentMaterial = m.getMaterial();
                 break;
             }
         }
@@ -165,7 +167,9 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
         return this.decider.decide(blocksToDecay, x, y, z);
     }
 
+    @Nullable
     public Material estimate() {
+        if (this.decider == null) return this.currentMaterial;
         return this.estimate;
     }
 }

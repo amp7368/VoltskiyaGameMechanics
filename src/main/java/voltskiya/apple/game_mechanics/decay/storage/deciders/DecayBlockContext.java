@@ -1,6 +1,6 @@
 package voltskiya.apple.game_mechanics.decay.storage.deciders;
 
-import voltskiya.apple.game_mechanics.decay.config.block.DecayBlockTemplateRequiredType;
+import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateRequiredType;
 import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
 
 import java.util.ArrayList;

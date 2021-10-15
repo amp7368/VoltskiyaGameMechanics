@@ -2,12 +2,11 @@ package voltskiya.apple.game_mechanics.decay.world;
 
 import apple.utilities.util.BooleanUtils;
 import apple.utilities.util.NumberUtils;
-import voltskiya.apple.game_mechanics.decay.config.block.DecayBlockDatabase;
-import voltskiya.apple.game_mechanics.decay.config.block.DecayBlockTemplate;
+import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDatabase;
+import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplate;
 import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockContext;
 
-import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 public class DecayAlgorithm {
@@ -23,7 +22,7 @@ public class DecayAlgorithm {
             for (int y = 0; y < totalLength; y++) {
                 for (int z = 0; z < totalLength; z++) {
                     DecayBlockTemplate template = DecayBlockDatabase.getBlock(blocksToDecay[x + 1][y + 1][z + 1].getOldMaterial());
-                    blocksResistance[x][y][z] = template == null ? 0 : template.getResistance();
+                    blocksResistance[x][y][z] = template == null ? 0 : template.getSettings().getResistance();
                 }
             }
         }
@@ -122,26 +121,5 @@ public class DecayAlgorithm {
             damage = newDamage;
         }
         return damage;
-    }
-
-    public static void main(String[] args) {
-        int length = 5;
-        DecayBlock[][][] decayBlocks = new DecayBlock[length][length][length];
-        float[][][] dmg = new float[length - 2][length - 2][length - 2];
-        for (int xi = 0; xi < length; xi++) {
-            for (int yi = 0; yi < length; yi++) {
-                for (int zi = 0; zi < length; zi++) {
-                    decayBlocks[xi][yi][zi] = null;
-                    if (xi == 0 || yi == 0 || zi == 0 || xi == length - 1 || yi == length - 1 || zi == length - 1)
-                        continue;
-                    dmg[xi - 1][yi - 1][zi - 1] = 0;
-                }
-            }
-        }
-        float[][][] s = explosionInternal(dmg, 5);
-        System.out.println(Arrays.deepToString(s)
-                .replace("]],", "]],\n")
-                .replace("],", "],\n")
-        );
     }
 }

@@ -19,21 +19,22 @@ repositories {
     flatDir {
         dirs 'lib'
     }
+    maven {
+        url 'https://jitpack.io'
+    }
 }
-
-configurations {
-    toCopy
-}
-task download(type: Copy) {
-    from configurations.toCopy
-    into 'lib'
+configurations.all {
+    resolutionStrategy.cacheDynamicVersionsFor(20, 'seconds')
+    resolutionStrategy.cacheChangingModulesFor 20, 'seconds'
 }
 dependencies {
-    implementation('apple.nms.decoding:VoltskiyaUtilities:1.1.BUILD-SNAPSHOT')
-    implementation('apple.voltskiya.utilities:DecodingNms:1.1.BUILD-SNAPSHOT')
-    implementation 'apple.utilities:AppleUtilities:1.0.BUILD-SNAPSHOT'
+    compileOnly 'apple.nms.decoding:VoltskiyaUtilities:1.1.BUILD-SNAPSHOT'
+    compileOnly 'apple.voltskiya.utilities:DecodingNms:1.1.BUILD-SNAPSHOT'
+    compileOnly 'apple.utilities:AppleUtilities:v1.1'
+    compileOnly 'com.github.amp7368.YmlConfigManager:ycm-jar:Ycm-v1.1'
+    compileOnly 'com.github.amp7368.PluginManagerCreator:pmc-jar:Pmc-v1.2'
 
-    implementation 'org.jetbrains:annotations:22.0.0'
+    compileOnly 'org.jetbrains:annotations:22.0.0'
     compileOnly 'io.papermc.paper:paper-api:1.17.1-R0.1-SNAPSHOT'
     // The full Spigot server with no shadowing. Requires mavenLocal.
     compileOnly 'org.spigotmc:spigot:1.17.1-R0.1-SNAPSHOT'
@@ -41,14 +42,10 @@ dependencies {
     // delete me
     compileOnly 'org.xerial:sqlite-jdbc:3.36.0.2'
 
-    implementation 'org.hibernate:hibernate-core:5.5.7.Final'
-    compileOnly 'org.reflections:reflections:0.9.12'
+    compileOnly 'org.hibernate:hibernate-core:5.5.7.Final'
 
     compileOnly 'co.aikar:acf-paper:0.5.0-SNAPSHOT'
     compileOnly 'net.luckperms:api:5.3'
-
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.7.2'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.7.2'
 }
 
 jar {

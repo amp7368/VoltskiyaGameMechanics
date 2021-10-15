@@ -28,14 +28,18 @@ public class MaterialDatabase implements SaveFileable {
         @NotNull Collection<MaterialDatabase> database = databaseManager.loadAllNow(MaterialDatabase.class);
         if (database.isEmpty()) {
             instance = new MaterialDatabase();
+            save();
         } else {
             instance = database.stream().findFirst().get();
             materialToMyUid.putAll(instance.materialToMyUidSaved);
             for (Integer i : materialToMyUid.values()) {
                 if (i != null && i >= currentUid) currentUid = i + 1;
             }
-            databaseManager.save(instance);
         }
+    }
+
+    private static void save() {
+        databaseManager.save(instance);
     }
 
 
@@ -62,7 +66,7 @@ public class MaterialDatabase implements SaveFileable {
             int id = currentUid++;
             materialToMyUid.put(material, id);
             instance.materialToMyUidSaved.put(material, id);
-            databaseManager.save(instance);
+            save();
             return id;
         }
     }

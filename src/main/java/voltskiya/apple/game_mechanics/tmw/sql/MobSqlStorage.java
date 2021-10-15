@@ -95,111 +95,109 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
     }
 
     public static Map<Long, SpawnPercentages> getRegen() {
-        synchronized (VerifyDatabaseTmw.syncDB) {
-            Session session = VerifyDatabaseTmw.sessionFactory.openSession();
-            String queryString = String.format("""
-                            SELECT nearby.*, %s.%s, count(%s.%s) as mob_count
-                            FROM (
-                                     SELECT center.%s as cchunk_uid,
-                                            %s.%s,
-                                            %s.%s,
-                                            center.%s,
-                                            center.%s,
-                                            center.%s,
-                                            center.%s,
-                                            center.%s,
-                                            bridge.%s as bridge_uid
-                                     FROM (SELECT *
-                                           FROM %s
-                                           ORDER BY rand()
-                                           LIMIT %d) center
-                                              INNER JOIN %s ON %s.%s = center.%s
-                                              INNER JOIN %s bridge
-                                                         ON bridge.%s
-                                                             IN (
-                                                                 center.%s,
-                                                                 center.%s,
-                                                                 center.%s,
-                                                                 center.%s,
-                                                                 center.%s
-                                                                )
-                                              INNER JOIN %s bridge2
-                                                         ON bridge2.%s
-                                                             IN (
-                                                                 bridge.%s,
-                                                                 bridge.%s,
-                                                                 bridge.%s,
-                                                                 bridge.%s,
-                                                                 bridge.%s
-                                                                )
-                                 ) nearby
-                                     LEFT JOIN %s
-                                                ON floor(%s.%s / 16) = nearby.%s AND floor(%s.%s / 16) = nearby.%s
-                            GROUP BY %s.%s, nearby.cchunk_uid
-                            ORDER BY rand()
-                            LIMIT 5
-                            %n""",
-                    TABLE_STORED_MOB,
-                    MOB_UNIQUE_NAME,
-                    TABLE_STORED_MOB,
-                    MOB_MY_UID,
-                    Contour.CHUNK_UID,
-                    ChunkSql.TABLE_CHUNK,
-                    ChunkSql.BIOME_GUESS_UID,
-                    ChunkSql.TABLE_CHUNK,
-                    WORLD_MY_UID,
-                    Contour.CHUNK_X,
-                    Contour.CHUNK_Z,
-                    Contour.MIDDLE_X,
-                    Contour.MIDDLE_Y,
-                    Contour.MIDDLE_Z,
-                    Contour.CHUNK_UID,
-                    Contour.TABLE_CONTOUR,
-                    MOB_COUNT_PER_TICK,
-                    ChunkSql.TABLE_CHUNK,
-                    ChunkSql.TABLE_CHUNK,
-                    ChunkSql.CHUNK_UID,
-                    ChunkSql.CHUNK_UID,
-                    Contour.TABLE_CONTOUR,
-                    Contour.CHUNK_UID,
-                    Contour.BRIDGE_X_NEG,
-                    Contour.BRIDGE_X_POS,
-                    Contour.BRIDGE_Z_NEG,
-                    Contour.BRIDGE_Z_POS,
-                    Contour.CHUNK_UID,
-                    Contour.TABLE_CONTOUR,
-                    Contour.CHUNK_UID,
-                    Contour.BRIDGE_X_NEG,
-                    Contour.BRIDGE_X_POS,
-                    Contour.BRIDGE_Z_NEG,
-                    Contour.BRIDGE_Z_POS,
-                    Contour.CHUNK_UID,
-                    TABLE_STORED_MOB,
-                    TABLE_STORED_MOB,
-                    X,
-                    Contour.CHUNK_X,
-                    TABLE_STORED_MOB,
-                    Z,
-                    Contour.CHUNK_Z,
-                    TABLE_STORED_MOB,
-                    MOB_UNIQUE_NAME
-            );
-            NativeQuery<TmwSpawnPercentagesResponse> nativeQuery = session.createNativeQuery(queryString, "tmw_spawn_percentages");
-            List<TmwSpawnPercentagesResponse> results = nativeQuery.getResultList();
-            HashMap<Long, SpawnPercentages> resultsInMap = new HashMap<>();
-            for (TmwSpawnPercentagesResponse s : results) {
-                resultsInMap.compute(s.chunkUid, (k, spawnPercentages) -> {
-                    if (spawnPercentages == null) {
-                        if (s.biome == null) return null; //shouldn't happen in production
-                        return new SpawnPercentages(s.biome, s.chunkX, s.chunkZ, s.mobName, s.worldMyUid, s.middleX, s.middleY, s.middleZ, s.mobCount);
-                    } else {
-                        spawnPercentages.add(s.mobName, s.mobCount);
-                        return spawnPercentages;
-                    }
-                });
-            }
-            return resultsInMap;
+        Session session = VerifyDatabaseTmw.sessionFactory.openSession();
+        String queryString = String.format("""
+                        SELECT nearby.*, %s.%s, count(%s.%s) as mob_count
+                        FROM (
+                                 SELECT center.%s as cchunk_uid,
+                                        %s.%s,
+                                        %s.%s,
+                                        center.%s,
+                                        center.%s,
+                                        center.%s,
+                                        center.%s,
+                                        center.%s,
+                                        bridge.%s as bridge_uid
+                                 FROM (SELECT *
+                                       FROM %s
+                                       ORDER BY rand()
+                                       LIMIT %d) center
+                                          INNER JOIN %s ON %s.%s = center.%s
+                                          INNER JOIN %s bridge
+                                                     ON bridge.%s
+                                                         IN (
+                                                             center.%s,
+                                                             center.%s,
+                                                             center.%s,
+                                                             center.%s,
+                                                             center.%s
+                                                            )
+                                          INNER JOIN %s bridge2
+                                                     ON bridge2.%s
+                                                         IN (
+                                                             bridge.%s,
+                                                             bridge.%s,
+                                                             bridge.%s,
+                                                             bridge.%s,
+                                                             bridge.%s
+                                                            )
+                             ) nearby
+                                 LEFT JOIN %s
+                                            ON floor(%s.%s / 16) = nearby.%s AND floor(%s.%s / 16) = nearby.%s
+                        GROUP BY %s.%s, nearby.cchunk_uid
+                        ORDER BY rand()
+                        LIMIT 5
+                        %n""",
+                TABLE_STORED_MOB,
+                MOB_UNIQUE_NAME,
+                TABLE_STORED_MOB,
+                MOB_MY_UID,
+                Contour.CHUNK_UID,
+                ChunkSql.TABLE_CHUNK,
+                ChunkSql.BIOME_GUESS_UID,
+                ChunkSql.TABLE_CHUNK,
+                WORLD_MY_UID,
+                Contour.CHUNK_X,
+                Contour.CHUNK_Z,
+                Contour.MIDDLE_X,
+                Contour.MIDDLE_Y,
+                Contour.MIDDLE_Z,
+                Contour.CHUNK_UID,
+                Contour.TABLE_CONTOUR,
+                MOB_COUNT_PER_TICK,
+                ChunkSql.TABLE_CHUNK,
+                ChunkSql.TABLE_CHUNK,
+                ChunkSql.CHUNK_UID,
+                ChunkSql.CHUNK_UID,
+                Contour.TABLE_CONTOUR,
+                Contour.CHUNK_UID,
+                Contour.BRIDGE_X_NEG,
+                Contour.BRIDGE_X_POS,
+                Contour.BRIDGE_Z_NEG,
+                Contour.BRIDGE_Z_POS,
+                Contour.CHUNK_UID,
+                Contour.TABLE_CONTOUR,
+                Contour.CHUNK_UID,
+                Contour.BRIDGE_X_NEG,
+                Contour.BRIDGE_X_POS,
+                Contour.BRIDGE_Z_NEG,
+                Contour.BRIDGE_Z_POS,
+                Contour.CHUNK_UID,
+                TABLE_STORED_MOB,
+                TABLE_STORED_MOB,
+                X,
+                Contour.CHUNK_X,
+                TABLE_STORED_MOB,
+                Z,
+                Contour.CHUNK_Z,
+                TABLE_STORED_MOB,
+                MOB_UNIQUE_NAME
+        );
+        @SuppressWarnings("unchecked") NativeQuery<TmwSpawnPercentagesResponse> nativeQuery = session.createNativeQuery(queryString, "tmw_spawn_percentages");
+        List<TmwSpawnPercentagesResponse> results = nativeQuery.getResultList();
+        HashMap<Long, SpawnPercentages> resultsInMap = new HashMap<>();
+        for (TmwSpawnPercentagesResponse s : results) {
+            resultsInMap.compute(s.chunkUid, (k, spawnPercentages) -> {
+                if (spawnPercentages == null) {
+                    if (s.biome == null) return null; //shouldn't happen in production
+                    return new SpawnPercentages(s.biome, s.chunkX, s.chunkZ, s.mobName, s.worldMyUid, s.middleX, s.middleY, s.middleZ, s.mobCount);
+                } else {
+                    spawnPercentages.add(s.mobName, s.mobCount);
+                    return spawnPercentages;
+                }
+            });
         }
+        return resultsInMap;
     }
 
     @Override

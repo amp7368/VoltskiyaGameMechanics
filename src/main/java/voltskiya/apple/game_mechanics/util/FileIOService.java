@@ -21,7 +21,7 @@ public class FileIOService extends AppleRequestService {
     public <T> AppleRequestService.RequestHandler<T> queue(AppleRequest<T> request, Consumer<T> runAfter, RequestSettingsBuilder<T> builder) {
         builder.addRequestLogger(new RequestLogger<T>() {
             @Override
-            public void exceptionHandle(Exception e) {
+            public void exceptionUncaught(Exception e) {
                 PluginTMW.get().log(Level.WARNING, "Exception doing file IO " + "\n" + ExceptionUnpackaging.getStackTrace(e));
             }
         });
