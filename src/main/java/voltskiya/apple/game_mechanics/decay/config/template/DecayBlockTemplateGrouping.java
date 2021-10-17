@@ -12,6 +12,7 @@ public class DecayBlockTemplateGrouping {
     private transient DecayBlockTemplateGroupingSettings settings = null;
     private ItemSerializable icon;
     private HashMap<Material, DecayBlockTemplate> blocksInGroup;
+    private HashMap<Material, DecayInto> decayInto;
     private UUID settingsUUID;
 
     public DecayBlockTemplateGrouping() {
@@ -20,14 +21,16 @@ public class DecayBlockTemplateGrouping {
     public DecayBlockTemplateGrouping(DecayBlockTemplateGrouping other) {
         this.icon = other.icon.copy();
         this.blocksInGroup = new HashMap<>(other.blocksInGroup);
+        this.decayInto = new HashMap<>(other.decayInto);
         this.settingsUUID = other.settingsUUID;
     }
 
     public DecayBlockTemplateGrouping(ItemStack currentItem) {
         this.icon = new ItemSerializable(currentItem, true);
         this.blocksInGroup = new HashMap<>();
-        this.settings = DecayBlockTemplateGroupingSettings.createDefault();
-        this.settingsUUID = settings.getUuid();
+        this.decayInto = new HashMap<>();
+        this.settings = null;
+        this.settingsUUID = null;
     }
 
     public ItemSerializable getIcon() {
@@ -55,9 +58,47 @@ public class DecayBlockTemplateGrouping {
     }
 
     public DecayBlockTemplateGroupingSettings getSettings() {
-        if (settings == null) {
-            this.settings = DecayBlockSettingsDatabase.get(settingsUUID);
-        }
+        validateSettings();
+        if (settings == null) return DecayBlockTemplateGroupingSettings.DEFAULT;
         return settings;
+    }
+
+    public void setSettings(DecayBlockTemplateGroupingSettings settings) {
+        this.settings = settings;
+        this.settingsUUID = settings.getUuid();
+        for (DecayBlockTemplate block : this.blocksInGroup.values()) {
+            block.setSettings(settings);
+        }
+    }
+
+    private void validateSettings() {
+        if (this.settings == null) {
+            this.settings = DecayBlockSettingsDatabase.get(this.settingsUUID);
+        }
+    }
+
+    public void addDecayInto(DecayInto decayInto) {
+        this.decayInto.put(decayInto.getMaterial(), decayInto);
+    }
+
+    public void removeDecayInto(Material material) {
+        this.decayInto.remove(material);
+    }
+
+    public DecayInto getDecay(Material material) {
+        return this.decayInto.get(material);
+    }
+
+    public void setDeleted(boolean isDeleted) {
+        for (DecayBlockTemplate block : this.blocksInGroup.values()) {
+            block.setDeleted(isDeleted);
+        }
+        for (DecayInto decay : this.decayInto.values()) {
+            decay.setDeleted(isDeleted);
+        }
+    }
+
+    public HashMap<Material, DecayInto> getDecayInto() {
+        return decayInto;
     }
 }

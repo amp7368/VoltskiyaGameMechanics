@@ -3,7 +3,7 @@ package voltskiya.apple.game_mechanics.decay.config.template;
 
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import voltskiya.apple.game_mechanics.decay.config.gui.variant.BlockSizeType;
+import voltskiya.apple.game_mechanics.decay.config.gui.template.variant.BlockSizeType;
 
 public class MaterialVariant {
     public DecayBlockTemplateRequiredTypeJoined requirementsType;
@@ -11,8 +11,14 @@ public class MaterialVariant {
     public double chance;
     public BlockSizeType blockSize;
     public MaterialVariantType materialVariantType;
+    private transient boolean isDeleted;
+
+    public MaterialVariant() {
+        this.isDeleted = false;
+    }
 
     public MaterialVariant(ItemStack item) {
+        this.isDeleted = true;
         this.material = item.getType();
         this.requirementsType = new DecayBlockTemplateRequiredTypeJoined();
         this.chance = 1;
@@ -21,6 +27,7 @@ public class MaterialVariant {
     }
 
     public MaterialVariant(MaterialVariant other) {
+        this.isDeleted = true;
         this.requirementsType = other.requirementsType.copy();
         this.material = other.material;
         this.chance = other.chance;
@@ -56,5 +63,13 @@ public class MaterialVariant {
 
     public void setMaterialVariantType(MaterialVariantType materialVariantType) {
         this.materialVariantType = materialVariantType;
+    }
+
+    public boolean isDeleted() {
+        return isDeleted;
+    }
+
+    public void setDeleted(boolean isDeleted) {
+        this.isDeleted = isDeleted;
     }
 }

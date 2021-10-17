@@ -21,7 +21,7 @@ public class DecayCommand extends BaseCommand {
 
     @Subcommand("gui")
     public void gui(Player player) {
-        player.openInventory(new DecayGui(player).getInventory());
+        player.openInventory(new DecayGui().getInventory());
     }
 
     @Subcommand("wand")

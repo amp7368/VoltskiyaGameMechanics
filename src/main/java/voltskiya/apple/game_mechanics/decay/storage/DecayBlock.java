@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDatabase;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplate;
+import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateGrouping;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateRequiredType;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayInto;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockContext;
@@ -16,7 +17,7 @@ import voltskiya.apple.game_mechanics.tmw.sql.VerifyDatabaseTmw;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 
 import javax.persistence.*;
-import java.util.HashSet;
+import java.util.Collection;
 import java.util.Random;
 import java.util.UUID;
 
@@ -120,10 +121,12 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
 
     public void explosion(float damage, double chanceOfFire) {
         this.damage += damage;
-        DecayBlockTemplate template = DecayBlockDatabase.getBlock(this.getCurrentMaterial());
+        DecayBlockTemplateGrouping group = DecayBlockDatabase.getGroup(this.getCurrentMaterial());
+        @Nullable DecayBlockTemplate template = DecayBlockDatabase.getBlock(group, this.getCurrentMaterial());
         while (template != null && this.damage > template.getSettings().getDurability()) {
-            doBreak(template);
-            template = DecayBlockDatabase.getBlock(this.getCurrentMaterial());
+            doBreak(group, template);
+            group = DecayBlockDatabase.getGroup(this.getCurrentMaterial());
+            template = DecayBlockDatabase.getBlock(group, this.getCurrentMaterial());
         }
         if (template == null) {
             this.currentMaterial = Material.AIR;
@@ -143,13 +146,14 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
         }
     }
 
-    private void doBreak(DecayBlockTemplate template) {
+    private void doBreak(DecayBlockTemplateGrouping group, DecayBlockTemplate template) {
         this.damage -= template.getSettings().getDurability();
-        HashSet<DecayInto> decayInto = template.getSettings().getDecayInto();
+        Collection<DecayInto> decayInto = group.getDecayInto().values();
         if (decayInto.isEmpty()) {
             this.currentMaterial = null;
+            return;
         }
-        int i = 0;
+        double i = 0;
         for (DecayInto m : decayInto) {
             i += m.getChance();
         }

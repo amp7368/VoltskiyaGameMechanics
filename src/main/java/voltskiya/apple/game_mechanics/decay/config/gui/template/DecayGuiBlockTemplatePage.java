@@ -1,9 +1,10 @@
-package voltskiya.apple.game_mechanics.decay.config.gui;
+package voltskiya.apple.game_mechanics.decay.config.gui.template;
 
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
-import voltskiya.apple.game_mechanics.decay.config.gui.variant.DecayGuiVariantSettingsPage;
+import voltskiya.apple.game_mechanics.decay.config.gui.DecayGui;
+import voltskiya.apple.game_mechanics.decay.config.gui.template.variant.DecayGuiVariantSettingsPage;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplate;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateGrouping;
 import voltskiya.apple.game_mechanics.decay.config.template.MaterialVariant;
@@ -18,11 +19,11 @@ import java.util.List;
 
 import static voltskiya.apple.utilities.util.minecraft.InventoryUtils.makeItem;
 
-public class DecayGuiBlockSettingsPage extends InventoryGuiPageScrollableACD<DecayGui> {
+public class DecayGuiBlockTemplatePage extends InventoryGuiPageScrollableACD<DecayGui> {
     private final DecayBlockTemplateGrouping parentGrouping;
     private final DecayBlockTemplate.DecayBlockBuilderTemplate builder;
 
-    public DecayGuiBlockSettingsPage(DecayGui decayGui, DecayBlockTemplateGrouping parentGrouping, DecayBlockTemplate.DecayBlockBuilderTemplate builder) {
+    public DecayGuiBlockTemplatePage(DecayGui decayGui, DecayBlockTemplateGrouping parentGrouping, DecayBlockTemplate.DecayBlockBuilderTemplate builder) {
         super(decayGui, false);
         this.parentGrouping = parentGrouping;
         this.builder = builder;

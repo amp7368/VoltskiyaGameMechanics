@@ -19,9 +19,8 @@ public class DecayGuiSettingsPage extends InventoryGuiPageConfigACD<DecayGui> {
 
     @Override
     public void initialize() {
-        setSlot(new InventoryGuiSlotImplACD(e -> parentNext(),
-                InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)), 8);
-        super.initialize();
+        setSlot(new InventoryGuiSlotImplACD(e -> parentRemoveSubPage(),
+                InventoryUtils.makeItem(Material.RED_TERRACOTTA, "Back to navigation")), 0);
     }
 
     @GuiButtonACD(item = @ItemACD(material = Material.JUNGLE_SAPLING, name = "Decay Rate: %s", nameSupplier = "getDecayRate"),

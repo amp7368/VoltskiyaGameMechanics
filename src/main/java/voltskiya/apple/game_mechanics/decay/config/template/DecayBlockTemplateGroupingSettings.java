@@ -1,36 +1,48 @@
 package voltskiya.apple.game_mechanics.decay.config.template;
 
+import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDefaultsDatabase;
+import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
+import voltskiya.apple.utilities.util.minecraft.ItemSerializable;
 
-import java.util.HashSet;
 import java.util.UUID;
 
 public class DecayBlockTemplateGroupingSettings {
+    public static final DecayBlockTemplateGroupingSettings DEFAULT = createDefault(InventoryUtils.makeItem(Material.COMMAND_BLOCK, "DEFAULT"));
+
+    static {
+        DEFAULT.uuid = UUID.fromString("68a069a5-5a9e-4422-a71c-f3fc2c8f6e0c");
+    }
+
     private UUID uuid;
-    private HashSet<DecayInto> decayInto;
     private int durability;
     private int resistance;
+    private ItemSerializable icon;
 
     private DecayBlockTemplateGroupingSettings() {
     }
 
-    public DecayBlockTemplateGroupingSettings(boolean ignored) {
+    public DecayBlockTemplateGroupingSettings(ItemSerializable icon) {
         uuid = UUID.randomUUID();
-        decayInto = new HashSet<>();
+        this.icon = icon;
         this.durability = DecayBlockDefaultsDatabase.getDurability();
         this.resistance = DecayBlockDefaultsDatabase.getDefaultResistance();
     }
 
-    public static DecayBlockTemplateGroupingSettings createDefault() {
-        return new DecayBlockTemplateGroupingSettings(true);
+    public DecayBlockTemplateGroupingSettings(DecayBlockTemplateGroupingSettings other) {
+        this.uuid = other.uuid;
+        this.durability = other.durability;
+        this.resistance = other.resistance;
+        this.icon = other.icon;
+    }
+
+    public static DecayBlockTemplateGroupingSettings createDefault(ItemStack item) {
+        return new DecayBlockTemplateGroupingSettings(new ItemSerializable(item, true));
     }
 
     public UUID getUuid() {
         return uuid;
-    }
-
-    public HashSet<DecayInto> getDecayInto() {
-        return decayInto;
     }
 
     public int getDurability() {
@@ -48,5 +60,13 @@ public class DecayBlockTemplateGroupingSettings {
     public void incrementResistance(int i) {
         this.resistance += i;
 
+    }
+
+    public ItemStack getIcon() {
+        return this.icon.getItem();
+    }
+
+    public DecayBlockTemplateGroupingSettings copy() {
+        return new DecayBlockTemplateGroupingSettings(this);
     }
 }

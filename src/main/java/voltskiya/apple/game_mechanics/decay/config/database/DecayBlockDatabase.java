@@ -40,13 +40,14 @@ public class DecayBlockDatabase implements SaveFileable {
     }
 
     public synchronized static void addBlock(DecayBlockTemplateGrouping grouping) {
-        instance.blocks.put(grouping.getIcon().getMaterial(), grouping);
+        DecayBlockTemplateGrouping oldGrouping = instance.blocks.put(grouping.getIcon().getMaterial(), grouping);
+        if (oldGrouping != null) oldGrouping.setDeleted(true);
+        grouping.setDeleted(false);
         for (DecayBlockTemplate blockTemplate : grouping.getBlocks().values()) {
             for (MaterialVariant material : blockTemplate.getMaterials().values()) {
                 instance.allBlocks.put(material.material, grouping);
             }
         }
-        DecayBlockSettingsDatabase.add(grouping.getSettings());
         save();
     }
 
@@ -59,25 +60,33 @@ public class DecayBlockDatabase implements SaveFileable {
     }
 
     @Nullable
-    public static DecayBlockTemplate getBlock(Material name) {
-        DecayBlockTemplateGrouping grouping = getGroup(name);
-        if (grouping == null) {
-            return null;
-        } else {
-            return grouping.getBlock(name);
-        }
+    public static DecayBlockTemplate getBlock(Material material) {
+        DecayBlockTemplateGrouping grouping = getGroup(material);
+        return getBlock(grouping, material);
     }
 
-    public static DecayBlockTemplateGrouping getGroup(Material name) {
-        if (name == null || name.isAir()) {
+    @Nullable
+    public static DecayBlockTemplate getBlock(DecayBlockTemplateGrouping grouping, Material material) {
+        return grouping == null ? null : grouping.getBlock(material);
+    }
+
+    @Nullable
+    public static DecayBlockTemplateGrouping getGroup(Material material) {
+        if (material == null || material.isAir()) {
             return null;
         }
-        return get().allBlocks.get(name);
+        return get().allBlocks.get(material);
     }
 
     @NotNull
     private static String getSaveFileNameStatic() {
         return "decayBlocksDB.json";
+    }
+
+    public static MaterialVariant getMaterialVariant(Material material) {
+        @Nullable DecayBlockTemplate block = getBlock(material);
+        return block == null ? null : block.getMaterial(material);
+
     }
 
     @Override

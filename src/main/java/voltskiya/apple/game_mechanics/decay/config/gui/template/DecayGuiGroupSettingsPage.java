@@ -1,10 +1,12 @@
-package voltskiya.apple.game_mechanics.decay.config.gui;
+package voltskiya.apple.game_mechanics.decay.config.gui.template;
 
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDatabase;
+import voltskiya.apple.game_mechanics.decay.config.gui.DecayGui;
+import voltskiya.apple.game_mechanics.decay.config.gui.template.group.DecayGuiGroupSettingsChooseSettingsPage;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplate;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateGrouping;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayInto;
@@ -17,11 +19,12 @@ import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import static voltskiya.apple.utilities.util.minecraft.InventoryUtils.makeItem;
 
 public class DecayGuiGroupSettingsPage extends InventoryGuiPageScrollableACD<DecayGui> {
-    private DecayBlockTemplateGrouping builder;
+    private final DecayBlockTemplateGrouping builder;
 
     public DecayGuiGroupSettingsPage(DecayGui parent, DecayBlockTemplateGrouping builder) {
         super(parent, false);
@@ -34,7 +37,6 @@ public class DecayGuiGroupSettingsPage extends InventoryGuiPageScrollableACD<Dec
         addSection(new ScrollableSectionACD("into", 23, 54));
         addBlocks();
         addInto();
-        settings();
         scrollButtons();
 
         setSlot(new InventoryGuiSlotImplACD(e -> parentRemoveSubPage(), makeItem(Material.RED_TERRACOTTA, "Discard Changes")), 0);
@@ -48,6 +50,9 @@ public class DecayGuiGroupSettingsPage extends InventoryGuiPageScrollableACD<Dec
             DecayBlockDatabase.addBlock(builder);
             parentRemoveSubPage();
         }, makeItem(Material.GREEN_TERRACOTTA, "Save Changes")), 8);
+        setSlot(new InventoryGuiSlotImplACD(e -> {
+            parentAddSubPage(new DecayGuiGroupSettingsChooseSettingsPage(parent, this.builder));
+        }, makeItem(Material.COMPARATOR, "Set settings")), 3);
     }
 
     private void scrollButtons() {
@@ -65,34 +70,19 @@ public class DecayGuiGroupSettingsPage extends InventoryGuiPageScrollableACD<Dec
         }, InventoryUtils.makeItem(Material.LEVER, 1, "Down", List.of("Scroll down"))), 16);
     }
 
-    public void settings() {
-        setSlot(new InventoryGuiSlotImplACD(e -> {
-            builder.getSettings().incrementDurability(e.getClick().isLeftClick() ? 1 : -1);
-        }, InventoryGuiButtonTemplate.configNamed(Material.BRICKS, "Durability",
-                Collections.singletonList("How much durability does this item have before it breaks"),
-                builder.getSettings()::getDurability, 1)
-        ), 3);
-
-        setSlot(new InventoryGuiSlotImplACD(e -> {
-            builder.getSettings().incrementResistance(e.getClick().isLeftClick() ? 1 : -1);
-        }, InventoryGuiButtonTemplate.configNamed(Material.TNT, "Resistance",
-                Collections.singletonList("How much resistance does this item have against decay"),
-                builder.getSettings()::getResistance, 1)
-        ), 2);
-    }
 
     @Override
     public void refreshPageItems() {
         addBlocks();
         addInto();
-        settings();
+        setSlot(new InventoryGuiSlotDoNothingACD(builder.getSettings().getIcon()), 4);
     }
 
     private void addBlocks() {
         getSection("blocks_in_group").clear();
         for (DecayBlockTemplate block : builder.getBlocks().values()) {
             add("blocks_in_group", new InventoryGuiSlotImplACD(
-                    e -> parentAddSubPage(new DecayGuiBlockSettingsPage(parent, this.builder, block.toBuilder())),
+                    e -> parentAddSubPage(new DecayGuiBlockTemplatePage(parent, this.builder, block.toBuilder())),
                     makeItem(block.getIcon(), "Block in Group")
             ));
         }
@@ -100,9 +90,8 @@ public class DecayGuiGroupSettingsPage extends InventoryGuiPageScrollableACD<Dec
 
     private void addInto() {
         getSection("into").clear();
-        for (DecayInto block : builder.getSettings().getDecayInto()) {
+        for (DecayInto block : builder.getDecayInto().values()) {
             add("into", new InventoryGuiSlotImplACD(
-                    // todo
                     e -> parentAddSubPage(new DecayGuiDecayIntoSettingsPage(parent, this.builder, block.copy())),
                     makeItem(block.getMaterial(), "Block in Group")
             ));
@@ -119,10 +108,11 @@ public class DecayGuiGroupSettingsPage extends InventoryGuiPageScrollableACD<Dec
                         blockOld == null ?
                                 new DecayBlockTemplate.DecayBlockBuilderTemplate(this.builder.getSettingsUUID(), item) :
                                 blockOld.toBuilder();
-                parentAddSubPage(new DecayGuiBlockSettingsPage(parent, this.builder, block));
+                parentAddSubPage(new DecayGuiBlockTemplatePage(parent, this.builder, block));
             } else if (event.getClick().isRightClick()) {
-                //todo
-                parentAddSubPage(new DecayGuiDecayIntoSettingsPage(parent, this.builder, new DecayInto(item)));
+                DecayInto decayOld = this.builder.getDecay(item.getType());
+                DecayInto decayInto = Objects.requireNonNullElseGet(decayOld, () -> new DecayInto(item));
+                parentAddSubPage(new DecayGuiDecayIntoSettingsPage(parent, this.builder, decayInto));
             }
         }
     }

@@ -34,6 +34,7 @@ public class DecayBlockTemplate {
 
     public DecayBlockTemplateGroupingSettings getSettings() {
         validateSettings();
+        if (settings == null) return DecayBlockTemplateGroupingSettings.DEFAULT;
         return settings;
     }
 
@@ -53,6 +54,21 @@ public class DecayBlockTemplate {
             decider.addChance(block.requirementsType::getAsRequirement, (c, x, y, z) -> block.chance, block.material);
         }
         return decider;
+    }
+
+    public void setSettings(DecayBlockTemplateGroupingSettings settings) {
+        this.settings = settings;
+        this.settingsUUID = settings.getUuid();
+    }
+
+    public MaterialVariant getMaterial(Material material) {
+        return this.decayIntoThis.get(material);
+    }
+
+    public void setDeleted(boolean isDeleted) {
+        for (MaterialVariant variant : this.decayIntoThis.values()) {
+            variant.setDeleted(isDeleted);
+        }
     }
 
     public static class DecayBlockBuilderTemplate {

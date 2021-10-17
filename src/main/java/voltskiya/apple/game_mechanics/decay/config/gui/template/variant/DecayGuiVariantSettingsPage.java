@@ -1,4 +1,4 @@
-package voltskiya.apple.game_mechanics.decay.config.gui.variant;
+package voltskiya.apple.game_mechanics.decay.config.gui.template.variant;
 
 import org.bukkit.Material;
 import voltskiya.apple.game_mechanics.decay.config.gui.DecayGui;
