@@ -2,6 +2,7 @@ package voltskiya.apple.game_mechanics.tmw.sql;
 
 import javax.persistence.Column;
 
+
 public class TmwMapContour {
     public long chunk_uid;
     public int chunk_x;

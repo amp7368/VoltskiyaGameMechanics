@@ -32,6 +32,13 @@ public class DecayBlockDatabase implements SaveFileable {
             save();
         } else {
             instance = database;
+            for (DecayBlockTemplateGrouping grouping : database.blocks.values()) {
+                for (DecayBlockTemplate blockTemplate : grouping.getBlocks().values()) {
+                    for (MaterialVariant material : blockTemplate.getMaterials().values()) {
+                        instance.allBlocks.put(material.material, grouping);
+                    }
+                }
+            }
         }
     }
 
@@ -67,22 +74,21 @@ public class DecayBlockDatabase implements SaveFileable {
 
     @Nullable
     public static DecayBlockTemplate getBlock(DecayBlockTemplateGrouping grouping, Material material) {
-        return grouping == null ? null : grouping.getBlock(material);
+        if (material == null || material.isAir()) return null;
+        DecayBlockTemplate block = grouping == null ? null : grouping.getBlock(material);
+        if (block == null) {
+            return DecayBlockTemplate.defaultWithMaterial(material);
+        }
+        return block;
     }
 
     @Nullable
     public static DecayBlockTemplateGrouping getGroup(Material material) {
-        if (material == null || material.isAir()) {
-            return null;
-        }
+        if (material == null || material.isAir()) return null;
         return get().allBlocks.get(material);
     }
 
-    @NotNull
-    private static String getSaveFileNameStatic() {
-        return "decayBlocksDB.json";
-    }
-
+    @Nullable
     public static MaterialVariant getMaterialVariant(Material material) {
         @Nullable DecayBlockTemplate block = getBlock(material);
         return block == null ? null : block.getMaterial(material);
@@ -92,5 +98,10 @@ public class DecayBlockDatabase implements SaveFileable {
     @Override
     public String getSaveFileName() {
         return getSaveFileNameStatic();
+    }
+
+    @NotNull
+    private static String getSaveFileNameStatic() {
+        return "decayBlocksDB.json";
     }
 }

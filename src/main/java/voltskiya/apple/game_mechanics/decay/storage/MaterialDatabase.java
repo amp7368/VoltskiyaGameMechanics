@@ -50,6 +50,7 @@ public class MaterialDatabase implements SaveFileable {
     @NotNull
     public static Integer get(Material material) {
         synchronized (materialToMyUid) {
+            if (material == null) material = Material.AIR;
             Integer result = materialToMyUid.get(material);
             if (result != null) return result;
             return put(material);

@@ -23,7 +23,7 @@ public enum DecayErosionType {
     SAND_BUILDUP(null),
     SNOW_BUILDUP(null);
 
-    private BiFunction<DecayBlock[][][], Integer, float[][][]> decayFunction;
+    private final BiFunction<DecayBlock[][][], Integer, float[][][]> decayFunction;
 
     DecayErosionType(BiFunction<DecayBlock[][][], Integer, float[][][]> decayFunction) {
         this.decayFunction = decayFunction;

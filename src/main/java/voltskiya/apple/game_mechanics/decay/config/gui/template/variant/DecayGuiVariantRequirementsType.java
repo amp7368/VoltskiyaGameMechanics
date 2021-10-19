@@ -1,5 +1,6 @@
 package voltskiya.apple.game_mechanics.decay.config.gui.template.variant;
 
+import apple.utilities.structures.expressions.EnumOperatorType;
 import apple.utilities.util.Pretty;
 import org.bukkit.Material;
 import voltskiya.apple.game_mechanics.decay.config.gui.DecayGui;
@@ -53,8 +54,8 @@ public class DecayGuiVariantRequirementsType extends InventoryGuiPageScrollableA
     public void refreshPageItems() {
         addRequirements();
         setSlot(new InventoryGuiSlotCycleACD<>(
-                () -> RequirementsOrValue.get(requirementsType.getIsOr()),
-                r -> this.requirementsType.setIsOr(r.isOr())
+                () -> RequirementsOrValue.get(requirementsType.getOperatorType()),
+                r -> this.requirementsType.setOperator(r.getOperatorType())
         ), 2);
         setSlot(new InventoryGuiSlotCycleACD<>(() -> this.tempRequirementType, (r) -> this.tempRequirementType = r), 6);
     }
@@ -89,8 +90,8 @@ public class DecayGuiVariantRequirementsType extends InventoryGuiPageScrollableA
             this.material = material;
         }
 
-        public static RequirementsOrValue get(boolean isOr) {
-            return isOr ? OR : AND;
+        public static RequirementsOrValue get(EnumOperatorType operator) {
+            return operator == EnumOperatorType.ME_CONTAINS_ARG ? AND : OR;
         }
 
         @Override
@@ -117,8 +118,11 @@ public class DecayGuiVariantRequirementsType extends InventoryGuiPageScrollableA
             );
         }
 
-        public boolean isOr() {
-            return this == OR;
+        public EnumOperatorType getOperatorType() {
+            return switch (this) {
+                case OR -> EnumOperatorType.OR;
+                case AND -> EnumOperatorType.ME_CONTAINS_ARG;
+            };
         }
     }
 

@@ -34,16 +34,15 @@ public class DecayBlockDeciderRequirements implements DecayBlockDecider {
         }
         if (chanceSum <= 0) {
             decided = defaultChoice;
+            return decided;
         }
         double choiceIndex = random.nextDouble() * chanceSum;
         for (DecayBlockPossibilityRequirement choice : choices) {
             choiceIndex -= choice.chanceDecider(context, x, y, z);
             if (choiceIndex <= 0) {
-                decided = choice.materialIfChance();
-                break;
+                return decided = choice.materialIfChance();
             }
         }
-        if (decided == null) decided = defaultChoice;
         return decided;
     }
 

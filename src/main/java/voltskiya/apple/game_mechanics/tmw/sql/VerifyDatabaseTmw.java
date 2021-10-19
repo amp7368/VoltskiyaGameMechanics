@@ -11,6 +11,7 @@ import org.hibernate.type.BigIntegerType;
 import org.hibernate.type.Type;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
+import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeTypeDatabase;
 
@@ -46,6 +47,7 @@ public class VerifyDatabaseTmw {
         cfg.addSqlFunction("rand", new SqlRandFunction());
         cfg.addAnnotatedClass(TmwStoredMob.class)
                 .addAnnotatedClass(TmwMapContour.class)
+                .addAnnotatedClass(DecayBlock.class)
                 .addAnnotatedClass(TmwSpawnPercentagesResponse.class);
 
         sessionFactory = cfg.buildSessionFactory();

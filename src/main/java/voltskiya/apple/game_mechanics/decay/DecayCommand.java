@@ -53,7 +53,7 @@ public class DecayCommand extends BaseCommand {
         public void force(Player player, int force) {
             DecayWand wand = WandToolList.getPlayerWand(DecayWand.WAND_KEY, player, DecayWand.class);
             wand.setForce(force);
-            player.sendMessage(ChatColor.GREEN + "Set the radius to " + force);
+            player.sendMessage(ChatColor.GREEN + "Set the force to " + force);
         }
     }
 }

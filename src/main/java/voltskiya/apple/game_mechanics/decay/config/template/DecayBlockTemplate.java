@@ -5,6 +5,7 @@ import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockSettingsDatabase;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockDecider;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockDeciderRequirements;
+import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 import java.util.HashMap;
 import java.util.UUID;
@@ -22,6 +23,18 @@ public class DecayBlockTemplate {
     }
 
     public DecayBlockTemplate() {
+    }
+
+    private DecayBlockTemplate(Material defaultBlock) {
+        this.icon = Material.BARRIER;
+        this.decayIntoThis = new HashMap<>(1);
+        this.decayIntoThis.put(defaultBlock, new MaterialVariant(InventoryUtils.makeItem(defaultBlock)));
+        this.settings = DecayBlockTemplateGroupingSettings.DEFAULT;
+        this.settingsUUID = settings.getUuid();
+    }
+
+    public static DecayBlockTemplate defaultWithMaterial(Material material) {
+        return new DecayBlockTemplate(material);
     }
 
     public Material getIcon() {
@@ -49,9 +62,9 @@ public class DecayBlockTemplate {
     }
 
     public DecayBlockDecider toDecider() {
-        DecayBlockDeciderRequirements decider = new DecayBlockDeciderRequirements(this.getIcon());
+        DecayBlockDeciderRequirements decider = new DecayBlockDeciderRequirements(Material.AIR);
         for (MaterialVariant block : decayIntoThis.values()) {
-            decider.addChance(block.requirementsType::getAsRequirement, (c, x, y, z) -> block.chance, block.material);
+            decider.addChance(block.requirementsType, (c, x, y, z) -> block.chance, block.material);
         }
         return decider;
     }

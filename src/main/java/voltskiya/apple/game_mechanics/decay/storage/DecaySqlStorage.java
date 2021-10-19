@@ -25,7 +25,7 @@ public class DecaySqlStorage {
         Session session = VerifyDatabaseTmw.sessionFactory.openSession();
         session.beginTransaction();
         for (DecayBlock block : blockUpdates) {
-
+            //todo
         }
         session.getTransaction().commit();
     }

@@ -18,6 +18,7 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 
 import javax.persistence.*;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Random;
 import java.util.UUID;
 
@@ -121,24 +122,31 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
 
     public void explosion(float damage, double chanceOfFire) {
         this.damage += damage;
-        DecayBlockTemplateGrouping group = DecayBlockDatabase.getGroup(this.getCurrentMaterial());
+        @Nullable DecayBlockTemplateGrouping group = DecayBlockDatabase.getGroup(this.getCurrentMaterial());
         @Nullable DecayBlockTemplate template = DecayBlockDatabase.getBlock(group, this.getCurrentMaterial());
+        boolean isOriginal = true;
         while (template != null && this.damage > template.getSettings().getDurability()) {
+            isOriginal = false;
             doBreak(group, template);
             group = DecayBlockDatabase.getGroup(this.getCurrentMaterial());
             template = DecayBlockDatabase.getBlock(group, this.getCurrentMaterial());
         }
-        if (template == null) {
-            this.currentMaterial = Material.AIR;
+        if (isOriginal) {
+            this.decider = DecayBlockDecider.given(this.getCurrentMaterial());
+            this.estimate = this.getCurrentMaterial();
+            return;
         }
-        this.currentMaterialUid = MaterialDatabase.get(getCurrentMaterial());
         if (template == null) {
-            if (chanceOfFire == 0) {
-                this.decider = DecayBlockDecider.AIR;
-            } else {
-                this.decider = new DecayBlockDeciderRequirements(Material.AIR)
-                        .addChance(DecayBlockTemplateRequiredType.BLOCK_BELOW, (c, x, y, z) -> chanceOfFire, Material.FIRE);
+            if (this.damage < 0) {
+                // we didn't break
+                this.decider = DecayBlockDecider.given(currentMaterial);
+                this.estimate = currentMaterial;
+                return;
             }
+            // make it air
+            this.decider = new DecayBlockDeciderRequirements(Material.AIR)
+                    .addChance(DecayBlockTemplateRequiredType.BLOCK_BELOW, (c, x, y, z) -> chanceOfFire, Material.FIRE)
+                    .addChance(DecayBlockTemplateRequiredType.NONE, (c, x, y, z) -> 1 - chanceOfFire, Material.AIR);
             this.estimate = Material.AIR;
         } else {
             this.decider = template.toDecider();
@@ -146,34 +154,42 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
         }
     }
 
+    private void setCurrentMaterial(Material material) {
+        this.currentMaterial = material;
+        this.currentMaterialUid = MaterialDatabase.get(material);
+    }
+
     private void doBreak(DecayBlockTemplateGrouping group, DecayBlockTemplate template) {
         this.damage -= template.getSettings().getDurability();
-        Collection<DecayInto> decayInto = group.getDecayInto().values();
+        Collection<DecayInto> decayInto = group == null ? Collections.emptyList() : group.getDecayInto().values();
         if (decayInto.isEmpty()) {
-            this.currentMaterial = null;
+            setCurrentMaterial(null);
             return;
         }
         double i = 0;
         for (DecayInto m : decayInto) {
             i += m.getChance();
         }
-        i = random.nextInt(decayInto.size());
+        i = random.nextDouble() * i;
         for (DecayInto m : decayInto) {
-            if ((i -= m.getChance()) == 0) {
-                this.currentMaterial = m.getMaterial();
-                break;
+            if ((i -= m.getChance()) <= 0) {
+                setCurrentMaterial(m.getMaterial());
+                return;
             }
         }
+        setCurrentMaterial(null);
     }
 
     @Override
     public Material decide(DecayBlockContext blocksToDecay, int x, int y, int z) {
-        return this.decider.decide(blocksToDecay, x, y, z);
+        Material decided = this.decider.decide(blocksToDecay, x, y, z);
+        setCurrentMaterial(decided);
+        return decided;
     }
 
     @Nullable
     public Material estimate() {
-        if (this.decider == null) return this.currentMaterial;
+        if (this.estimate == null) return this.currentMaterial;
         return this.estimate;
     }
 }

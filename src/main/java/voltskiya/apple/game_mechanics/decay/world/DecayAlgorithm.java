@@ -7,6 +7,7 @@ import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplate;
 import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockContext;
 
+import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 public class DecayAlgorithm {
@@ -21,7 +22,7 @@ public class DecayAlgorithm {
         for (int x = 0; x < totalLength; x++) {
             for (int y = 0; y < totalLength; y++) {
                 for (int z = 0; z < totalLength; z++) {
-                    DecayBlockTemplate template = DecayBlockDatabase.getBlock(blocksToDecay[x + 1][y + 1][z + 1].getOldMaterial());
+                    DecayBlockTemplate template = DecayBlockDatabase.getBlock(blocksToDecay[x + 1][y + 1][z + 1].getCurrentMaterial());
                     blocksResistance[x][y][z] = template == null ? 0 : template.getSettings().getResistance();
                 }
             }
@@ -49,12 +50,7 @@ public class DecayAlgorithm {
     public static float[][][] explosionInternal(float[][][] blocksResistance, int force) {
         int totalLength = blocksResistance.length;
 
-        float starter;
-        if (totalLength <= 1) {
-            starter = force;
-        } else {
-            starter = (float) ((Math.pow(Math.E, 3) + Math.pow(totalLength, 3)) * force);
-        }
+        float starter = (float) (Math.pow(Math.E, 3) * Math.pow(force, 3));
         float[][][] damage = new float[][][]{{{starter}}};
 
         for (int explosionIteration = 2; explosionIteration <= totalLength; explosionIteration++) {
@@ -121,5 +117,15 @@ public class DecayAlgorithm {
             damage = newDamage;
         }
         return damage;
+    }
+
+    private static void printArray(float[][][] a) {
+        for (float[][] ar : a) {
+            for (float[] arr : ar) {
+                System.out.println(Arrays.toString(arr));
+            }
+            System.out.println();
+        }
+        System.out.println();
     }
 }

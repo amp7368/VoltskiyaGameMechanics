@@ -1,6 +1,5 @@
 package voltskiya.apple.game_mechanics.decay.config.template;
 
-import apple.utilities.structures.Enumable;
 import apple.utilities.util.NumberUtils;
 import org.bukkit.Material;
 import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.BooleanUtils;
@@ -8,7 +7,7 @@ import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockContext;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockRequirementAbstract;
 
-public enum DecayBlockTemplateRequiredType implements Enumable, DecayBlockRequirementAbstract<Boolean> {
+public enum DecayBlockTemplateRequiredType implements DecayBlockRequirementAbstract<Boolean> {
     NONE((c, x, y, z) -> true),
     AIR_ABOVE(DecayBlockTemplateRequiredType::isSatasifiedAirAbove),
     BLOCK_BELOW(DecayBlockTemplateRequiredType::isSatasifiedBlockBelow),
@@ -55,7 +54,7 @@ public enum DecayBlockTemplateRequiredType implements Enumable, DecayBlockRequir
                 int zii = zi + z;
                 if (BooleanUtils.and(NumberUtils.betweenMultiple(0, blocks.length, xii, yii, zii))) {
                     Material estimate = blocks[xii][yii][zii].estimate();
-                    if (estimate != null && !estimate.isAir() && estimate.getBlastResistance() != 0) {
+                    if (estimate != null && !estimate.isAir()) {
                         if (++isWall >= 3) return true;
                     }
                 }
