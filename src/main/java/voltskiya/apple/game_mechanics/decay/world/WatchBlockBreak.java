@@ -2,6 +2,7 @@ package voltskiya.apple.game_mechanics.decay.world;
 
 import com.destroystokyo.paper.event.block.BlockDestroyEvent;
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -24,7 +25,7 @@ public class WatchBlockBreak implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockDestroyEvent event) {
         @NotNull Block blockBroken = event.getBlock();
-        DecaySqlStorage.insertPlaceUpdate(new DecayBlock(
+        DecaySqlStorage.insertPlaceUpdate(event.getBlock().getLocation(), new DecayBlock(
                 blockBroken.getType(),
                 event.getNewState().getMaterial(),
                 blockBroken.getX(),
@@ -37,9 +38,9 @@ public class WatchBlockBreak implements Listener {
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockBreakEvent event) {
         @NotNull Block blockBroken = event.getBlock();
-        DecaySqlStorage.insertPlaceUpdate(new DecayBlock(
+        DecaySqlStorage.insertPlaceUpdate(event.getBlock().getLocation(), new DecayBlock(
                 blockBroken.getType(),
-                null,
+                Material.AIR,
                 blockBroken.getX(),
                 blockBroken.getY(),
                 blockBroken.getZ(),
@@ -51,9 +52,9 @@ public class WatchBlockBreak implements Listener {
     public void onBlockBreak(EntityExplodeEvent event) {
         @NotNull List<Block> blockBroken = event.blockList();
         for (Block block : blockBroken) {
-            DecaySqlStorage.insertPlaceUpdate(new DecayBlock(
+            DecaySqlStorage.insertPlaceUpdate(block.getLocation(), new DecayBlock(
                     block.getType(),
-                    null,
+                    Material.AIR,
                     block.getX(),
                     block.getY(),
                     block.getZ(),
@@ -63,9 +64,9 @@ public class WatchBlockBreak implements Listener {
     }
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
-    public void onBlockBreak(BlockPlaceEvent event) {
+    public void onBlockPlace(BlockPlaceEvent event) {
         @NotNull Block blockPlaced = event.getBlock();
-        DecaySqlStorage.insertPlaceUpdate(new DecayBlock(
+        DecaySqlStorage.insertPlaceUpdate(event.getBlock().getLocation(), new DecayBlock(
                 event.getBlockReplacedState().getType(),
                 blockPlaced.getType(),
                 blockPlaced.getX(),

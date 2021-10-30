@@ -5,7 +5,6 @@ import co.aikar.commands.annotation.CommandAlias;
 import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.Subcommand;
 import org.bukkit.GameMode;
-import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.InventoryHolder;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
@@ -15,7 +14,6 @@ import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.biomes.ComputedBiomeChunk;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.biomes.ScanWorldBiomes;
-import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobRegen;
 import voltskiya.apple.utilities.util.data_structures.Pair;
 
 import java.util.*;
@@ -47,11 +45,6 @@ public class TMWCommand extends BaseCommand {
         player.openInventory(new TMWGui(player).getInventory());
     }
 
-    @Subcommand("mobs pause")
-    public void pause(CommandSender sender) {
-        sender.sendMessage("mob spawning is " + (MobRegen.pause() ? "on" : "off"));
-
-    }
 
     @Subcommand("biome")
     public void biome(Player player) {
@@ -75,4 +68,6 @@ public class TMWCommand extends BaseCommand {
         // scan the entire world ig
         new ScanWorldBiomes(player.getLocation(), x1, z1, x2, z2).scan();
     }
+
+
 }

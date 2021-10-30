@@ -1,7 +1,10 @@
 package voltskiya.apple.game_mechanics.decay.storage;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.hibernate.Session;
+import org.hibernate.Transaction;
+import org.jetbrains.annotations.NotNull;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.sql.VerifyDatabaseTmw;
 
@@ -11,23 +14,25 @@ import java.util.Map;
 
 public class DecaySqlStorage {
 
-    public static void insertPlaceUpdate(DecayBlock placed) {
+    public static void insertPlaceUpdate(@NotNull Location location, DecayBlock placed) {
         synchronized (SaveDaemon.sync) {
-            DecayBlock block = SaveDaemon.placeUpdates.get(placed);
+            DecayBlock block = SaveDaemon.placeUpdates.get(location);
             if (block != null) {
                 placed = new DecayBlock(block.getOldMaterial(), placed.getCurrentMaterial(), placed.getX(), placed.getY(), placed.getZ(), placed.getWorld());
             }
-            SaveDaemon.placeUpdates.put(placed, placed);
+            SaveDaemon.placeUpdates.put(location, placed);
         }
     }
 
     private static void placeBlocks(Collection<DecayBlock> blockUpdates) {
         Session session = VerifyDatabaseTmw.sessionFactory.openSession();
-        session.beginTransaction();
+        Transaction transaction = session.beginTransaction();
         for (DecayBlock block : blockUpdates) {
-            //todo
+            if (!session.contains(block))
+                session.saveOrUpdate(block);
         }
-        session.getTransaction().commit();
+        transaction.commit();
+        session.close();
     }
 
 
@@ -36,19 +41,19 @@ public class DecaySqlStorage {
         private static final Object sync = new Object();
 
         // this is a map of self references because I need the get() method to get the original material
-        private static Map<DecayBlock, DecayBlock> placeUpdates = new HashMap<>();
+        private static Map<Location, DecayBlock> placeUpdates = new HashMap<>();
 
         public SaveDaemon() {
             run();
         }
 
         private static void flush() {
-            Map<DecayBlock, DecayBlock> placeUpdatesTemp;
+            Map<Location, DecayBlock> placeUpdatesTemp;
             synchronized (sync) {
                 placeUpdatesTemp = placeUpdates;
                 placeUpdates = new HashMap<>();
             }
-            placeBlocks(placeUpdatesTemp.keySet());
+            placeBlocks(placeUpdatesTemp.values());
         }
 
         @Override

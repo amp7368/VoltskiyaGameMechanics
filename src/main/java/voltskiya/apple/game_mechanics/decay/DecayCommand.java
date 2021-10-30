@@ -13,7 +13,7 @@ import voltskiya.apple.game_mechanics.decay.config.gui.DecayGui;
 import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 import voltskiya.apple.utilities.util.wand.WandToolList;
 
-@CommandAlias("tmwdecay")
+@CommandAlias("decay")
 public class DecayCommand extends BaseCommand {
     public DecayCommand() {
         VoltskiyaPlugin.get().getCommandManager().registerCommand(this);

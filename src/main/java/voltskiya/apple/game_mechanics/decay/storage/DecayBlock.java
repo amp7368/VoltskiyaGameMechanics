@@ -4,10 +4,7 @@ import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDatabase;
-import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplate;
-import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateGrouping;
-import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateRequiredType;
-import voltskiya.apple.game_mechanics.decay.config.template.DecayInto;
+import voltskiya.apple.game_mechanics.decay.config.template.*;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockContext;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockDecider;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockDeciderRequirements;
@@ -42,8 +39,6 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
     public int oldMaterialUid;
     @Column(name = Decay.CURRENT_MATERIAL, nullable = false)
     public int currentMaterialUid;
-    @Column(name = Decay.IS_DECAY)
-    public boolean isDecay;
     @Column(name = Decay.DAMAGE)
     public int damage;
     @Transient
@@ -67,7 +62,6 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
         this.oldMaterialUid = MaterialDatabase.get(oldMaterial);
         this.currentMaterialUid = MaterialDatabase.get(currentMaterial);
         this.myWorldUid = SimpleWorldDatabase.getWorld(world);
-        this.isDecay = true;
         this.damage = 0;
     }
 
@@ -84,7 +78,7 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
 
     @Override
     public int hashCode() {
-        return (int) ((x + (long) y + z) % Integer.MAX_VALUE);
+        return x << 16 + z << 8 + y;
     }
 
 
@@ -137,12 +131,6 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
             return;
         }
         if (template == null) {
-            if (this.damage < 0) {
-                // we didn't break
-                this.decider = DecayBlockDecider.given(currentMaterial);
-                this.estimate = currentMaterial;
-                return;
-            }
             // make it air
             this.decider = new DecayBlockDeciderRequirements(Material.AIR)
                     .addChance(DecayBlockTemplateRequiredType.BLOCK_BELOW, (c, x, y, z) -> chanceOfFire, Material.FIRE)
@@ -191,5 +179,14 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
     public Material estimate() {
         if (this.estimate == null) return this.currentMaterial;
         return this.estimate;
+    }
+
+    public float getResistance() {
+        DecayBlockTemplate template = DecayBlockDatabase.getBlock(this.getCurrentMaterial());
+        if (template == null) return 0;
+        else {
+            DecayBlockTemplateGroupingSettings settings = template.getSettings();
+            return Math.min(settings.getResistance(), settings.getDurability() - this.damage);
+        }
     }
 }

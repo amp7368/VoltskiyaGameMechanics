@@ -19,7 +19,8 @@ import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.util.List;
 
-import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.*;
+import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.Contour;
+import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.Decay;
 
 public class VerifyDatabaseTmw {
 
@@ -27,7 +28,6 @@ public class VerifyDatabaseTmw {
 
     private static long currentMobMyUid;
     private static long currentChunkUid;
-    private static int currentMaterialUid;
     private static long currentDecayBlockUid;
 
     public synchronized static void connect() {
@@ -35,17 +35,18 @@ public class VerifyDatabaseTmw {
         final Configuration cfg = new Configuration()
                 .setProperty("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver")
                 .setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect")
-                .setProperty("hibernate.connection.pool_size", "3")
+                .setProperty("hibernate.connection.pool_size", "100")
                 .setProperty("hibernate.current_session_context_class", "thread")
                 .setProperty("hibernate.show_sql", "false")
                 .setProperty("hibernate.format_sql", "false")
-                .setProperty("hibernate.hbm2ddl.auto", "create")
+                .setProperty("hibernate.hbm2ddl.auto", "update")
                 .setProperty("hibernate.connection.url", TmwDatabaseConfig.get().url)
                 .setProperty("hibernate.connection.username", TmwDatabaseConfig.get().username)
                 .setProperty("hibernate.connection.password", TmwDatabaseConfig.get().password);
         cfg.addAttributeConverter(new BiomeTypeConverter());
         cfg.addSqlFunction("rand", new SqlRandFunction());
         cfg.addAnnotatedClass(TmwStoredMob.class)
+                .addAnnotatedClass(TmwChunkEntity.class)
                 .addAnnotatedClass(TmwMapContour.class)
                 .addAnnotatedClass(DecayBlock.class)
                 .addAnnotatedClass(TmwSpawnPercentagesResponse.class);
@@ -57,10 +58,22 @@ public class VerifyDatabaseTmw {
     private static void verify() {
         Session session = sessionFactory.openSession();
         session.beginTransaction();
-        currentMobMyUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", SqlVariableNames.MOB_MY_UID, SqlVariableNames.TABLE_STORED_MOB)).getSingleResult()).longValue();
-        currentChunkUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", Contour.CHUNK_UID, Contour.TABLE_CONTOUR)).getSingleResult()).longValue();
-        currentMaterialUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", MATERIAL_MY_UID, TABLE_MATERIAL)).getSingleResult()).intValue();
-        currentDecayBlockUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", Decay.BLOCK_UID, Decay.TABLE_DECAY_BLOCK)).getSingleResult()).longValue();
+        try {
+            currentMobMyUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", SqlVariableNames.MOB_MY_UID, SqlVariableNames.TABLE_STORED_MOB)).getSingleResult()).longValue();
+        } catch (Exception e) {
+            currentMobMyUid = 1;
+        }
+        System.out.println(currentMobMyUid);
+        try {
+            currentChunkUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", Contour.CHUNK_UID, Contour.TABLE_CONTOUR)).getSingleResult()).longValue();
+        } catch (Exception e) {
+            currentMobMyUid = 1;
+        }
+        try {
+            currentDecayBlockUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", Decay.BLOCK_UID, Decay.TABLE_DECAY_BLOCK)).getSingleResult()).longValue();
+        } catch (Exception e) {
+            currentMobMyUid = 1;
+        }
         session.getTransaction().commit();
         session.close();
     }
@@ -93,10 +106,6 @@ public class VerifyDatabaseTmw {
 
     public synchronized static long getChunkUid() {
         return currentChunkUid++;
-    }
-
-    public synchronized static int getMaterialUid() {
-        return currentMaterialUid++;
     }
 
     public synchronized static long getCurrentDecayBlockUid() {

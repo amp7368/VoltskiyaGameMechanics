@@ -1,32 +1,30 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world.biomes;
 
-import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
-import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayer;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchTickable;
 import voltskiya.apple.utilities.util.data_structures.Pair;
 
 import java.util.*;
 
-public class BiomeWatchPlayer implements Runnable {
-    //TODO change the interval to config
-    private static final long WATCH_PLAYER_INTERVAL = 20;
-    private static final int PREVIOUS_BIOMES_COUNT = (int) (20 * 60 / WATCH_PLAYER_INTERVAL);
+public class BiomeWatchPlayer implements WatchTickable {
+    private static final int WATCH_PLAYER_INTERVAL = 20;
+    private static final int PREVIOUS_BIOMES_COUNT = 20 * 60 / WATCH_PLAYER_INTERVAL;
     private final Player player;
     private final List<ComputedBiomeChunk> previousBiomes = new ArrayList<>();
     @Nullable
     private BiomeType currentGuess;
+    private int tickCount;
 
     public BiomeWatchPlayer(Player player, WatchPlayer watchPlayer) {
         this.player = player;
-        Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this);
     }
 
     @Override
@@ -39,16 +37,15 @@ public class BiomeWatchPlayer implements Runnable {
         final Location playerLocation = player.getLocation();
         Chunk chunk = playerLocation.getChunk();
         previousBiomes.add(new ComputedBiomeChunk(BiomeTypeBuilderRegisterBlocks.compute(
-                playerLocation.getChunk(),
-                new HashSet<>(),
-                playerLocation.getBlockX() - chunk.getX() * TemperatureChunk.BLOCKS_IN_A_CHUNK,
-                playerLocation.getBlockY(),
-                playerLocation.getBlockZ() - chunk.getZ() * TemperatureChunk.BLOCKS_IN_A_CHUNK
+                        playerLocation.getChunk(),
+                        new HashSet<>(),
+                        playerLocation.getBlockX() - chunk.getX() * TemperatureChunk.BLOCKS_IN_A_CHUNK,
+                        playerLocation.getBlockY(),
+                        playerLocation.getBlockZ() - chunk.getZ() * TemperatureChunk.BLOCKS_IN_A_CHUNK
                 ))
         );
         while (previousBiomes.size() > PREVIOUS_BIOMES_COUNT) previousBiomes.remove(0);
         this.currentGuess = finalizeGuesses();
-        Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this, WATCH_PLAYER_INTERVAL);
     }
 
     @Nullable
@@ -78,5 +75,20 @@ public class BiomeWatchPlayer implements Runnable {
     @Nullable
     public BiomeType getCurrentGuess() {
         return this.currentGuess;
+    }
+
+    @Override
+    public int getTickCount() {
+        return this.tickCount;
+    }
+
+    @Override
+    public void setTickCount(int i) {
+        this.tickCount = i;
+    }
+
+    @Override
+    public int getTicksPerRun() {
+        return WATCH_PLAYER_INTERVAL;
     }
 }

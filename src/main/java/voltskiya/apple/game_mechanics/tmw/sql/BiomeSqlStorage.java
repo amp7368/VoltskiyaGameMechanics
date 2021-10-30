@@ -4,7 +4,6 @@ import apple.utilities.request.AppleRequestService;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.biomes.ScanWorldBiomes.ProcessedChunk;
-import voltskiya.apple.utilities.util.data_structures.Triple;
 
 import java.util.Collection;
 
@@ -16,56 +15,21 @@ public class BiomeSqlStorage extends AppleRequestService {
     private static final BiomeSqlStorage instance = new BiomeSqlStorage();
 
     public static void insert(Collection<ProcessedChunk> processedChunks) {
-        instance.queue(() -> {
-                    insertThreaded(processedChunks);
-                    return true;
-                }, (v) -> {
-                }
+        instance.queueVoid(() -> insertThreaded(processedChunks)
         );
     }
 
     private static void insertThreaded(Collection<ProcessedChunk> processedChunks) {
         Session session = VerifyDatabaseTmw.sessionFactory.openSession();
+
         Transaction transaction = session.beginTransaction();
         for (ProcessedChunk chunk : processedChunks) {
             session.createNativeQuery(
-                    String.format("INSERT INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) " +
-                                    "VALUES (%d, %d, %d, %s, %s, %s, %s, %d, %d, %d) " +
-                                    "ON CONFLICT (%s, %s) DO NOTHING",
+                    String.format("REPLACE INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) " +
+                                    "SELECT %d, %d, %d, %d, %s, %s, %s, %s, %d, %d, %d ",
                             TABLE_CONTOUR,
                             CHUNK_UID,
-                            CHUNK_X,
-                            CHUNK_Z,
-                            BRIDGE_X_POS,
-                            BRIDGE_X_NEG,
-                            BRIDGE_Z_POS,
-                            BRIDGE_Z_NEG,
-                            MIDDLE_X,
-                            MIDDLE_Y,
-                            MIDDLE_Z,
-                            VerifyDatabaseTmw.getChunkUid(),
-                            chunk.x(),
-                            chunk.z(),
-                            getChunkSql(chunk.getNeighborXPos().middle()),
-                            getChunkSql(chunk.getNeighborXNeg().middle()),
-                            getChunkSql(chunk.getNeighborZPos().middle()),
-                            getChunkSql(chunk.getNeighborZNeg().middle()),
-                            chunk.middle().getX(),
-                            chunk.middle().getY(),
-                            chunk.middle().getZ(),
-                            CHUNK_X,
-                            CHUNK_Z
-                    )
-            );
-        }
-        transaction.commit();
-        // same thing, except replace into
-        for (ProcessedChunk chunk : processedChunks) {
-            session.createNativeQuery(
-                    String.format("REPLACE INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s) " +
-                                    "VALUES (%d, %d, %d, %s, %s, %s, %s, %d, %d, %d)",
-                            TABLE_CONTOUR,
-                            CHUNK_UID,
+                            WORLD_MY_UID,
                             CHUNK_X,
                             CHUNK_Z,
                             BRIDGE_X_POS,
@@ -76,12 +40,13 @@ public class BiomeSqlStorage extends AppleRequestService {
                             MIDDLE_Y,
                             MIDDLE_Z,
                             chunk.chunkUid = VerifyDatabaseTmw.getChunkUid(),
+                            chunk.worldMyUid(),
                             chunk.x(),
                             chunk.z(),
-                            getChunkSql(chunk.getNeighborXPos().middle()),
-                            getChunkSql(chunk.getNeighborXNeg().middle()),
-                            getChunkSql(chunk.getNeighborZPos().middle()),
-                            getChunkSql(chunk.getNeighborZNeg().middle()),
+                            getChunkSql(chunk.getNeighborXPos()),
+                            getChunkSql(chunk.getNeighborXNeg()),
+                            getChunkSql(chunk.getNeighborZPos()),
+                            getChunkSql(chunk.getNeighborZNeg()),
                             chunk.middle().getX(),
                             chunk.middle().getY(),
                             chunk.middle().getZ()
@@ -89,23 +54,55 @@ public class BiomeSqlStorage extends AppleRequestService {
             );
         }
         transaction.commit();
+        transaction = session.beginTransaction();
+        // same thing, except replace into
         for (ProcessedChunk chunk : processedChunks) {
-            session.createNativeQuery(String.format("INSERT INTO %s (%s, %s, %s)\n" +
-                            "VALUES (%d, %d, %d)",
+            session.createNativeQuery(
+                    String.format("REPLACE INTO %s (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) " +
+                                    "SELECT %d, %d, %d, %d, %s, %s, %s, %s, %d, %d, %d ",
+                            TABLE_CONTOUR,
+                            CHUNK_UID,
+                            WORLD_MY_UID,
+                            CHUNK_X,
+                            CHUNK_Z,
+                            BRIDGE_X_POS,
+                            BRIDGE_X_NEG,
+                            BRIDGE_Z_POS,
+                            BRIDGE_Z_NEG,
+                            MIDDLE_X,
+                            MIDDLE_Y,
+                            MIDDLE_Z,
+                            chunk.chunkUid,
+                            chunk.worldMyUid(),
+                            chunk.x(),
+                            chunk.z(),
+                            getChunkSql(chunk.getNeighborXPos()),
+                            getChunkSql(chunk.getNeighborXNeg()),
+                            getChunkSql(chunk.getNeighborZPos()),
+                            getChunkSql(chunk.getNeighborZNeg()),
+                            chunk.middle().getX(),
+                            chunk.middle().getY(),
+                            chunk.middle().getZ()
+                    )
+            ).executeUpdate();
+        }
+        transaction.commit();
+        transaction = session.beginTransaction();
+        for (ProcessedChunk chunk : processedChunks) {
+            session.createNativeQuery(String.format("REPLACE INTO %s (%s, %s)\n" +
+                            "VALUES (%d, %d)",
                     ChunkSql.TABLE_CHUNK,
                     ChunkSql.CHUNK_UID,
                     ChunkSql.BIOME_GUESS_UID,
-                    WORLD_MY_UID,
                     chunk.chunkUid,
-                    chunk.computedBiomeChunk().getGuessedBiomes().get(0).getKey().getUid(),
-                    chunk.worldMyUid()
-            ));
+                    chunk.computedBiomeChunk().getGuessedBiomes().get(0).getKey().getUid()
+            )).executeUpdate();
         }
         transaction.commit();
         session.close();
     }
 
-    private static String getChunkSql(Triple<Integer, Integer, Integer> coords) {
+    private static String getChunkSql(ProcessedChunk coords) {
         if (coords == null) return " null ";
         return String.format("""
                          (SELECT %s
@@ -116,12 +113,12 @@ public class BiomeSqlStorage extends AppleRequestService {
                          """,
                 CHUNK_UID,
                 TABLE_CONTOUR,
-                MIDDLE_X,
-                coords.getX(),
-                MIDDLE_Y,
-                coords.getY(),
-                MIDDLE_Z,
-                coords.getZ()
+                WORLD_MY_UID,
+                coords.worldMyUid(),
+                CHUNK_X,
+                coords.x(),
+                CHUNK_Z,
+                coords.z()
         );
     }
 

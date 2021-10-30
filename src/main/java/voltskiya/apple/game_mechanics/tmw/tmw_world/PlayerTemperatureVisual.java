@@ -1,17 +1,15 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world;
 
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
-import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 
-public class PlayerTemperatureVisual implements Runnable {
+public class PlayerTemperatureVisual implements WatchTickable {
+    private int tickCount = 0;
     private Player player;
     private int freezeTicks = 0;
 
     public PlayerTemperatureVisual(Player player) {
         this.player = player;
-        Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this, 1);
     }
 
     public void setFreezeTicks(int freezeTicks) {
@@ -30,6 +28,20 @@ public class PlayerTemperatureVisual implements Runnable {
         } else if (this.freezeTicks != 0) {
             this.player.setFreezeTicks(Math.max(this.player.getFreezeTicks(), this.freezeTicks));
         }
-        Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this, 1);
+    }
+
+    @Override
+    public int getTickCount() {
+        return this.tickCount;
+    }
+
+    @Override
+    public void setTickCount(int i) {
+        this.tickCount = i;
+    }
+
+    @Override
+    public int getTicksPerRun() {
+        return 2;
     }
 }

@@ -7,6 +7,7 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobWatchPlayer;
 
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
@@ -22,7 +23,7 @@ import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.*;
 
 public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
     private static final double MOB_TYPE_VARIATION = .5;
-    private static final int MOB_COUNT_PER_TICK = 40;
+    private static final int MOB_COUNT_PER_TICK = 1;
 
     private static final MobSqlStorage instance = new MobSqlStorage();
 
@@ -30,29 +31,28 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
         instance.queue("insert_mobs", () -> {
             insertThreaded(mobs);
             return false;
-        });
+        }, AppleRequestOnConflict.ADD());
     }
 
     private static void insertThreaded(List<TmwStoredMob> mobs) {
-
         Session session = VerifyDatabaseTmw.sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
         for (TmwStoredMob mob : mobs) {
-            session.save(mob);
+            session.saveOrUpdate(mob);
         }
         transaction.commit();
         session.close();
     }
 
-    public static void getMobs(int lowerX, int upperX, int lowerZ, int upperZ, Consumer<List<TmwStoredMob>> callback) {
+    public static void getMobs(int lowerX, int upperX, int lowerZ, int upperZ, int worldMyUid, Consumer<List<TmwStoredMob>> callback) {
         instance.queue("get_mobs", () -> {
-            List<TmwStoredMob> finalAnswer = getMobThreaded(lowerX, upperX, lowerZ, upperZ);
+            List<TmwStoredMob> finalAnswer = getMobThreaded(lowerX, upperX, lowerZ, upperZ, worldMyUid);
             Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), () -> callback.accept(finalAnswer));
             return true;
         }, AppleRequestOnConflict.ADD());
     }
 
-    private static List<TmwStoredMob> getMobThreaded(int lowerX, int upperX, int lowerZ, int upperZ) {
+    private static List<TmwStoredMob> getMobThreaded(int lowerX, int upperX, int lowerZ, int upperZ, int worldMyUid) {
         Session session = VerifyDatabaseTmw.sessionFactory.openSession();
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
 
@@ -60,7 +60,8 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
         Root<TmwStoredMob> mobRoot = query.from(TmwStoredMob.class);
         query.where(criteriaBuilder.and(
                 criteriaBuilder.between(mobRoot.get(X), lowerX, upperX),
-                criteriaBuilder.between(mobRoot.get(Z), lowerZ, upperZ)
+                criteriaBuilder.between(mobRoot.get(Z), lowerZ, upperZ),
+                criteriaBuilder.equal(mobRoot.get("myWorldUid"), worldMyUid)
         ));
         List<TmwStoredMob> result = session.createQuery(query).getResultList();
         session.close();
@@ -68,7 +69,7 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
     }
 
     public static void removeMobs(Collection<Long> mobsToDelete) {
-        instance.queue("get_mobs", () -> {
+        instance.queue("remove_mobs", () -> {
             removeMobsThreaded(mobsToDelete);
             return true;
         }, AppleRequestOnConflict.ADD());
@@ -80,13 +81,16 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
         Session session = VerifyDatabaseTmw.sessionFactory.openSession();
         CriteriaBuilder criteriaBuilder = session.getCriteriaBuilder();
         CriteriaDelete<TmwStoredMob> query = criteriaBuilder.createCriteriaDelete(TmwStoredMob.class);
-        Root<TmwStoredMob> mobRoot = query.getRoot();
+        Root<TmwStoredMob> mobRoot = query.from(TmwStoredMob.class);
+        Transaction transaction = session.beginTransaction();
         session.createQuery(query.where(mobRoot.in(mobsToDelete))).executeUpdate();
+        transaction.commit();
         session.close();
+        MobWatchPlayer.removeMobToBeRemoved(mobsToDelete);
     }
 
     public static void getRegen(Consumer<Map<Long, SpawnPercentages>> afterRun) {
-        instance.queue("get_mobs", () -> {
+        instance.queue("getRegen", () -> {
             afterRun.accept(getRegen());
             return true;
         }, (b) -> {
@@ -101,7 +105,7 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
                         FROM (
                                  SELECT center.%s as cchunk_uid,
                                         %s.%s,
-                                        %s.%s,
+                                        center.%s,
                                         center.%s,
                                         center.%s,
                                         center.%s,
@@ -145,7 +149,6 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
                 Contour.CHUNK_UID,
                 ChunkSql.TABLE_CHUNK,
                 ChunkSql.BIOME_GUESS_UID,
-                ChunkSql.TABLE_CHUNK,
                 WORLD_MY_UID,
                 Contour.CHUNK_X,
                 Contour.CHUNK_Z,
@@ -197,27 +200,28 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
                 }
             });
         }
+        session.close();
         return resultsInMap;
     }
 
     @Override
     public int getRequestsPerTimeUnit() {
-        return 10;
+        return 80;
     }
 
     @Override
     public int getTimeUnitMillis() {
-        return 0;
+        return 1;
     }
 
     @Override
     public int getSafeGuardBuffer() {
-        return 0;
+        return 1;
     }
 
     @Override
     public int getLazinessMillis() {
-        return 100;
+        return 0;
     }
 
 }

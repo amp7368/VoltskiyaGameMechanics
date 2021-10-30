@@ -45,4 +45,11 @@ public class WatchPlayer {
     public PlayerTemperature getPlayerInfo() {
         return playerInfo;
     }
+
+    public void scheduleTicks() {
+        this.playerVisual.scheduleTicks();
+        this.biomeWatch.scheduleTicks();
+        this.mobWatch.scheduleTicks();
+        this.temperatureWatch.scheduleTicks();
+    }
 }

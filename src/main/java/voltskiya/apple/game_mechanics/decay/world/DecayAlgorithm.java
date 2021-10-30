@@ -2,8 +2,6 @@ package voltskiya.apple.game_mechanics.decay.world;
 
 import apple.utilities.util.BooleanUtils;
 import apple.utilities.util.NumberUtils;
-import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDatabase;
-import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplate;
 import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockContext;
 
@@ -22,8 +20,7 @@ public class DecayAlgorithm {
         for (int x = 0; x < totalLength; x++) {
             for (int y = 0; y < totalLength; y++) {
                 for (int z = 0; z < totalLength; z++) {
-                    DecayBlockTemplate template = DecayBlockDatabase.getBlock(blocksToDecay[x + 1][y + 1][z + 1].getCurrentMaterial());
-                    blocksResistance[x][y][z] = template == null ? 0 : template.getSettings().getResistance();
+                    blocksResistance[x][y][z] = blocksToDecay[x + 1][y + 1][z + 1].getResistance();
                 }
             }
         }

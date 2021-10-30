@@ -66,6 +66,5 @@ public class SqlVariableNames {
         // fields
         public static final String DAMAGE = "damage";
         public static final String BLOCK_UID = "block_uid";
-        public static final String IS_DECAY = "is_decay";
     }
 }

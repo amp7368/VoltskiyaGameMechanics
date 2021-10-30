@@ -85,7 +85,7 @@ public final class SpawnPercentages {
                 totalPerc -= mob.getValue();
                 if (totalPerc < 0) {
                     this.mobCount += mob.getKey().getMeanGroup();
-                    this.mobsToSpawn.add(mob.getKey());
+                   if (!this.mobsToSpawn.contains(mob.getKey())) this.mobsToSpawn.add(mob.getKey());
                     wasSet = true;
                     break;
                 }
@@ -93,6 +93,7 @@ public final class SpawnPercentages {
             // just as a failsafe to make sure progress is made
             if (!wasSet) this.mobCount++;
         }
+
     }
 
     public boolean mobCountHigh() {
@@ -108,15 +109,14 @@ public final class SpawnPercentages {
         if (worldUUID != null) {
             @Nullable World world = Bukkit.getWorld(worldUUID);
             if (world != null) {
-                if (!world.isChunkLoaded(chunkX, chunkZ)) {
-                    world.getChunkAtAsync(chunkX, chunkZ).thenAccept(this::spawnIRL);
-                }
+                @NotNull Chunk chunk = world.getChunkAt(chunkX, chunkZ);
+                this.spawnIRL(chunk);
             }
         }
     }
 
     private void spawnIRL(Chunk chunk) {
-        @NotNull Block block = chunk.getWorld().getBlockAt(middleX, middleY, middleZ);
+        @NotNull Block block = chunk.getBlock(middleX, middleY, middleZ);
         int y = middleY;
         if (MaterialUtils.isPassable(block.getType())) {
             do {
@@ -131,7 +131,7 @@ public final class SpawnPercentages {
         List<BiomeTypeBuilderRegisterBlocks.TopBlock> topBlocks = scanNearby(chunk,
                 new HashSet<>(),
                 middleX,
-                y - 1,
+                y + 1,
                 middleZ
         );
         Collections.shuffle(topBlocks);
