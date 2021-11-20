@@ -6,6 +6,8 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import voltskiya.apple.game_mechanics.tmw.PluginTMW;
+import voltskiya.apple.game_mechanics.tmw.TmwWatchConfig;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
@@ -85,7 +87,7 @@ public final class SpawnPercentages {
                 totalPerc -= mob.getValue();
                 if (totalPerc < 0) {
                     this.mobCount += mob.getKey().getMeanGroup();
-                   if (!this.mobsToSpawn.contains(mob.getKey())) this.mobsToSpawn.add(mob.getKey());
+                    if (!this.mobsToSpawn.contains(mob.getKey())) this.mobsToSpawn.add(mob.getKey());
                     wasSet = true;
                     break;
                 }
@@ -144,7 +146,8 @@ public final class SpawnPercentages {
                     for (int mobCount = 0; mobCount < group; mobCount++) {
                         final TmwStoredMob storedMob = new TmwStoredMob(topBlock.x() + chunkX * BLOCKS_IN_A_CHUNK, topBlock.y() + 1, topBlock.z() + chunkZ * BLOCKS_IN_A_CHUNK, worldMyUid, mobType);
                         mobsToSave.add(storedMob);
-                        System.out.printf("spawn %s %d, %d, %d\n", storedMob.uniqueName, storedMob.x, storedMob.y, storedMob.z);
+                        if (TmwWatchConfig.get().consoleOutput.showCreateMob)
+                            PluginTMW.get().logger().info("create %s %d, %d, %d", storedMob.uniqueName, storedMob.x, storedMob.y, storedMob.z);
                     }
                     topBlocks.remove(i);
                     break;

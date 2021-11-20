@@ -54,6 +54,7 @@ public class MobListener implements Listener {
                 }
             }
         }
+
         MobSqlStorage.insertMobs(mobsToSave);
     }
 }

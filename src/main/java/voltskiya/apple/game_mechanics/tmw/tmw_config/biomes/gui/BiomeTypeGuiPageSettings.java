@@ -45,7 +45,6 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
         setSlot(new LowestYSlot(), 35);
         setSlot(new SpawnRateSlot(), 45);
         setSlot(new RegisterBlocksSlot(), 53);
-        setSlot(new RegisterBlocksSlot(), 53);
         setSlot(new RegisterTimeTempSlot(BiomeType.TemperatureTime.MORNING), 9);
         setSlot(new RegisterTimeTempSlot(BiomeType.TemperatureTime.NOON), 10);
         setSlot(new RegisterTimeTempSlot(BiomeType.TemperatureTime.EVENING), 11);

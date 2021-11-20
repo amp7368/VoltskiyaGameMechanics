@@ -43,6 +43,7 @@ public class WatchPlayerListener implements Listener {
     }
 
     private synchronized void tick() {
+        this.watches.values().removeIf(w -> !w.getPlayer().isOnline());
         for (WatchPlayer watchPlayer : this.watches.values()) {
             watchPlayer.scheduleTicks();
         }

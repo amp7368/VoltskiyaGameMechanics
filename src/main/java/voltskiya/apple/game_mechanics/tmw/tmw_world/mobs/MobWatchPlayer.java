@@ -5,6 +5,8 @@ import net.minecraft.world.entity.EntityTypes;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
+import voltskiya.apple.game_mechanics.tmw.PluginTMW;
+import voltskiya.apple.game_mechanics.tmw.TmwWatchConfig;
 import voltskiya.apple.game_mechanics.tmw.sql.MobSqlStorage;
 import voltskiya.apple.game_mechanics.tmw.sql.TmwStoredMob;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
@@ -14,16 +16,15 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchTickable;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import static voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk.BLOCKS_IN_A_CHUNK;
 
 public class MobWatchPlayer implements WatchTickable {
     private static final int CHUNK_SIGHT = 6;
-    //todo change interval
-    private static final int CHECK_INTERVAL = 60;
 
-    private static final HashSet<Long> mobsToBeRemoved = new HashSet<>();
     private final Player player;
     private int tickCount;
 
@@ -34,27 +35,29 @@ public class MobWatchPlayer implements WatchTickable {
     public static synchronized void spawnMobs(List<TmwStoredMob> mobsToSpawn) {
         List<Long> mobsToRemove = new ArrayList<>();
         for (TmwStoredMob storedMob : mobsToSpawn) {
-            if (mobsToBeRemoved.contains(storedMob.uid)) continue;
+            synchronized (MobSqlStorage.mobsToBeRemoved) {
+                if (MobSqlStorage.mobsToBeRemoved.contains(storedMob.uid)) continue;
+            }
             MobType mobType = MobTypeDatabase.getMob(storedMob.uniqueName);
             Optional<EntityTypes<?>> entityTypes = EntityTypes.a(mobType.getEnitityNbt());
             if (entityTypes.isPresent()) {
                 Entity entity = entityTypes.get().a(storedMob.getNmsWorld());
                 mobsToRemove.add(storedMob.uid);
-                mobsToBeRemoved.add(storedMob.uid);
+                synchronized (MobSqlStorage.mobsToBeRemoved) {
+                    MobSqlStorage.mobsToBeRemoved.add(storedMob.uid);
+                }
                 if (entity != null) {
+                    entity.load(mobType.getEnitityNbt());
                     storedMob.getNmsWorld().addAllEntitiesSafely(entity);
                     entity.load(mobType.getEnitityNbt());
                     entity.addScoreboardTag(TmwStoredMob.getTag(storedMob.uniqueName));
                     entity.teleportAndSync(storedMob.x, storedMob.y, storedMob.z);
-                    System.out.printf("summon mob %s at %s %d %d %d\n", storedMob.uniqueName, storedMob.getWorld().getName(), storedMob.x, storedMob.y, storedMob.z);
+                    if (TmwWatchConfig.get().consoleOutput.showSummonMob)
+                        PluginTMW.get().logger().info("summon mob %s at %s %d %d %d", storedMob.uniqueName, storedMob.getWorld().getName(), storedMob.x, storedMob.y, storedMob.z);
                 }
             }
         }
         MobSqlStorage.removeMobs(mobsToRemove);
-    }
-
-    public static synchronized void removeMobToBeRemoved(Collection<Long> id) {
-        mobsToBeRemoved.removeAll(id);
     }
 
     @Override
@@ -94,6 +97,6 @@ public class MobWatchPlayer implements WatchTickable {
 
     @Override
     public int getTicksPerRun() {
-        return CHECK_INTERVAL;
+        return TmwWatchConfig.getCheckInterval().mobWatchPlayer;
     }
 }

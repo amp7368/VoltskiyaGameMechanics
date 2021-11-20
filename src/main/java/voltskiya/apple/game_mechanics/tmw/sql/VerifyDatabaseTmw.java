@@ -23,7 +23,6 @@ import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.Contour;
 import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.Decay;
 
 public class VerifyDatabaseTmw {
-
     public static SessionFactory sessionFactory;
 
     private static long currentMobMyUid;
@@ -61,18 +60,20 @@ public class VerifyDatabaseTmw {
         try {
             currentMobMyUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", SqlVariableNames.MOB_MY_UID, SqlVariableNames.TABLE_STORED_MOB)).getSingleResult()).longValue();
         } catch (Exception e) {
+            e.printStackTrace();
             currentMobMyUid = 1;
         }
-        System.out.println(currentMobMyUid);
         try {
             currentChunkUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", Contour.CHUNK_UID, Contour.TABLE_CONTOUR)).getSingleResult()).longValue();
         } catch (Exception e) {
-            currentMobMyUid = 1;
+            e.printStackTrace();
+            currentChunkUid = 1;
         }
         try {
             currentDecayBlockUid = ((Number) session.createNativeQuery(String.format("SELECT COALESCE(max(%s)+1,0) FROM %s", Decay.BLOCK_UID, Decay.TABLE_DECAY_BLOCK)).getSingleResult()).longValue();
         } catch (Exception e) {
-            currentMobMyUid = 1;
+            e.printStackTrace();
+            currentDecayBlockUid = 1;
         }
         session.getTransaction().commit();
         session.close();

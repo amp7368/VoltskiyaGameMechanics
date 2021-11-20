@@ -5,6 +5,7 @@ import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
+import voltskiya.apple.game_mechanics.tmw.TmwWatchConfig;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.PlayerTemperatureVisual;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayer;
@@ -13,7 +14,6 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchTickable;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.TemperatureChecks.ClothingTemperature;
 
 public class TemperatureWatchPlayer implements WatchTickable {
-    private static final int WATCH_PLAYER_INTERVAL = 20;
     private static final double TIME_TO_HEAT_CHANGE = 10;
     private final Player player;
     private final WatchPlayer watchPlayer;
@@ -60,9 +60,7 @@ public class TemperatureWatchPlayer implements WatchTickable {
             double airTemp3 = airTemp2 - ((boundaries / (1 + Math.pow(Math.E, (-airTemp2 / boundaries)))) * fluidFactor / 10);
 
             double feltTemperature = clothing.resistTemp(airTemp3);
-            double heatTransferConstant = 0.01;
-            double surfaceArea = 7;
-            this.playerInfo.temperature += feltTemperature * surfaceArea * heatTransferConstant - surfaceArea * heatTransferConstant * this.playerInfo.temperature;
+            this.playerInfo.temperature += (feltTemperature - this.playerInfo.temperature) * TmwWatchConfig.getCheckInterval().heatTransferConstant;
             this.playerInfo.doTemperatureEffects(this.playerVisual);
             TextComponent msg = new TextComponent();
             msg.setText(String.format("final temp - %.2f, biome - %s", this.playerInfo.temperature, currentBiome == null ? "null" : currentBiome.getName()));
@@ -86,6 +84,6 @@ public class TemperatureWatchPlayer implements WatchTickable {
 
     @Override
     public int getTicksPerRun() {
-        return WATCH_PLAYER_INTERVAL;
+        return TmwWatchConfig.getCheckInterval().temperatureWatchPlayer;
     }
 }

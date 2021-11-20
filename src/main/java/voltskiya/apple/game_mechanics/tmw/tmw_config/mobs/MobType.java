@@ -5,6 +5,7 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.nbt.MojangsonParser;
 import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
@@ -259,11 +260,18 @@ public class MobType {
 
             public ItemStack toItem() {
                 ItemStack item = new ItemStack(material);
+                ItemStack itemStack;
+                try {
+                    net.minecraft.world.item.ItemStack nmsItem = net.minecraft.world.item.ItemStack.a(MojangsonParser.parse(nbt));
+                    itemStack = CraftItemStack.asBukkitCopy(nmsItem);
+                } catch (CommandSyntaxException e) {
+                    itemStack = new ItemStack(material);
+                }
                 final ItemMeta itemMeta = item.getItemMeta();
                 itemMeta.setDisplayName(name);
                 itemMeta.setLore(lore);
                 item.setItemMeta(itemMeta);
-                return item;
+                return itemStack;
             }
 
             public String getName() {

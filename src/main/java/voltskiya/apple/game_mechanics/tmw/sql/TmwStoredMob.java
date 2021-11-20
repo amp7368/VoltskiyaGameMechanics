@@ -1,6 +1,5 @@
 package voltskiya.apple.game_mechanics.tmw.sql;
 
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.server.level.WorldServer;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
@@ -12,7 +11,6 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 
 import javax.persistence.*;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.Set;
 import java.util.UUID;
 
@@ -53,17 +51,6 @@ public class TmwStoredMob {
         this.uniqueName = uniqueName;
 
         this.despawnTime = despawnTime;
-    }
-
-    public TmwStoredMob(long uid, int x, int y, int z, int myWorldUid, String uniqueName, Timestamp despawnTime) throws CommandSyntaxException {
-        this.uid = uid;
-        this.x = x;
-        this.y = y;
-        this.z = z;
-        this.myWorldUid = myWorldUid;
-        this.worldUUID = SimpleWorldDatabase.getWorld(myWorldUid);
-        this.uniqueName = uniqueName;
-        this.despawnTime = despawnTime.getTime();
     }
 
     public TmwStoredMob(int x, int y, int z, int myWorldUid, MobType mobType) {

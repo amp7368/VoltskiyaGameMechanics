@@ -34,6 +34,11 @@ public class PluginDecay extends PluginManagedModule {
     }
 
     @Override
+    public boolean shouldEnable() {
+        return false;
+    }
+
+    @Override
     public String getName() {
         return "Decay";
     }

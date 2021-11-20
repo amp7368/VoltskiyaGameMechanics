@@ -5,6 +5,7 @@ import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk;
+import voltskiya.apple.game_mechanics.tmw.TmwWatchConfig;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayer;
@@ -15,8 +16,7 @@ import voltskiya.apple.utilities.util.data_structures.Pair;
 import java.util.*;
 
 public class BiomeWatchPlayer implements WatchTickable {
-    private static final int WATCH_PLAYER_INTERVAL = 20;
-    private static final int PREVIOUS_BIOMES_COUNT = 20 * 60 / WATCH_PLAYER_INTERVAL;
+    private static final int PREVIOUS_BIOMES_COUNT = 20 * 60 / TmwWatchConfig.getCheckInterval().biomeWatchPlayer;
     private final Player player;
     private final List<ComputedBiomeChunk> previousBiomes = new ArrayList<>();
     @Nullable
@@ -89,6 +89,6 @@ public class BiomeWatchPlayer implements WatchTickable {
 
     @Override
     public int getTicksPerRun() {
-        return WATCH_PLAYER_INTERVAL;
+        return TmwWatchConfig.getCheckInterval().biomeWatchPlayer;
     }
 }

@@ -1,10 +1,10 @@
 package voltskiya.apple.game_mechanics.electricity.piping.simple;
 
+import org.bukkit.Location;
 import org.bukkit.util.Vector;
 import org.jetbrains.annotations.NotNull;
 import voltskiya.apple.game_mechanics.electricity.FluidTickable;
 import voltskiya.apple.game_mechanics.electricity.FluidTickableLogistics;
-import voltskiya.apple.utilities.util.minecraft.LocationCoords;
 import voltskiya.apple.utilities.util.storage.GetNameable;
 
 import java.util.Collections;
@@ -13,12 +13,12 @@ import java.util.UUID;
 
 public class ElectricitySimpleLine implements GetNameable, FluidTickable {
     private String name;
-    private LocationCoords inletLoc;
-    private LocationCoords outletLoc;
+    private Location inletLoc;
+    private Location outletLoc;
     private FluidTickable outlet;
     private List<FluidTickableLogistics> tick = null;
 
-    public ElectricitySimpleLine(LocationCoords inletLoc, LocationCoords outletLoc) {
+    public ElectricitySimpleLine(Location inletLoc, Location outletLoc) {
         this.inletLoc = inletLoc;
         this.outletLoc = outletLoc;
         this.name = UUID.randomUUID().toString();
@@ -42,8 +42,8 @@ public class ElectricitySimpleLine implements GetNameable, FluidTickable {
     }
 
     @Override
-    public LocationCoords[] getInlets() {
-        return new LocationCoords[]{inletLoc};
+    public Location[] getInlets() {
+        return new Location[]{inletLoc};
     }
 
     @Override

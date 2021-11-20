@@ -1,6 +1,9 @@
 package voltskiya.apple.game_mechanics.tmw;
 
+import apple.utilities.util.FileFormatting;
 import plugin.util.plugin.plugin.util.plugin.PluginManagedModule;
+import voltskiya.apple.configs.plugin.manage.ConfigBuilderHolder;
+import voltskiya.apple.configs.plugin.manage.PluginManagedModuleConfig;
 import voltskiya.apple.game_mechanics.tmw.commands.CommandMobsTmw;
 import voltskiya.apple.game_mechanics.tmw.sql.TmwDatabaseConfig;
 import voltskiya.apple.game_mechanics.tmw.sql.VerifyDatabaseTmw;
@@ -10,7 +13,10 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobRegen;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.PlayerTemperatureCommand;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.WorldDatabaseManager;
 
-public class PluginTMW extends PluginManagedModule {
+import java.util.Collection;
+import java.util.List;
+
+public class PluginTMW extends PluginManagedModule implements PluginManagedModuleConfig {
     public static final String MOBS_FOLDER = "mobs";
     private static PluginTMW instance;
 
@@ -18,14 +24,21 @@ public class PluginTMW extends PluginManagedModule {
         return instance;
     }
 
+    public PluginTMW() {
+        instance = this;
+    }
+
+    @Override
+    public void init() {
+        TmwMobConfigDatabase.initialize();
+    }
+
     @Override
     public void enable() {
-        instance = this;
-
         TmwDatabaseConfig.load();
         WorldDatabaseManager.get().loadAllNow();
         VerifyDatabaseTmw.connect();
-        MobConfigDatabase.loadNow();
+        TmwMobConfigDatabase.loadNow();
 
         new MobListener();
         new WatchPlayerListener();
@@ -39,5 +52,15 @@ public class PluginTMW extends PluginManagedModule {
     @Override
     public String getName() {
         return "tmw";
+    }
+
+    @Override
+    public Collection<ConfigBuilderHolder<?>> getConfigsToRegister() {
+        return List.of(configFolder(
+                yml(TmwWatchConfig.class).setName("TmwWatchConfig").setExtension(FileFormatting::extensionYml),
+                basic(TmwMobConfigDatabase.class)
+                        .setLoading(TmwMobConfigDatabase::loadNow)
+                        .setName(TmwMobConfigDatabase.getFileNameExtStatic())
+        ).nameAsExtension());
     }
 }

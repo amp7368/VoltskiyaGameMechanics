@@ -24,6 +24,7 @@ public class WatchBlockBreak implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.MONITOR)
     public void onBlockBreak(BlockDestroyEvent event) {
+
         @NotNull Block blockBroken = event.getBlock();
         DecaySqlStorage.insertPlaceUpdate(event.getBlock().getLocation(), new DecayBlock(
                 blockBroken.getType(),

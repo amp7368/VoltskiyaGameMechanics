@@ -7,16 +7,13 @@ import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.NativeQuery;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
-import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobWatchPlayer;
 
+import javax.persistence.PersistenceException;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaDelete;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.*;
@@ -26,22 +23,45 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
     private static final int MOB_COUNT_PER_TICK = 1;
 
     private static final MobSqlStorage instance = new MobSqlStorage();
+    public static final HashSet<Long> mobsToBeRemoved = new HashSet<>();
+    private static final Object mobsToBeInsertedSync = new Object();
+    private static List<TmwStoredMob> mobsToBeInserted = new ArrayList<>();
 
     public static void insertMobs(List<TmwStoredMob> mobs) {
+        if (mobs.isEmpty()) return;
+        synchronized (mobsToBeInsertedSync) {
+            mobsToBeInserted.addAll(mobs);
+        }
         instance.queue("insert_mobs", () -> {
-            insertThreaded(mobs);
+            insertThreaded();
             return false;
         }, AppleRequestOnConflict.ADD());
     }
 
-    private static void insertThreaded(List<TmwStoredMob> mobs) {
+    private static void insertThreaded() {
         Session session = VerifyDatabaseTmw.sessionFactory.openSession();
         Transaction transaction = session.beginTransaction();
-        for (TmwStoredMob mob : mobs) {
-            session.saveOrUpdate(mob);
+        List<TmwStoredMob> tempMobs;
+        synchronized (mobsToBeInsertedSync) {
+            tempMobs = mobsToBeInserted;
+            mobsToBeInserted = new ArrayList<>();
         }
-        transaction.commit();
-        session.close();
+        for (TmwStoredMob mob : tempMobs) {
+            synchronized (mobsToBeRemoved) {
+                try {
+                    if (!mobsToBeRemoved.remove(mob.uid))
+                        session.saveOrUpdate(mob);
+                } catch (PersistenceException ignored) {
+                }
+            }
+        }
+        try {
+            transaction.commit();
+            session.close();
+        } catch (
+                PersistenceException ignored) {
+        }
+
     }
 
     public static void getMobs(int lowerX, int upperX, int lowerZ, int upperZ, int worldMyUid, Consumer<List<TmwStoredMob>> callback) {
@@ -86,7 +106,10 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
         session.createQuery(query.where(mobRoot.in(mobsToDelete))).executeUpdate();
         transaction.commit();
         session.close();
-        MobWatchPlayer.removeMobToBeRemoved(mobsToDelete);
+
+        synchronized (mobsToBeRemoved) {
+            mobsToBeRemoved.removeAll(mobsToDelete);
+        }
     }
 
     public static void getRegen(Consumer<Map<Long, SpawnPercentages>> afterRun) {
@@ -211,17 +234,17 @@ public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
 
     @Override
     public int getTimeUnitMillis() {
-        return 1;
+        return 0;
     }
 
     @Override
     public int getSafeGuardBuffer() {
-        return 1;
+        return 0;
     }
 
     @Override
     public int getLazinessMillis() {
-        return 0;
+        return 200;
     }
 
 }

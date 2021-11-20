@@ -2,43 +2,64 @@ package voltskiya.apple.game_mechanics.tmw;
 
 import apple.utilities.database.SaveFileable;
 import apple.utilities.database.singleton.AppleJsonDatabaseSingleton;
+import apple.utilities.util.FileFormatting;
 import org.jetbrains.annotations.NotNull;
+import voltskiya.apple.configs.plugin.manage.functions.ConfigSaveable;
 import voltskiya.apple.game_mechanics.util.FileIOService;
+import ycm.yml.manager.fields.YcmField;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-public class MobConfigDatabase implements SaveFileable {
-    private static final AppleJsonDatabaseSingleton<MobConfigDatabase> databaseManager = new AppleJsonDatabaseSingleton<>(
-            PluginTMW.get().getFile(PluginTMW.MOBS_FOLDER),
-            FileIOService.get()
-    );
-    private static MobConfigDatabase instance;
-    private final HashMap<UUID, MobConfigPerWorld> worldSpawning = new HashMap<>();
-    private int regenInterval = 60;
-    private boolean isSpawningMobs = true;
+public class TmwMobConfigDatabase implements SaveFileable, ConfigSaveable {
+    private static AppleJsonDatabaseSingleton<TmwMobConfigDatabase> databaseManager;
 
-    public static void loadNow() {
-        instance = databaseManager.loadNow(MobConfigDatabase.class, getFileNameStatic());
-        if (instance == null) {
-            instance = new MobConfigDatabase();
-            instance.save();
-        }
+
+    private static TmwMobConfigDatabase instance;
+    @YcmField
+    public final HashMap<UUID, MobConfigPerWorld> worldSpawning = new HashMap<>();
+    @YcmField
+    public long regenInterval = 200;
+    @YcmField
+    public boolean isSpawningMobs = false;
+
+    public TmwMobConfigDatabase() {
+        instance = this;
     }
 
-    public static MobConfigDatabase get() {
+    public static void initialize() {
+        databaseManager = new AppleJsonDatabaseSingleton<>(
+                PluginTMW.get().getFile(PluginTMW.MOBS_FOLDER),
+                FileIOService.get()
+        );
+    }
+
+    public static TmwMobConfigDatabase loadNow() {
+        return databaseManager.loadNow(TmwMobConfigDatabase.class, getFileNameExtStatic());
+    }
+
+    public static TmwMobConfigDatabase get() {
         return instance;
     }
 
     @NotNull
-    private static String getFileNameStatic() {
-        return "mobsConfig.json";
+    public static String getFileNameExtStatic() {
+        return FileFormatting.extensionJson(getFileNameStatic());
+    }
+
+    public static String getFileNameStatic() {
+        return "TmwMobConfig";
     }
 
     @Override
     public String getSaveFileName() {
-        return getFileNameStatic();
+        return getFileNameExtStatic();
+    }
+
+    @Override
+    public void saveInstance() {
+        save();
     }
 
     private void save() {

@@ -2,7 +2,7 @@ package voltskiya.apple.game_mechanics.tmw.tmw_world.mobs;
 
 import org.bukkit.Bukkit;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
-import voltskiya.apple.game_mechanics.tmw.MobConfigDatabase;
+import voltskiya.apple.game_mechanics.tmw.TmwMobConfigDatabase;
 import voltskiya.apple.game_mechanics.tmw.sql.SpawnPercentages;
 
 import java.util.Map;
@@ -17,8 +17,8 @@ public class MobRegen implements Runnable {
 
     @Override
     public void run() {
-        VoltskiyaPlugin.get().scheduleSyncDelayedTask(this, MobConfigDatabase.get().getRegenInterval());
-        if (MobConfigDatabase.get().isSpawningMobs()) {
+        VoltskiyaPlugin.get().scheduleSyncDelayedTask(this, TmwMobConfigDatabase.get().getRegenInterval());
+        if (TmwMobConfigDatabase.get().isSpawningMobs()) {
             getRegen(this::spawn);
         }
     }

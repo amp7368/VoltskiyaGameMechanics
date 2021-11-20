@@ -6,10 +6,10 @@ import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 public interface WatchTickable extends Runnable {
     default void scheduleTicks() {
         int tickNow = getTickCount() % getTicksPerRun();
-        setTickCount(tickNow);
         if (tickNow == 0) {
             Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this);
         }
+        setTickCount(tickNow + 1);
     }
 
     int getTickCount();
