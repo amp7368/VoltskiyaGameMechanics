@@ -29,7 +29,7 @@ configurations.all {
 }
 dependencies {
     compileOnly 'apple.voltskiya.utilities:VoltskiyaUtilities:1.1.BUILD-SNAPSHOT'
-    compileOnly 'apple.voltskiya.configs:VoltskiyaConfigs:1.0.BUILD-SNAPSHOT'
+    compileOnly 'apple.configs:AppleConfigs:v1.1'
     compileOnly 'apple.nms.decoding:DecodingNms:1.1.BUILD-SNAPSHOT'
     compileOnly 'apple.utilities:AppleUtilities:v1.1'
     compileOnly 'com.github.amp7368.YmlConfigManager:ycm-jar:Ycm-v1.1'

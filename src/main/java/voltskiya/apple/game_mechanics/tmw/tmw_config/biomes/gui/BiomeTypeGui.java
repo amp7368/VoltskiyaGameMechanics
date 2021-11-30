@@ -8,7 +8,7 @@ public class BiomeTypeGui extends InventoryGui {
     public BiomeTypeGui(TMWGui tmwGui, BiomeType.BiomeTypeBuilder biome) {
         addPage(
                 new BiomeTypeGuiPageSettings(this, biome, tmwGui),
-                new BiomeTypeGuiPageBlocks(this, biome, tmwGui),
+                new BiomeTypeGuiPageBiomes(this, biome, tmwGui),
                 new BiomeTypeGuiPageMobs(this, biome, tmwGui)
         );
     }

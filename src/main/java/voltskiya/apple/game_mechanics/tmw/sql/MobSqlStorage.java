@@ -19,7 +19,6 @@ import java.util.function.Consumer;
 import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.*;
 
 public class MobSqlStorage extends AppleRequestLazyService<Boolean> {
-    private static final double MOB_TYPE_VARIATION = .5;
     private static final int MOB_COUNT_PER_TICK = 1;
 
     private static final MobSqlStorage instance = new MobSqlStorage();

@@ -11,7 +11,6 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.PlayerTemperatureVisual;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayer;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchTickable;
-import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.TemperatureChecks.ClothingTemperature;
 
 public class TemperatureWatchPlayer implements WatchTickable {
     private static final double TIME_TO_HEAT_CHANGE = 10;
@@ -47,7 +46,7 @@ public class TemperatureWatchPlayer implements WatchTickable {
             double wind = TemperatureChecks.wind(currentBiome, location);
             double wetness = TemperatureChecks.wetness(player);
 
-            ClothingTemperature clothing = TemperatureChecks.clothing(player);
+            TemperatureChecks.ClothingTemperature clothing = TemperatureChecks.clothing(player);
             double finalBlockHeatSource = (1 + insideness) * blockHeatSource;
             double finalWind = clothing.resistWind(wind * (1 - insideness));
             double finalWetness = clothing.resistWet(wetness);

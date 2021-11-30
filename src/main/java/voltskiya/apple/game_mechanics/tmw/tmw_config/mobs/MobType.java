@@ -1,5 +1,6 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.mobs;
 
+import apple.utilities.json.gson.serialize.JsonSerializing;
 import com.google.gson.*;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.nbt.MojangsonParser;
@@ -125,14 +126,18 @@ public class MobType {
         }
     }
 
-    public static class MobTypeSerializer implements JsonSerializer<MobType> {
+    public static class MobTypeSerializer implements JsonSerializing<MobType> {
+        private static final MobTypeSerializer instance = new MobTypeSerializer();
+
+        public static MobTypeSerializer get() {
+            return instance;
+        }
+
         @Override
         public JsonElement serialize(MobType mobType, Type type, JsonSerializationContext jsonSerializationContext) {
             return new JsonPrimitive(mobType.icon.getName());
         }
-    }
 
-    public static class MobTypeDeSerializer implements JsonDeserializer<MobType> {
         @Override
         public MobType deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
             return MobTypeDatabase.getMob(jsonElement.getAsString());

@@ -1,86 +1,106 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.biomes;
 
+import apple.utilities.database.SaveFileable;
+import apple.utilities.database.singleton.AppleJsonDatabaseSingleton;
+import apple.utilities.util.FileFormatting;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import net.minecraft.resources.MinecraftKey;
 import org.jetbrains.annotations.Nullable;
+import plugin.util.plugin.plugin.util.plugin.FileIOServiceNow;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
+import voltskiya.apple.utilities.util.storage.GsonTypeAdapterUtils;
 
-import java.io.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
+import java.io.File;
+import java.util.*;
 
-public class BiomeTypeDatabase {
-    private static final Gson gson;
-    private final HashMap<String, BiomeType> biomes = new HashMap<>();
+public class BiomeTypeDatabase implements SaveFileable {
+    private static AppleJsonDatabaseSingleton<BiomeTypeDatabase> databaseManager;
+    private static int currentBiomeUid = 1;
+    private final HashMap<String, BiomeType> biomesByName = new HashMap<>();
 
-    private static final String BIOMES_FOLDER = "biomes";
-    private static final File biomesFile;
     private static BiomeTypeDatabase instance;
-    private int currentBiomeUid = 1;
+    private final HashMap<MinecraftKey, String> biomeKeyToName = new HashMap<>();
 
-    static {
+    public BiomeTypeDatabase() {
+        instance = this;
+    }
+
+    public static void load() {
         final GsonBuilder gsonBuilder = new GsonBuilder();
-        gsonBuilder.registerTypeAdapter(MobType.class, new MobType.MobTypeSerializer());
-        gsonBuilder.registerTypeAdapter(MobType.class, new MobType.MobTypeDeSerializer());
-        gson = gsonBuilder.create();
+        gsonBuilder.registerTypeHierarchyAdapter(MobType.class, MobType.MobTypeSerializer.get());
+        GsonTypeAdapterUtils.registerMinecraftKeyTypeAdapter(gsonBuilder);
+        Gson gson = gsonBuilder.create();
+        File folder = PluginTMW.get().getFile("biomes");
+        databaseManager = new AppleJsonDatabaseSingleton<>(folder, FileIOServiceNow.get(), gson);
+        databaseManager.loadNow(BiomeTypeDatabase.class, getFileNameStatic());
+        if (instance == null) instance = new BiomeTypeDatabase();
+        for (BiomeType biome : instance.biomesByName.values())
+            currentBiomeUid = Math.max(currentBiomeUid, biome.getUid());
+        for (BiomeType biome : instance.biomesByName.values())
+            biome.validateUid();
+    }
 
-        // get the biomes from our db
-        File biomesFolder = new File(PluginTMW.get().getDataFolder(), BIOMES_FOLDER);
-        biomesFolder.mkdirs();
-        biomesFile = new File(biomesFolder, "biomesDB.json");
-        try {
-            if (biomesFile.exists()) {
-                try (BufferedReader reader = new BufferedReader(new FileReader(biomesFile))) {
-                    instance = gson.fromJson(reader, BiomeTypeDatabase.class);
-                }
-            } else {
-                biomesFile.createNewFile();
-                instance = new BiomeTypeDatabase();
-                save();
-            }
-            for (BiomeType biome : instance.biomes.values()) {
-                instance.currentBiomeUid = Math.max(instance.currentBiomeUid, biome.getUid());
-            }
-            for (BiomeType biome : instance.biomes.values()) {
-                biome.validateUid();
-            }
-        } catch (IOException e) {
-            instance = null;
-            e.printStackTrace();
-        }
+    private static String getFileNameStatic() {
+        return FileFormatting.extensionJson("biomesDB");
+    }
+
+    private static void save() {
+        databaseManager.save(instance);
+    }
+
+    public synchronized static void addBiome(BiomeType biome) {
+        get().biomesByName.put(biome.getName(), biome);
+        save();
+    }
+
+    public static List<BiomeType> getAll() {
+        return new ArrayList<>(get().biomesByName.values());
     }
 
     public static BiomeTypeDatabase get() {
         return instance;
     }
 
-    public synchronized static void addBiome(BiomeType biome) {
-        get().biomes.put(biome.getName(), biome);
-        save();
-    }
-
-    private static void save() {
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(biomesFile))) {
-            gson.toJson(get(), writer);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static List<BiomeType> getAll() {
-        return new ArrayList<>(get().biomes.values());
-    }
-
     public static void removeBiome(BiomeType.BiomeTypeBuilder biome) {
         final String key = biome.getName();
-        if (key != null)
-            get().biomes.remove(key);
+        if (key == null) return;
+        get().biomesByName.remove(key);
+        save();
+
     }
 
     public static int getCurrentBiomeUid() {
-        return get().currentBiomeUid++;
+        return ++currentBiomeUid;
+    }
+
+    @Nullable
+    public static BiomeType getBiome(MinecraftKey key) {
+        String biome = instance.biomeKeyToName.get(key);
+        return biome == null ? null : instance.biomesByName.get(biome);
+    }
+
+    public void addBiomeMapping(MinecraftKey minecraft, String name) {
+        this.biomeKeyToName.put(minecraft, name);
+        save();
+    }
+
+    public List<MinecraftKey> getMinecraftBiomes(BiomeType.BiomeTypeBuilder biome) {
+        final String key = biome.getName();
+        if (key == null) return Collections.emptyList();
+        List<MinecraftKey> minecraft = new ArrayList<>();
+        for (Map.Entry<MinecraftKey, String> biomeKey : biomeKeyToName.entrySet()) {
+            if (key.equals(biomeKey.getValue())) {
+                minecraft.add(biomeKey.getKey());
+            }
+        }
+        return minecraft;
+    }
+
+    @Override
+    public String getSaveFileName() {
+        return getFileNameStatic();
     }
 
     @Nullable
@@ -91,5 +111,10 @@ public class BiomeTypeDatabase {
             }
         }
         return null;
+    }
+
+    public void removeMapping(MinecraftKey minecraftBiome) {
+        this.biomeKeyToName.remove(minecraftBiome);
+        save();
     }
 }

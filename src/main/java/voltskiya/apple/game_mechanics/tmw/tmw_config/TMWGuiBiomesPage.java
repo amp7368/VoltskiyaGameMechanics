@@ -10,7 +10,7 @@ import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
 import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 public class TMWGuiBiomesPage extends InventoryGuiPageScrollable {
-    private TMWGui tmwGui;
+    private final TMWGui tmwGui;
 
     public TMWGuiBiomesPage(TMWGui tmwGui) {
         super(tmwGui);

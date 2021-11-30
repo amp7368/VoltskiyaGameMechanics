@@ -12,15 +12,14 @@ import org.hibernate.type.Type;
 import org.hibernate.type.descriptor.WrapperOptions;
 import org.hibernate.type.descriptor.java.JavaTypeDescriptor;
 import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
+import voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.Contour;
+import voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.Decay;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeTypeDatabase;
 
 import javax.persistence.AttributeConverter;
 import javax.persistence.Converter;
 import java.util.List;
-
-import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.Contour;
-import static voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.Decay;
 
 public class VerifyDatabaseTmw {
     public static SessionFactory sessionFactory;
@@ -35,6 +34,7 @@ public class VerifyDatabaseTmw {
                 .setProperty("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver")
                 .setProperty("hibernate.dialect", "org.hibernate.dialect.MySQL8Dialect")
                 .setProperty("hibernate.connection.pool_size", "100")
+                .setProperty("hibernate.connection.autocommit", "false")
                 .setProperty("hibernate.current_session_context_class", "thread")
                 .setProperty("hibernate.show_sql", "false")
                 .setProperty("hibernate.format_sql", "false")

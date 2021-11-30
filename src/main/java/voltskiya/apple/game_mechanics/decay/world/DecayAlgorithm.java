@@ -5,7 +5,6 @@ import apple.utilities.util.NumberUtils;
 import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockContext;
 
-import java.util.Arrays;
 import java.util.function.BiConsumer;
 
 public class DecayAlgorithm {
@@ -116,13 +115,4 @@ public class DecayAlgorithm {
         return damage;
     }
 
-    private static void printArray(float[][][] a) {
-        for (float[][] ar : a) {
-            for (float[] arr : ar) {
-                System.out.println(Arrays.toString(arr));
-            }
-            System.out.println();
-        }
-        System.out.println();
-    }
 }
