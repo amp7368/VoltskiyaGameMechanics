@@ -6,39 +6,18 @@ import co.aikar.commands.annotation.CommandCompletion;
 import co.aikar.commands.annotation.Subcommand;
 import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
-import org.bukkit.inventory.InventoryHolder;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
-import voltskiya.apple.game_mechanics.tmw.tmw_world.biomes.ScanWorldBiomes;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.biomes.ScanWorld;
 
 @CommandAlias("tmw")
 public class TMWCommand extends BaseCommand {
-    private static final Map<UUID, InventoryHolder> openMeOnNextCommand = new HashMap<>();
-    private static final Object sync = new Object();
-
     public TMWCommand() {
         VoltskiyaPlugin.get().getCommandManager().registerCommand(this);
     }
 
-    public static void addOpenMeNext(UUID player, InventoryHolder openMe) {
-        synchronized (sync) {
-            openMeOnNextCommand.put(player, openMe);
-        }
-    }
-
     @Subcommand("gui")
     public void gui(Player player) {
-        synchronized (sync) {
-            InventoryHolder openMe = openMeOnNextCommand.remove(player.getUniqueId());
-            if (openMe != null) {
-                player.openInventory(openMe.getInventory());
-                return;
-            }
-        }
         player.openInventory(new TMWGui(player).getInventory());
     }
 
@@ -50,6 +29,6 @@ public class TMWCommand extends BaseCommand {
             return;
         }
         // scan the entire world ig
-        new ScanWorldBiomes(player.getLocation(), x1, z1, x2, z2).scan();
+        new ScanWorld(player.getWorld(), x1, z1, x2, z2).scanAll();
     }
 }

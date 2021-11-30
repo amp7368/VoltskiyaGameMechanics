@@ -3,4 +3,4 @@ version: 1.0
 main: voltskiya.apple.game_mechanics.VoltskiyaPlugin
 api-version: 1.16
 authors: [ appleptr16 ]
-softdepend: [ LuckPerms, LoadDependencies, DecodingNms, VoltskiyaUtilities ]
+softdepend: [ LuckPerms, LoadDependencies, DecodingNms, VoltskiyaUtilities , VoltskiyaConfigs ]

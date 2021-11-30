@@ -42,6 +42,9 @@ public class MobTypeGuiPageSettings extends InventoryGuiPageSimple {
         setSlot(new HighestYValue(), 44);
         setSlot(new LowestYValue(), 53);
         setSlot(new GroupSlot(), 46);
+
+        setSlot(new InventoryGuiSlotGeneric((e1) -> e1.getWhoClicked().openInventory(callbackGui.getInventory()), InventoryUtils.makeItem(Material.LIGHT_BLUE_TERRACOTTA, 1, "Back", null)
+        ), 6);
     }
 
     @Override

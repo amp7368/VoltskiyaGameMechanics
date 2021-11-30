@@ -1,6 +1,7 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config;
 
 import org.bukkit.Material;
+import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
@@ -10,6 +11,9 @@ import voltskiya.apple.utilities.util.gui.InventoryGuiPageScrollable;
 import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
 import voltskiya.apple.utilities.util.gui.InventoryGuiSlotScrollable;
 import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
+
+import java.util.Comparator;
+import java.util.List;
 
 public class TMWGuiMobsPage extends InventoryGuiPageScrollable {
     private final TMWGui tmwGui;
@@ -23,7 +27,9 @@ public class TMWGuiMobsPage extends InventoryGuiPageScrollable {
 
     private void addMobs() {
         clear();
-        for (MobType mob : MobTypeDatabase.getAll()) {
+        List<MobType> mobs = MobTypeDatabase.getAll();
+        mobs.sort(Comparator.comparing(MobType::getName, String.CASE_INSENSITIVE_ORDER));
+        for (MobType mob : mobs) {
             add(new MobTypeInventorySlot(mob, tmwGui));
         }
     }
@@ -69,6 +75,12 @@ public class TMWGuiMobsPage extends InventoryGuiPageScrollable {
 
         @Override
         public void dealWithClick(InventoryClickEvent event) {
+            if (event.getClick() == ClickType.MIDDLE || event.getClick() == ClickType.NUMBER_KEY) {
+                ItemStack item = mob.toItem();
+                item.setAmount(8);
+                event.getWhoClicked().getInventory().addItem(item);
+                return;
+            }
             event.getWhoClicked().openInventory(
                     new MobTypeGui(tmwGui, mob.toBuilder()).getInventory()
             );

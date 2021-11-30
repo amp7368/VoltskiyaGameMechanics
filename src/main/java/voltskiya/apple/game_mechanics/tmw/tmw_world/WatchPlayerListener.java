@@ -23,6 +23,7 @@ public class WatchPlayerListener implements Listener {
             if (!watches.containsKey(playerUUID))
                 watches.put(playerUUID, new WatchPlayer(player));
         }
+        Bukkit.getScheduler().scheduleSyncRepeatingTask(VoltskiyaPlugin.get(), this::tick, 1, 1);
     }
 
     public static WatchPlayerListener get() {
@@ -39,6 +40,13 @@ public class WatchPlayerListener implements Listener {
         final UUID playerUUID = player.getUniqueId();
         if (!watches.containsKey(playerUUID))
             watches.put(playerUUID, new WatchPlayer(player));
+    }
+
+    private synchronized void tick() {
+        this.watches.values().removeIf(w -> !w.getPlayer().isOnline());
+        for (WatchPlayer watchPlayer : this.watches.values()) {
+            watchPlayer.scheduleTicks();
+        }
     }
 }
 

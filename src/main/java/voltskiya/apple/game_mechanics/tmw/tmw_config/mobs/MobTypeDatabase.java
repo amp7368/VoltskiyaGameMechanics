@@ -12,14 +12,13 @@ import java.util.Map;
 public class MobTypeDatabase {
     private final Map<String, MobType> mobs = new HashMap<>();
 
-    private static final String MOBS_FOLDER = "mobs";
     private static MobTypeDatabase instance;
 
     private static final File mobsFile;
 
     static {
         // get the mobs from our db
-        File mobsFolder = new File(PluginTMW.get().getDataFolder(), MOBS_FOLDER);
+        File mobsFolder = new File(PluginTMW.get().getDataFolder(), PluginTMW.MOBS_FOLDER);
         mobsFolder.mkdirs();
         mobsFile = new File(mobsFolder, "mobsDB.json");
         try {

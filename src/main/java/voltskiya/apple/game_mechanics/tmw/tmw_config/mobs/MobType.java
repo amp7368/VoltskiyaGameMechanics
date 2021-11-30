@@ -1,10 +1,12 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.mobs;
 
+import apple.utilities.json.gson.serialize.JsonSerializing;
 import com.google.gson.*;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import net.minecraft.nbt.MojangsonParser;
 import net.minecraft.nbt.NBTTagCompound;
 import org.bukkit.Material;
+import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
@@ -47,7 +49,7 @@ public class MobType {
     }
 
     public String getName() {
-        return icon.getName();
+        return icon == null ? "" : icon.getName();
     }
 
     @Override
@@ -124,14 +126,18 @@ public class MobType {
         }
     }
 
-    public static class MobTypeSerializer implements JsonSerializer<MobType> {
+    public static class MobTypeSerializer implements JsonSerializing<MobType> {
+        private static final MobTypeSerializer instance = new MobTypeSerializer();
+
+        public static MobTypeSerializer get() {
+            return instance;
+        }
+
         @Override
         public JsonElement serialize(MobType mobType, Type type, JsonSerializationContext jsonSerializationContext) {
             return new JsonPrimitive(mobType.icon.getName());
         }
-    }
 
-    public static class MobTypeDeSerializer implements JsonDeserializer<MobType> {
         @Override
         public MobType deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
             return MobTypeDatabase.getMob(jsonElement.getAsString());
@@ -240,6 +246,10 @@ public class MobType {
             return !icon.name.isBlank();
         }
 
+        public String getName() {
+            return icon == null ? "" : icon.getName();
+        }
+
         public static class MobIcon {
             private final String name;
             private final Material material;
@@ -255,11 +265,18 @@ public class MobType {
 
             public ItemStack toItem() {
                 ItemStack item = new ItemStack(material);
+                ItemStack itemStack;
+                try {
+                    net.minecraft.world.item.ItemStack nmsItem = net.minecraft.world.item.ItemStack.a(MojangsonParser.parse(nbt));
+                    itemStack = CraftItemStack.asBukkitCopy(nmsItem);
+                } catch (CommandSyntaxException e) {
+                    itemStack = new ItemStack(material);
+                }
                 final ItemMeta itemMeta = item.getItemMeta();
                 itemMeta.setDisplayName(name);
                 itemMeta.setLore(lore);
                 item.setItemMeta(itemMeta);
-                return item;
+                return itemStack;
             }
 
             public String getName() {

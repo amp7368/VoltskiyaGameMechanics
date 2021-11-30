@@ -9,6 +9,7 @@ import org.bukkit.event.world.ChunkUnloadEvent;
 import org.jetbrains.annotations.NotNull;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.sql.MobSqlStorage;
+import voltskiya.apple.game_mechanics.tmw.sql.TmwStoredMob;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -25,33 +26,35 @@ public class MobListener implements Listener {
     @EventHandler
     public void unloadChunk(ChunkUnloadEvent event) {
         @NotNull Entity[] entitiesInChunk = event.getChunk().getEntities();
-        List<MobSqlStorage.StoredMob> mobsToSave = new ArrayList<>();
+        List<TmwStoredMob> mobsToSave = new ArrayList<>();
         for (Entity entity : entitiesInChunk) {
-            for (String tag : entity.getScoreboardTags()) {
-                if (tag.startsWith(DESPAWN_AT_TIME) && tag.length() > DESPAWN_AT_TIME.length()) {
-                    long despawnAtTime;
-                    try {
-                        despawnAtTime = Long.parseLong(tag.substring(DESPAWN_AT_TIME.length()));
-                    } catch (NumberFormatException e) {
-                        continue;
-                    }
-                    Location location = entity.getLocation();
-                    int x = location.getBlockX();
-                    int y = location.getBlockY();
-                    int z = location.getBlockZ();
-                    String uniqueName = MobSqlStorage.StoredMob.getUniqueName(entity.getScoreboardTags());
-                    if (uniqueName != null) {
+            Location location = entity.getLocation();
+            int x = location.getBlockX();
+            int y = location.getBlockY();
+            int z = location.getBlockZ();
+            String uniqueName = TmwStoredMob.getUniqueName(entity.getScoreboardTags());
+            if (uniqueName != null) {
+                long despawnAtTime = Long.MAX_VALUE;
+                for (String tag : entity.getScoreboardTags()) {
+                    if (tag.startsWith(DESPAWN_AT_TIME) && tag.length() > DESPAWN_AT_TIME.length()) {
                         try {
-                            mobsToSave.add(new MobSqlStorage.StoredMob(x, y, z, location.getWorld().getUID(), uniqueName, despawnAtTime));
-                            entity.remove();
+                            despawnAtTime = Long.parseLong(tag.substring(DESPAWN_AT_TIME.length()));
+                        } catch (NumberFormatException e) {
                             break;
-                        } catch (SQLException e) {
-                            e.printStackTrace();
                         }
                     }
                 }
+
+                try {
+                    mobsToSave.add(new TmwStoredMob(x, y, z, location.getWorld().getUID(), uniqueName, despawnAtTime));
+                    entity.remove();
+                    break;
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
             }
         }
+
         MobSqlStorage.insertMobs(mobsToSave);
     }
 }

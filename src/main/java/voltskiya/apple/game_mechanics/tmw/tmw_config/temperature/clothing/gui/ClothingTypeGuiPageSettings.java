@@ -32,6 +32,9 @@ public class ClothingTypeGuiPageSettings extends InventoryGuiPageSimple {
                     }
                 }, InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Save", null)
         ), 4);
+        setSlot(new InventoryGuiSlotGeneric((e1) -> e1.getWhoClicked().openInventory(tmwGui.getInventory()), InventoryUtils.makeItem(Material.LIGHT_BLUE_TERRACOTTA, 1, "Back", null)
+        ), 6);
+
         setSlot(new IncrementSlot(clothing::incrementWindProtection, .1, 1, Material.REDSTONE, "Increase"), 10);
         setSlot(new IncrementSlot(clothing::incrementWindProtection, -.1, -1, Material.GUNPOWDER, "Decrease"), 11);
         setSlot(new IncrementSlot(clothing::incrementWetProtection, .1, 1, Material.REDSTONE, "Increase"), 19);

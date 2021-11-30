@@ -23,7 +23,6 @@ public class WatchPlayer {
         this.mobWatch = new MobWatchPlayer(player, this);
         this.temperatureWatch = new TemperatureWatchPlayer(player, this.playerVisual, this);
         // for watching the specifics of a chunk in our DB
-//        this.chunkWatch = new ChunkWatchPlayer(player,this);
     }
 
     public Player getPlayer() {
@@ -44,5 +43,12 @@ public class WatchPlayer {
 
     public PlayerTemperature getPlayerInfo() {
         return playerInfo;
+    }
+
+    public void scheduleTicks() {
+        this.playerVisual.scheduleTicks();
+        this.biomeWatch.scheduleTicks();
+        this.mobWatch.scheduleTicks();
+        this.temperatureWatch.scheduleTicks();
     }
 }

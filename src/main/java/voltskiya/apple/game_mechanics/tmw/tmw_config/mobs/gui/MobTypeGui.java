@@ -7,9 +7,9 @@ import voltskiya.apple.utilities.util.gui.InventoryGui;
 public class MobTypeGui extends InventoryGui {
     public MobTypeGui(TMWGui tmwGui, MobType.MobTypeBuilder mob) {
         addPage(
-                new MobTypeGuiPageSettings(this,mob,tmwGui),
-                new MobTypeGuiPageBiomes(this,mob),
-                new MobTypeGuiPageSpawnConditions(this,mob)
+                new MobTypeGuiPageSettings(this, mob, tmwGui),
+                new MobTypeGuiPageBiomes(this, mob, tmwGui),
+                new MobTypeGuiPageSpawnConditions(this, mob)
         );
     }
 }

@@ -11,11 +11,23 @@ public class SqlVariableNames {
     public static final String WORLD_UUID = "world_uuid";
     public static final String TABLE_WORLD = "world";
     public static final String MOB_MY_UID = "mob_my_uid";
+    public static final String MATERIAL = "name";
+    public static final String MATERIAL_MY_UID = "material_my_uid";
+    public static final String TABLE_MATERIAL = "material";
 
     public static class ChunkSql {
         public static final String TABLE_CHUNK = "chunk";
         public static final String CHUNK_UID = "chunk_uid";
         public static final String BIOME_GUESS_UID = "biome_guess_uid";
+    }
+
+    public static class Weather {
+
+        public static final String WEATHER_UID = "weather_uid";
+        public static final String IMPACT = "impact";
+        public static final String IMPACT_VELOCITY = "impact_velocity";
+        public static final String IMPACT_ACCELERATION = "impact_acceleration";
+        public static final String TABLE_WEATHER = "weather";
     }
 
     public static class Contour {
@@ -35,5 +47,24 @@ public class SqlVariableNames {
     public static class Kills {
         public static final String TABLE_CHUNK_KILL = "chunk_kill";
         public static final String TIME = "time_of_kill";
+    }
+
+    public static class Decay {
+        // table
+        public static final String TABLE_DECAY_BLOCK = "decay_block";
+
+        // location
+        public static final String X = "x";
+        public static final String Y = "y";
+        public static final String Z = "z";
+        public static final String WORLD_UID = "world";
+
+        // material
+        public static final String ORIGINAL_MATERIAL = "original_material";
+        public static final String CURRENT_MATERIAL = "new_material";
+
+        // fields
+        public static final String DAMAGE = "damage";
+        public static final String BLOCK_UID = "block_uid";
     }
 }

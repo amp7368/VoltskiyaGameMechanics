@@ -1,20 +1,18 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world.temperature;
 
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
-import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
+import voltskiya.apple.game_mechanics.tmw.TmwWatchConfig;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.PlayerTemperatureVisual;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayer;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
-import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.TemperatureChecks.ClothingTemperature;
+import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchTickable;
 
-public class TemperatureWatchPlayer implements Runnable {
-    private static final long WATCH_PLAYER_INTERVAL = 20;
+public class TemperatureWatchPlayer implements WatchTickable {
     private static final double TIME_TO_HEAT_CHANGE = 10;
     private final Player player;
     private final WatchPlayer watchPlayer;
@@ -23,13 +21,13 @@ public class TemperatureWatchPlayer implements Runnable {
     private final PlayerTemperature playerInfo;
     private double wetness = 0;
     private int saveInterval = SAVE_INTERVAL;
+    private int tickCount;
 
     public TemperatureWatchPlayer(Player player, PlayerTemperatureVisual playerVisual, WatchPlayer watchPlayer) {
         this.player = player;
         this.playerVisual = playerVisual;
         this.playerInfo = watchPlayer.getPlayerInfo();
         this.watchPlayer = watchPlayer;
-        Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this);
     }
 
     @Override
@@ -48,7 +46,7 @@ public class TemperatureWatchPlayer implements Runnable {
             double wind = TemperatureChecks.wind(currentBiome, location);
             double wetness = TemperatureChecks.wetness(player);
 
-            ClothingTemperature clothing = TemperatureChecks.clothing(player);
+            TemperatureChecks.ClothingTemperature clothing = TemperatureChecks.clothing(player);
             double finalBlockHeatSource = (1 + insideness) * blockHeatSource;
             double finalWind = clothing.resistWind(wind * (1 - insideness));
             double finalWetness = clothing.resistWet(wetness);
@@ -61,9 +59,7 @@ public class TemperatureWatchPlayer implements Runnable {
             double airTemp3 = airTemp2 - ((boundaries / (1 + Math.pow(Math.E, (-airTemp2 / boundaries)))) * fluidFactor / 10);
 
             double feltTemperature = clothing.resistTemp(airTemp3);
-            double heatTransferConstant = 0.01;
-            double surfaceArea = 7;
-            this.playerInfo.temperature += feltTemperature * surfaceArea * heatTransferConstant - surfaceArea * heatTransferConstant * this.playerInfo.temperature;
+            this.playerInfo.temperature += (feltTemperature - this.playerInfo.temperature) * TmwWatchConfig.getCheckInterval().heatTransferConstant;
             this.playerInfo.doTemperatureEffects(this.playerVisual);
             TextComponent msg = new TextComponent();
             msg.setText(String.format("final temp - %.2f, biome - %s", this.playerInfo.temperature, currentBiome == null ? "null" : currentBiome.getName()));
@@ -73,6 +69,20 @@ public class TemperatureWatchPlayer implements Runnable {
                 this.playerInfo.saveThreaded();
             }
         }
-        Bukkit.getScheduler().scheduleSyncDelayedTask(VoltskiyaPlugin.get(), this, WATCH_PLAYER_INTERVAL);
+    }
+
+    @Override
+    public int getTickCount() {
+        return this.tickCount;
+    }
+
+    @Override
+    public void setTickCount(int i) {
+        this.tickCount = i;
+    }
+
+    @Override
+    public int getTicksPerRun() {
+        return TmwWatchConfig.getCheckInterval().temperatureWatchPlayer;
     }
 }
