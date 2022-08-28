@@ -4,8 +4,9 @@ import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 public class PlayerTemperatureVisual implements WatchTickable {
-    private int tickCount = 0;
+
     private final Player player;
+    private int tickCount = 0;
     private int freezeTicks = 0;
 
     public PlayerTemperatureVisual(Player player) {

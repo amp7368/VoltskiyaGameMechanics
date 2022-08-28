@@ -1,5 +1,16 @@
 package voltskiya.apple.game_mechanics.tmw.sql;
 
+import static voltskiya.apple.game_mechanics.tmw.PluginTMW.BLOCKS_IN_A_CHUNK;
+import static voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks.scanNearby;
+
+import apple.mc.utilities.item.material.MaterialUtils;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.Chunk;
 import org.bukkit.World;
@@ -12,31 +23,26 @@ import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
-import voltskiya.apple.utilities.util.minecraft.MaterialUtils;
 
-import java.util.*;
+public class SpawnPercentages {
 
-import static voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk.BLOCKS_IN_A_CHUNK;
-import static voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks.scanNearby;
-
-public final class SpawnPercentages {
-    private @NotNull BiomeType biome;
-    private int chunkX;
-    private int chunkZ;
-    private int worldMyUid;
-    private int middleX;
-    private int middleY;
-    private int middleZ;
-    private HashMap<String, Integer> mobNames = new HashMap<>();
+    private final @NotNull BiomeType biome;
+    private final int chunkX;
+    private final int chunkZ;
+    private final int worldMyUid;
+    private final int middleX;
+    private final int middleY;
+    private final int middleZ;
+    private final HashMap<String, Integer> mobNames = new HashMap<>();
+    private final ArrayList<MobType> mobsToSpawn = new ArrayList<>();
     private double mobCount = 0;
-    private ArrayList<MobType> mobsToSpawn = new ArrayList<>();
 
     public SpawnPercentages(
-            @NotNull BiomeType biome,
-            int chunkX,
-            int chunkZ,
-            @Nullable String mobName,
-            int worldMyUid, int middleX, int middleY, int middleZ, int mobCount) {
+        @NotNull BiomeType biome,
+        int chunkX,
+        int chunkZ,
+        @Nullable String mobName,
+        int worldMyUid, int middleX, int middleY, int middleZ, int mobCount) {
         this.biome = biome;
         this.chunkX = chunkX;
         this.chunkZ = chunkZ;
@@ -44,8 +50,9 @@ public final class SpawnPercentages {
         this.middleX = middleX;
         this.middleY = middleY;
         this.middleZ = middleZ;
-        if (mobName != null)
+        if (mobName != null) {
             this.mobNames.put(mobName, mobCount);
+        }
         this.mobCount += mobCount;
     }
 
@@ -70,13 +77,17 @@ public final class SpawnPercentages {
         while (!this.mobCountHigh()) {
             Map<MobType, Double> shouldBeMobSpawns = biome.getSpawnPercentages();
             Map<String, Double> mobSpawns = new HashMap<>();
-            for (Map.Entry<String, Integer> mob : this.mobNames.entrySet())
+            for (Map.Entry<String, Integer> mob : this.mobNames.entrySet()) {
                 mobSpawns.put(mob.getKey(), mob.getValue() / this.mobCount);
+            }
 
             double totalPerc = 0;
             Map<MobType, Double> shouldBe = new HashMap<>();
             for (Map.Entry<MobType, Double> shouldBeMob : shouldBeMobSpawns.entrySet()) {
-                double shouldBeNess = shouldBeMob.getValue() - mobSpawns.getOrDefault(shouldBeMob.getKey().getName(), 0d);
+                double shouldBeNess =
+                    shouldBeMob.getValue() - mobSpawns.getOrDefault(shouldBeMob.getKey().getName(),
+                        0d
+                    );
                 shouldBe.put(shouldBeMob.getKey(), shouldBeNess);
                 totalPerc += shouldBeNess;
             }
@@ -87,13 +98,17 @@ public final class SpawnPercentages {
                 totalPerc -= mob.getValue();
                 if (totalPerc < 0) {
                     this.mobCount += mob.getKey().getMeanGroup();
-                    if (!this.mobsToSpawn.contains(mob.getKey())) this.mobsToSpawn.add(mob.getKey());
+                    if (!this.mobsToSpawn.contains(mob.getKey())) {
+                        this.mobsToSpawn.add(mob.getKey());
+                    }
                     wasSet = true;
                     break;
                 }
             }
             // just as a failsafe to make sure progress is made
-            if (!wasSet) this.mobCount++;
+            if (!wasSet) {
+                this.mobCount++;
+            }
         }
 
     }
@@ -131,10 +146,10 @@ public final class SpawnPercentages {
             } while (!MaterialUtils.isPassable(block.getType()));
         }
         List<BiomeTypeBuilderRegisterBlocks.TopBlock> topBlocks = scanNearby(chunk,
-                new HashSet<>(),
-                middleX,
-                y + 1,
-                middleZ
+            new HashSet<>(),
+            middleX,
+            y + 1,
+            middleZ
         );
         Collections.shuffle(topBlocks);
         List<TmwStoredMob> mobsToSave = new ArrayList<>();
@@ -144,10 +159,25 @@ public final class SpawnPercentages {
                 if (mobType.canSpawn(topBlock)) {
                     final int group = mobType.getGroup();
                     for (int mobCount = 0; mobCount < group; mobCount++) {
-                        final TmwStoredMob storedMob = new TmwStoredMob(topBlock.x() + chunkX * BLOCKS_IN_A_CHUNK, topBlock.y() + 1, topBlock.z() + chunkZ * BLOCKS_IN_A_CHUNK, worldMyUid, mobType);
+                        final TmwStoredMob storedMob = new TmwStoredMob(
+                            topBlock.x() + chunkX * BLOCKS_IN_A_CHUNK,
+                            topBlock.y() + 1,
+                            topBlock.z() + chunkZ * BLOCKS_IN_A_CHUNK,
+                            worldMyUid,
+                            mobType
+                        );
                         mobsToSave.add(storedMob);
-                        if (TmwWatchConfig.get().consoleOutput.showCreateMob)
-                            PluginTMW.get().logger().info("create %s %d, %d, %d", storedMob.uniqueName, storedMob.x, storedMob.y, storedMob.z);
+                        if (TmwWatchConfig.get().consoleOutput.showCreateMob) {
+                            PluginTMW
+                                .get()
+                                .logger()
+                                .info("create %s %d, %d, %d",
+                                    storedMob.uniqueName,
+                                    storedMob.x,
+                                    storedMob.y,
+                                    storedMob.z
+                                );
+                        }
                     }
                     topBlocks.remove(i);
                     break;

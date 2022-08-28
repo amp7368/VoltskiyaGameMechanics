@@ -1,12 +1,18 @@
 package voltskiya.apple.game_mechanics.decay.config.gui.template.variant;
 
+import static org.bukkit.Material.COBBLESTONE_WALL;
+import static org.bukkit.Material.OAK_BUTTON;
+import static org.bukkit.Material.OAK_FENCE;
+import static org.bukkit.Material.OAK_PLANKS;
+import static org.bukkit.Material.OAK_PRESSURE_PLATE;
+import static org.bukkit.Material.OAK_SLAB;
+import static org.bukkit.Material.OAK_STAIRS;
+
+import apple.mc.utilities.inventory.gui.acd.slot.ItemGuiSlotCycleable;
 import apple.utilities.util.Pretty;
 import org.bukkit.Material;
-import voltskiya.apple.utilities.util.gui.acd.slot.cycle.SlotCycleable;
 
-import static org.bukkit.Material.*;
-
-public enum BlockSizeType implements SlotCycleable<BlockSizeType> {
+public enum BlockSizeType implements ItemGuiSlotCycleable<BlockSizeType> {
     TINY(OAK_BUTTON),
     THIN(OAK_PRESSURE_PLATE),
     SLAB(OAK_SLAB),

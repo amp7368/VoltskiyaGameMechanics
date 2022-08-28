@@ -5,6 +5,7 @@ import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDatabase;
 
 public final class DecayInto {
+
     private Material material;
     private transient MaterialVariant variant = null;
     private transient boolean isDeleted;

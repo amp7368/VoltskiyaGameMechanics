@@ -1,16 +1,16 @@
 package voltskiya.apple.game_mechanics.decay.config.template;
 
+import apple.mc.utilities.inventory.item.InventoryUtils;
+import java.util.HashMap;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockSettingsDatabase;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockDecider;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockDeciderRequirements;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
-
-import java.util.HashMap;
-import java.util.UUID;
 
 public class DecayBlockTemplate {
+
     private HashMap<Material, MaterialVariant> decayIntoThis;
     private Material icon;
     private UUID settingsUUID;
@@ -28,7 +28,8 @@ public class DecayBlockTemplate {
     private DecayBlockTemplate(Material defaultBlock) {
         this.icon = Material.BARRIER;
         this.decayIntoThis = new HashMap<>(1);
-        this.decayIntoThis.put(defaultBlock, new MaterialVariant(InventoryUtils.makeItem(defaultBlock)));
+        this.decayIntoThis.put(defaultBlock,
+            new MaterialVariant(InventoryUtils.get().makeItem(defaultBlock)));
         this.settings = DecayBlockTemplateGroupingSettings.DEFAULT;
         this.settingsUUID = settings.getUuid();
     }
@@ -47,8 +48,15 @@ public class DecayBlockTemplate {
 
     public DecayBlockTemplateGroupingSettings getSettings() {
         validateSettings();
-        if (settings == null) return DecayBlockTemplateGroupingSettings.DEFAULT;
+        if (settings == null) {
+            return DecayBlockTemplateGroupingSettings.DEFAULT;
+        }
         return settings;
+    }
+
+    public void setSettings(DecayBlockTemplateGroupingSettings settings) {
+        this.settings = settings;
+        this.settingsUUID = settings.getUuid();
     }
 
     private void validateSettings() {
@@ -69,11 +77,6 @@ public class DecayBlockTemplate {
         return decider;
     }
 
-    public void setSettings(DecayBlockTemplateGroupingSettings settings) {
-        this.settings = settings;
-        this.settingsUUID = settings.getUuid();
-    }
-
     public MaterialVariant getMaterial(Material material) {
         return this.decayIntoThis.get(material);
     }
@@ -85,6 +88,7 @@ public class DecayBlockTemplate {
     }
 
     public static class DecayBlockBuilderTemplate {
+
         public HashMap<Material, MaterialVariant> decayIntoThis;
         public Material icon;
         public UUID settingsUUID;

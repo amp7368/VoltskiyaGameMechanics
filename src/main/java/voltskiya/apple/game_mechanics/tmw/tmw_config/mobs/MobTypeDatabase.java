@@ -1,20 +1,22 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.mobs;
 
 import com.google.gson.Gson;
-import voltskiya.apple.game_mechanics.tmw.PluginTMW;
-
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 
 public class MobTypeDatabase {
-    private final Map<String, MobType> mobs = new HashMap<>();
-
-    private static MobTypeDatabase instance;
 
     private static final File mobsFile;
+    private static MobTypeDatabase instance;
 
     static {
         // get the mobs from our db
@@ -36,6 +38,8 @@ public class MobTypeDatabase {
             e.printStackTrace();
         }
     }
+
+    private final Map<String, MobType> mobs = new HashMap<>();
 
     public static MobTypeDatabase get() {
         return instance;

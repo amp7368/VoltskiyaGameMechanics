@@ -1,5 +1,8 @@
 package voltskiya.apple.game_mechanics.decay.config.gui.template;
 
+import apple.mc.utilities.inventory.gui.acd.page.InventoryGuiPageScrollableACD;
+import apple.mc.utilities.inventory.gui.acd.page.ScrollableSectionACD;
+import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -8,22 +11,14 @@ import voltskiya.apple.game_mechanics.decay.config.gui.template.variant.DecayGui
 import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplate;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateGrouping;
 import voltskiya.apple.game_mechanics.decay.config.template.MaterialVariant;
-import voltskiya.apple.utilities.util.gui.acd.page.InventoryGuiPageScrollableACD;
-import voltskiya.apple.utilities.util.gui.acd.page.ScrollableSectionACD;
-import voltskiya.apple.utilities.util.gui.acd.slot.InventoryGuiButtonTemplate;
-import voltskiya.apple.utilities.util.gui.acd.slot.InventoryGuiSlotDoNothingACD;
-import voltskiya.apple.utilities.util.gui.acd.slot.InventoryGuiSlotImplACD;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
-
-import java.util.List;
-
-import static voltskiya.apple.utilities.util.minecraft.InventoryUtils.makeItem;
 
 public class DecayGuiBlockTemplatePage extends InventoryGuiPageScrollableACD<DecayGui> {
+
     private final DecayBlockTemplateGrouping parentGrouping;
     private final DecayBlockTemplate.DecayBlockBuilderTemplate builder;
 
-    public DecayGuiBlockTemplatePage(DecayGui decayGui, DecayBlockTemplateGrouping parentGrouping, DecayBlockTemplate.DecayBlockBuilderTemplate builder) {
+    public DecayGuiBlockTemplatePage(DecayGui decayGui, DecayBlockTemplateGrouping parentGrouping,
+        DecayBlockTemplate.DecayBlockBuilderTemplate builder) {
         super(decayGui, false);
         this.parentGrouping = parentGrouping;
         this.builder = builder;
@@ -32,26 +27,26 @@ public class DecayGuiBlockTemplatePage extends InventoryGuiPageScrollableACD<Dec
     @Override
     public void initialize() {
         addSection(new ScrollableSectionACD("variants", 18, size()));
-        setSlot(new InventoryGuiSlotImplACD(
-                e -> parentRemoveSubPage(),
-                makeItem(Material.RED_TERRACOTTA, "Discard Changes")
+        setSlot(slotImpl(
+            e -> parentRemoveSubPage(),
+            makeItem(Material.RED_TERRACOTTA, "Discard Changes")
         ), 0);
-        setSlot(new InventoryGuiSlotDoNothingACD(makeItem(builder.icon, "Block")
+        setSlot(slotDoNothing(makeItem(builder.icon, "Block")
         ), 4);
-        setSlot(new InventoryGuiSlotImplACD(
-                e -> {
-                    parentGrouping.addBlock(builder.build());
-                    parentRemoveSubPage();
-                },
-                makeItem(Material.GREEN_TERRACOTTA, "Save Changes")
+        setSlot(slotImpl(
+            e -> {
+                parentGrouping.addBlock(builder.build());
+                parentRemoveSubPage();
+            },
+            makeItem(Material.GREEN_TERRACOTTA, "Save Changes")
         ), 8);
-        this.setSlot(new InventoryGuiSlotImplACD((e) -> {
+        this.setSlot(slotImpl((e) -> {
             this.getSection("variants").scroll(-1);
-        }, InventoryUtils.makeItem(Material.REDSTONE_TORCH, 1, "Up", List.of("Scroll up"))), 17);
-        this.setSlot(new InventoryGuiSlotImplACD((e) -> {
+        }, makeItem(Material.REDSTONE_TORCH, 1, "Up", List.of("Scroll up"))), 17);
+        this.setSlot(slotImpl((e) -> {
             this.getSection("variants").scroll(1);
-        }, InventoryUtils.makeItem(Material.LEVER, 1, "Down", List.of("Scroll down"))), 16);
-        setSlot(InventoryGuiButtonTemplate.blackGlassDoNothing(), 9, 10, 11, 12, 13, 14, 15);
+        }, makeItem(Material.LEVER, 1, "Down", List.of("Scroll down"))), 16);
+        setSlot(blackGlassDoNothing(), 9, 10, 11, 12, 13, 14, 15);
     }
 
     @Override
@@ -62,9 +57,9 @@ public class DecayGuiBlockTemplatePage extends InventoryGuiPageScrollableACD<Dec
     private void addVarients() {
         getSection("variants").clear();
         for (MaterialVariant variant : builder.decayIntoThis.values()) {
-            add("variants", new InventoryGuiSlotImplACD(e -> {
-                parentAddSubPage(new DecayGuiVariantSettingsPage(parent, builder, variant.copy()));
-            }, makeItem(variant.material)
+            add("variants", slotImpl(e -> {
+                    parentAddSubPage(new DecayGuiVariantSettingsPage(parent, builder, variant.copy()));
+                }, makeItem(variant.material)
             ));
         }
     }
@@ -75,7 +70,9 @@ public class DecayGuiBlockTemplatePage extends InventoryGuiPageScrollableACD<Dec
         ItemStack currentItem = event.getCurrentItem();
         if (currentItem != null && currentItem.getType().isBlock()) {
             MaterialVariant variant = builder.decayIntoThis.get(currentItem.getType());
-            if (variant == null) variant = new MaterialVariant(currentItem);
+            if (variant == null) {
+                variant = new MaterialVariant(currentItem);
+            }
             parentAddSubPage(new DecayGuiVariantSettingsPage(parent, builder, variant));
         }
     }

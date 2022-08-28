@@ -8,6 +8,7 @@ import voltskiya.apple.game_mechanics.decay.PluginDecay;
 import voltskiya.apple.game_mechanics.util.FileIOService;
 
 public class DecayBlockDefaultsDatabase implements SaveFileable {
+
     private static DecayBlockDefaultsDatabase instance;
     private static AppleJsonDatabaseSingleton<DecayBlockDefaultsDatabase> databaseManager;
     private int defaultResistance = 1;
@@ -16,10 +17,11 @@ public class DecayBlockDefaultsDatabase implements SaveFileable {
 
     public static void load() {
         databaseManager = new AppleJsonDatabaseSingleton<>(
-                PluginDecay.get().getFile("decayBlocks"),
-                FileIOService.get()
+            PluginDecay.get().getFile("decayBlocks"),
+            FileIOService.get()
         );
-        @Nullable DecayBlockDefaultsDatabase database = databaseManager.loadNow(DecayBlockDefaultsDatabase.class, getSaveFileNameStatic());
+        @Nullable DecayBlockDefaultsDatabase database = databaseManager.loadNow(
+            DecayBlockDefaultsDatabase.class, getSaveFileNameStatic());
         if (database == null) {
             instance = new DecayBlockDefaultsDatabase();
             save();

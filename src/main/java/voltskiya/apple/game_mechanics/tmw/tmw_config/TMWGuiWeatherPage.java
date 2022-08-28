@@ -1,36 +1,28 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config;
 
+import apple.mc.utilities.inventory.gui.acd.page.InventoryGuiPageScrollableACD;
 import org.bukkit.Material;
-import voltskiya.apple.utilities.util.gui.InventoryGuiPageScrollable;
-import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
-public class TMWGuiWeatherPage extends InventoryGuiPageScrollable {
-    private TMWGui tmwGui;
-
+public class TMWGuiWeatherPage extends InventoryGuiPageScrollableACD<TMWGui> {
     public TMWGuiWeatherPage(TMWGui tmwGui) {
         super(tmwGui);
-        this.tmwGui = tmwGui;
-        setSlots();
     }
 
     private void addWeathers() {
-
+        clear();
     }
 
     @Override
-    public void setSlots() {
-        super.setSlots();
-        setSlot(new InventoryGuiSlotGeneric((e1) -> tmwGui.nextPage(-1),
-                InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Previous Page", null)), 0);
-        setSlot(new InventoryGuiSlotGeneric((e1) -> tmwGui.nextPage(1), InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)
-        ), 8);
+    public void initialize() {
+        
+        setSlot(slotImpl((e1) -> parentPrev(), backItem()), 0);
+        setSlot(slotImpl((e1) -> parentNext(),
+            makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)), 8);
     }
 
     @Override
-    public void fillInventory() {
+    public void refreshPageItems() {
         addWeathers();
-        super.fillInventory();
     }
 
     @Override
@@ -41,10 +33,5 @@ public class TMWGuiWeatherPage extends InventoryGuiPageScrollable {
     @Override
     public int size() {
         return 54;
-    }
-
-    @Override
-    protected int getScrollIncrement() {
-        return 8;
     }
 }

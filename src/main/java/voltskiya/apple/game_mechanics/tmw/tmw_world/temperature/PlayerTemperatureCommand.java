@@ -11,6 +11,7 @@ import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 
 @CommandAlias("temperatureReal")
 public class PlayerTemperatureCommand extends BaseCommand {
+
     private final static Object sync = new Object();
     private static boolean temperature = true;
 
@@ -36,7 +37,8 @@ public class PlayerTemperatureCommand extends BaseCommand {
     public void on(CommandSender commandSender) {
         synchronized (sync) {
             temperature = true;
-            Bukkit.broadcastMessage(ChatColor.AQUA + "Temperature is now" + ChatColor.GREEN + " on");
+            Bukkit.broadcastMessage(
+                ChatColor.AQUA + "Temperature is now" + ChatColor.GREEN + " on");
         }
     }
 }

@@ -1,7 +1,7 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world.biomes;
 
 import apple.nms.decoding.world.DecodeBiome;
-import net.minecraft.resources.MinecraftKey;
+import net.minecraft.resources.ResourceLocation;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.Nullable;
@@ -13,6 +13,7 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchTickable;
 
 public class BiomeWatchPlayer implements WatchTickable {
+
     private final Player player;
     @Nullable
     private BiomeType currentGuess;
@@ -29,9 +30,12 @@ public class BiomeWatchPlayer implements WatchTickable {
             return;
         }
         final Location location = player.getLocation();
-        @Nullable MinecraftKey minecraft = DecodeBiome.getBiomeKeyAt(location.getWorld(), location.getX(), location.getY(), location.getZ());
-        if (minecraft != null)
+
+        ResourceLocation minecraft = DecodeBiome.getBiomeKey(location.getWorld(),
+            location.getBlockX(), location.getBlockY(), location.getBlockZ()).location();
+        if (minecraft != null) {
             currentGuess = BiomeTypeDatabase.getBiome(minecraft);
+        }
     }
 
     @Nullable

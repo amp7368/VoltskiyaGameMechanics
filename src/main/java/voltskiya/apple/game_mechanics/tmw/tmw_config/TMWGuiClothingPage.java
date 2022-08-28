@@ -1,61 +1,37 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config;
 
+import apple.mc.utilities.inventory.gui.acd.page.InventoryGuiPageScrollableACD;
+import java.util.Comparator;
+import java.util.List;
 import org.bukkit.Material;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.clothing.ClothingDatabase;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.clothing.ClothingType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.clothing.gui.ClothingTypeGui;
-import voltskiya.apple.utilities.util.gui.InventoryGuiPageScrollable;
-import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
-import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGenericScrollable;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
-import java.util.Comparator;
-import java.util.List;
+public class TMWGuiClothingPage extends InventoryGuiPageScrollableACD<TMWGui> {
 
-public class TMWGuiClothingPage extends InventoryGuiPageScrollable {
 
-    private final TMWGui tmwGui;
-
-    public TMWGuiClothingPage(TMWGui tmwGui) {
-        super(tmwGui);
-        this.tmwGui = tmwGui;
-        setSlot(new InventoryGuiSlotGeneric((e1) -> tmwGui.nextPage(-1),
-                InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Previous Page", null)), 0);
-        setSlot(new InventoryGuiSlotGeneric((e1) -> tmwGui.nextPage(1), InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)
-        ), 8);
-        setSlot(new InventoryGuiSlotGeneric(e -> e.getWhoClicked().openInventory(new ClothingTypeGui(tmwGui, new ClothingType.ClothingTypeBuilder()).getInventory()),
-                InventoryUtils.makeItem(Material.DARK_OAK_SAPLING, 1, "Add a mob", null)), 4);
-        addClothing();
-        setSlots();
+    public TMWGuiClothingPage(TMWGui parent) {
+        super(parent);
+        setSlot(slotImpl((e1) -> parentPrev(),
+            makeItem(Material.GREEN_TERRACOTTA, 1, "Previous Page", null)), 0);
+        setSlot(slotImpl((e1) -> parentNext(),
+            makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)), 8);
+        setSlot(slotImpl(e -> e.getWhoClicked().openInventory(
+                new ClothingTypeGui(parent, new ClothingType.ClothingTypeBuilder()).getInventory()),
+            makeItem(Material.DARK_OAK_SAPLING, 1, "Add a mob", null)), 4);
     }
 
-    private void addClothing() {
+    @Override
+    public void refreshPageItems() {
         clear();
         final List<ClothingType> clothings = ClothingDatabase.getAll();
         clothings.sort(Comparator.comparing(ClothingType::getName));
         for (ClothingType clothing : clothings) {
-            add(new InventoryGuiSlotGenericScrollable(
-                    e -> e.getWhoClicked().openInventory(new ClothingTypeGui(this.tmwGui, clothing.toBuilder()).getInventory()),
-                    clothing.toItem()
-            ));
+            add(slotImpl(e -> e.getWhoClicked().openInventory(
+                    new ClothingTypeGui(this.parent, clothing.toBuilder()).getInventory()),
+                clothing.toItem()));
         }
-    }
-
-    @Override
-    public void setSlots() {
-        addClothing();
-        super.setSlots();
-    }
-
-    @Override
-    public void fillInventory() {
-        addClothing();
-        super.fillInventory();
-    }
-
-    @Override
-    protected int getScrollIncrement() {
-        return 8;
     }
 
     @Override

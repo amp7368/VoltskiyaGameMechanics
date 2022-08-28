@@ -1,5 +1,12 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui;
 
+import apple.mc.utilities.inventory.gui.acd.page.InventoryGuiPageImplACD;
+import apple.mc.utilities.inventory.gui.acd.slot.base.ItemGuiSlotACD;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
@@ -7,32 +14,25 @@ import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType.BiomeTypeBuilder;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeType.TemperatureInfo;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeTypeDatabase;
-import voltskiya.apple.utilities.util.gui.InventoryGui;
-import voltskiya.apple.utilities.util.gui.InventoryGuiPageSimple;
-import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
-import java.util.*;
+public class BiomeTypeGuiPageSettings extends InventoryGuiPageImplACD<TMWGui> {
 
-public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
-    private final BiomeTypeGui biomeTypeGui;
     private final BiomeType.BiomeTypeBuilder biome;
-    private final TMWGui callbackGui;
 
-    BiomeTypeGuiPageSettings(BiomeTypeGui biomeTypeGui, BiomeType.BiomeTypeBuilder biome, TMWGui callbackGui) {
-        super(biomeTypeGui);
-        this.biomeTypeGui = biomeTypeGui;
+    BiomeTypeGuiPageSettings(TMWGui parent, BiomeTypeBuilder biome) {
+        super(parent);
         this.biome = biome;
-        this.callbackGui = callbackGui;
-        setSlots();
     }
 
-    private void setSlots() {
+    @Override
+    public void initialize() {
         setSlot(new BiomeNameSlot(), 0);
         setSlot(new SaveSlot(), 4);
-        setSlot(new InventoryGuiSlotGeneric((e) -> biomeTypeGui.nextPage(1), InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)
-        ), 8);
+        setSlot(slotImpl((e) -> parentNext(1),
+            makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)), 8);
         setSlot(new SpawnRateSlot(), 45);
         setSlot(new RegisterTimeTempSlot(BiomeType.TemperatureTime.MORNING), 9);
         setSlot(new RegisterTimeTempSlot(BiomeType.TemperatureTime.NOON), 10);
@@ -40,14 +40,7 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
         setSlot(new RegisterTimeTempSlot(BiomeType.TemperatureTime.MIDNIGHT), 12);
         setSlot(new RegisterWindSlot(), 18);
         setSlot(new DeleteSlot(), 2);
-        setSlot(new InventoryGuiSlotGeneric((e1) -> e1.getWhoClicked().openInventory(callbackGui.getInventory()), InventoryUtils.makeItem(Material.LIGHT_BLUE_TERRACOTTA, 1, "Back", null)
-        ), 6);
-    }
-
-    @Override
-    public void fillInventory() {
-        setSlots();
-        super.fillInventory();
+        setSlot(slotImpl((e) -> this.parentPrev(), backItem()), 6);
     }
 
     @Override
@@ -61,10 +54,11 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
     }
 
 
-    private class BiomeNameSlot implements InventoryGui.InventoryGuiSlot {
+    private class BiomeNameSlot implements ItemGuiSlotACD {
+
         @Override
         public void dealWithClick(InventoryClickEvent event) {
-            biomeTypeGui.setTempInventory(new BiomeTypeGuiPageSettings.BiomeNameSlot.BiomeNamePage());
+            parentAddSubPage(new BiomeNamePage(BiomeTypeGuiPageSettings.this));
         }
 
         @Override
@@ -72,13 +66,14 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
             return biome.getIconItem();
         }
 
-        private class BiomeNamePage extends InventoryGuiPageSimple {
-            public BiomeNamePage() {
-                super(biomeTypeGui);
-                setSlot(new InventoryGuiSlotGeneric(e -> {
+        private class BiomeNamePage extends InventoryGuiPageImplACD<BiomeTypeGuiPageSettings> {
+
+            public BiomeNamePage(BiomeTypeGuiPageSettings parent) {
+                super(parent);
+                setSlot(slotImpl(e -> {
                 }, biome.getIconItem()), 0);
-                setSlot(new InventoryGuiSlotGeneric(e -> biomeTypeGui.setTempInventory(null),
-                        InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Save", null)), 8);
+                setSlot(slotImpl(e -> this.parent.parentRemoveSubPage(),
+                    makeItem(Material.GREEN_TERRACOTTA, 1, "Save", null)), 8);
             }
 
             @Override
@@ -92,9 +87,11 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
             }
 
             @Override
-            public void dealWithPlayerInventoryClick(InventoryClickEvent event) {
+            public void onPlayerInventory(InventoryClickEvent event) {
                 @Nullable ItemStack item = event.getCurrentItem();
-                if (item == null) return;
+                if (item == null) {
+                    return;
+                }
                 // the material of the ItemStack
                 Material material = item.getType();
                 ItemMeta im = item.getItemMeta();
@@ -104,44 +101,49 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
                 List<String> lore = im.getLore();
 
                 biome.setIcon(new BiomeType.BiomeTypeBuilder.BiomeIcon(name, material, lore));
-                setSlot(new InventoryGuiSlotGeneric(e -> {
+                setSlot(slotImpl(e -> {
                 }, biome.getIconItem()), 0);
-                update();
+                refresh();
             }
         }
     }
 
-    private class SaveSlot implements InventoryGui.InventoryGuiSlot {
+    private class SaveSlot implements ItemGuiSlotACD {
+
         @Override
         public void dealWithClick(InventoryClickEvent event) {
             BiomeTypeDatabase.addBiome(biome.build());
-            callbackGui.update(null);
-            event.getWhoClicked().openInventory(callbackGui.getInventory());
+            parentRemoveSubPage();
         }
 
         @Override
         public ItemStack getItem() {
-            return InventoryUtils.makeItem(Material.LIME_CONCRETE, 1, "Save", Collections.singletonList("list of things needed before saving"));
+            return makeItem(Material.LIME_CONCRETE, 1, "Save",
+                Collections.singletonList("list of things needed before saving"));
         }
     }
 
-    private class SpawnRateSlot implements InventoryGui.InventoryGuiSlot {
+    private class SpawnRateSlot implements ItemGuiSlotACD {
+
         @Override
         public void dealWithClick(InventoryClickEvent event) {
-            if (event.getClick().isLeftClick())
+            if (event.getClick().isLeftClick()) {
                 biome.incrementSpawnRate(1);
-            else
+            } else {
                 biome.incrementSpawnRate(-1);
-            update();
+            }
+            refresh();
         }
 
         @Override
         public ItemStack getItem() {
-            return InventoryUtils.makeItem(Material.GHAST_TEAR, 1, "Spawn Rate", Collections.singletonList(String.valueOf(biome.getSpawnRate())));
+            return makeItem(Material.GHAST_TEAR, 1, "Spawn Rate",
+                Collections.singletonList(String.valueOf(biome.getSpawnRate())));
         }
     }
 
-    private class RegisterTimeTempSlot implements InventoryGui.InventoryGuiSlot {
+    private class RegisterTimeTempSlot implements ItemGuiSlotACD {
+
         private final BiomeType.TemperatureTime time;
 
         public RegisterTimeTempSlot(BiomeType.TemperatureTime time) {
@@ -150,71 +152,56 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
 
         @Override
         public void dealWithClick(InventoryClickEvent inventoryClickEvent) {
-            biomeTypeGui.setTempInventory(new TimeTempBuilderGuiPage(biomeTypeGui, biome.getDailyTemperatures().get(time)));
+            parentAddSubPage(new TimeTempBuilderGuiPage(BiomeTypeGuiPageSettings.this,
+                biome.getDailyTemperatures().get(time)));
         }
 
         @Override
         public ItemStack getItem() {
             HashMap<BiomeType.TemperatureTime, BiomeType.TemperatureInfo> temperatures = biome.getDailyTemperatures();
             BiomeType.TemperatureInfo temperatureInfo = temperatures.get(time);
-            return InventoryUtils.makeItem(
-                    Material.YELLOW_STAINED_GLASS_PANE,
-                    1,
-                    "Temperature " + time.name().toLowerCase(Locale.ROOT),
-                    Collections.singletonList(
-                            temperatureInfo == null ? "???" : String.format("%d degrees", temperatureInfo.degrees)
-                    )
-            );
+            return makeItem(Material.YELLOW_STAINED_GLASS_PANE, 1,
+                "Temperature " + time.name().toLowerCase(Locale.ROOT), Collections.singletonList(
+                    temperatureInfo == null ? "???"
+                        : String.format("%d degrees", temperatureInfo.degrees)));
         }
 
-        private class TimeTempBuilderGuiPage extends InventoryGuiPageSimple {
+        private class TimeTempBuilderGuiPage extends
+            InventoryGuiPageImplACD<BiomeTypeGuiPageSettings> {
+
             private final BiomeType.TemperatureInfo temperatureInfo;
 
-            public TimeTempBuilderGuiPage(BiomeTypeGui holder, BiomeType.TemperatureInfo temperatureInfo) {
-                super(holder);
+            public TimeTempBuilderGuiPage(BiomeTypeGuiPageSettings parent,
+                TemperatureInfo temperatureInfo) {
+                super(parent);
                 this.temperatureInfo = temperatureInfo;
-                setSlot(new InventoryGuiSlotGeneric(e -> {
-                    if (e.getClick().isLeftClick()) temperatureInfo.degrees += 1;
-                    else temperatureInfo.degrees += 5;
-                    holder.update(null);
-                }, InventoryUtils.makeItem(
-                        Material.REDSTONE, 1, "Temperature increase", Arrays.asList(
-                                "Left click - increase temperature by 1",
-                                "Right click - increase temperature by 5"
-                        )
-                )), 1);
-                setSlot(new InventoryGuiSlotGeneric(e -> {
-                    if (e.getClick().isLeftClick()) temperatureInfo.degrees -= 1;
-                    else temperatureInfo.degrees -= 5;
-                    holder.update(null);
-                }, InventoryUtils.makeItem(
-                        Material.GUNPOWDER, 1, "Temperature decrease", Arrays.asList(
-                                "Left click - decrease temperature by 1",
-                                "Right click - decrease temperature by 5"
-                        )
-                )), 2);
-                setSlot(new InventoryGuiSlotGeneric(e -> {
-                    holder.setTempInventory(null);
-                    holder.update(null);
-                }, InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Save", null)), 8);
-                setSlots();
-            }
 
-            private void setSlots() {
-                setSlot(new InventoryGuiSlotGeneric(e -> {
-                }, () -> InventoryUtils.makeItem(Material.YELLOW_STAINED_GLASS_PANE,
-                        1,
-                        "Temperature",
-                        Collections.singletonList(
-                                String.format("%d degrees", temperatureInfo.degrees)
-                        )
-                )), 0);
             }
 
             @Override
-            public void fillInventory() {
-                super.fillInventory();
-                setSlots();
+            public void initialize() {
+                setSlot(slotImpl(e -> {
+                    temperatureInfo.degrees += e.getClick().isLeftClick() ? 1 : 5;
+                }, makeItem(Material.REDSTONE, 1, "Temperature increase",
+                    Arrays.asList("Left click - increase temperature by 1",
+                        "Right click - increase temperature by 5"))), 1);
+                setSlot(slotImpl(e -> {
+                    temperatureInfo.degrees -= e.getClick().isLeftClick() ? 1 : 5;
+                }, makeItem(Material.GUNPOWDER, 1, "Temperature decrease",
+                    Arrays.asList("Left click - decrease temperature by 1",
+                        "Right click - decrease temperature by 5"))), 2);
+                setSlot(slotImpl(e -> {
+                    parent.parentRemoveSubPage();
+                }, makeItem(Material.GREEN_TERRACOTTA, 1, "Save", null)), 8);
+            }
+
+            @Override
+            public void refreshPageItems() {
+                setSlot(slotImpl(e -> {
+                }, makeItem(Material.YELLOW_STAINED_GLASS_PANE, 1, "Temperature",
+                    Collections.singletonList(
+                        String.format("%d degrees", temperatureInfo.degrees)))), 0);
+                super.finalizePageItems();
             }
 
             @Override
@@ -229,77 +216,26 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
         }
     }
 
-    private class RegisterWindSlot implements InventoryGui.InventoryGuiSlot {
-
-        public RegisterWindSlot() {
-        }
+    private class RegisterWindSlot implements ItemGuiSlotACD {
 
         @Override
         public void dealWithClick(InventoryClickEvent inventoryClickEvent) {
-            biomeTypeGui.setTempInventory(new WindGuiPage());
+            parentAddSubPage(new WindGuiPage(parent));
         }
 
         @Override
         public ItemStack getItem() {
-            return InventoryUtils.makeItem(Material.BLACK_STAINED_GLASS_PANE, 1, "Wind", Arrays.asList(
-                    String.format("%d kph (min)", biome.getWind().kphMin), String.format("%d kph (max)", biome.getWind().kphMax)
-            ));
+            return makeItem(Material.BLACK_STAINED_GLASS_PANE, 1, "Wind",
+                Arrays.asList(String.format("%d kph (min)", biome.getWind().kphMin),
+                    String.format("%d kph (max)", biome.getWind().kphMax)));
         }
 
-        private class WindGuiPage extends InventoryGuiPageSimple {
+        private class WindGuiPage extends InventoryGuiPageImplACD<TMWGui> {
+
             final BiomeType.WindInfo wind = biome.getWind();
 
-            public WindGuiPage() {
-                super(biomeTypeGui);
-                setSlot(new InventoryGuiSlotGeneric(e -> {
-                    if (e.getClick().isLeftClick()) wind.kphMin += 1;
-                    else wind.kphMin += 5;
-                    fixWindMinMax();
-                }, InventoryUtils.makeItem(
-                        Material.REDSTONE, 1, "Wind increase (min)", Arrays.asList(
-                                "Left click - increase kph by 1",
-                                "Right click - increase kph by 5"
-                        )
-                )), 1);
-                setSlot(new InventoryGuiSlotGeneric(e -> {
-                    if (e.getClick().isLeftClick()) wind.kphMax += 1;
-                    else wind.kphMax += 5;
-                    fixWindMinMax();
-                }, InventoryUtils.makeItem(
-                        Material.REDSTONE, 1, "Wind increase (max)", Arrays.asList(
-                                "Left click - increase kph by 1",
-                                "Right click - increase kph by 5"
-                        )
-                )), 2);
-
-
-                setSlot(new InventoryGuiSlotGeneric(e -> {
-                    if (e.getClick().isLeftClick()) wind.kphMin -= 1;
-                    else wind.kphMin -= 5;
-                    fixWindMinMax();
-                }, InventoryUtils.makeItem(
-                        Material.GUNPOWDER, 1, "Wind decrease (min)", Arrays.asList(
-                                "Left click - decrease kph by 1",
-                                "Right click - decrease kph by 5"
-                        )
-                )), 3);
-                setSlot(new InventoryGuiSlotGeneric(e -> {
-                    if (e.getClick().isLeftClick()) wind.kphMax -= 1;
-                    else wind.kphMax -= 5;
-                    fixWindMinMax();
-                }, InventoryUtils.makeItem(
-                        Material.GUNPOWDER, 1, "Wind decrease (max)", Arrays.asList(
-                                "Left click - decrease kph by 1",
-                                "Right click - decrease kph by 5"
-                        )
-                )), 4);
-
-
-                setSlot(new InventoryGuiSlotGeneric(e -> {
-                    biomeTypeGui.setTempInventory(null);
-                    biomeTypeGui.update(null);
-                }, InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Save", null)), 8);
-                setSlots();
+            public WindGuiPage(TMWGui parent) {
+                super(parent);
             }
 
             private void fixWindMinMax() {
@@ -310,21 +246,60 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
                 }
                 wind.kphMin = Math.max(0, wind.kphMin);
                 wind.kphMax = Math.max(0, wind.kphMax);
-                update();
-            }
-
-            private void setSlots() {
-                setSlot(new InventoryGuiSlotGeneric(e -> {
-                }, InventoryUtils.makeItem(Material.BLACK_STAINED_GLASS_PANE, 1, "Wind", Arrays.asList(
-                        String.format("%d kph (min)", wind.kphMin), String.format("%d kph (max)", wind.kphMax)
-                ))
-                ), 0);
+                refresh();
             }
 
             @Override
-            public void fillInventory() {
-                super.fillInventory();
-                setSlots();
+            public void initialize() {
+                setSlot(slotImpl(e -> {
+                    if (e.getClick().isLeftClick()) {
+                        wind.kphMin += 1;
+                    } else {
+                        wind.kphMin += 5;
+                    }
+                    fixWindMinMax();
+                }, makeItem(Material.REDSTONE, 1, "Wind increase (min)",
+                    Arrays.asList("Left click - increase kph by 1",
+                        "Right click - increase kph by 5"))), 1);
+                setSlot(slotImpl(e -> {
+                    if (e.getClick().isLeftClick()) {
+                        wind.kphMax += 1;
+                    } else {
+                        wind.kphMax += 5;
+                    }
+                    fixWindMinMax();
+                }, makeItem(Material.REDSTONE, 1, "Wind increase (max)",
+                    Arrays.asList("Left click - increase kph by 1",
+                        "Right click - increase kph by 5"))), 2);
+
+                setSlot(slotImpl(e -> {
+                    if (e.getClick().isLeftClick()) {
+                        wind.kphMin -= 1;
+                    } else {
+                        wind.kphMin -= 5;
+                    }
+                    fixWindMinMax();
+                }, makeItem(Material.GUNPOWDER, 1, "Wind decrease (min)",
+                    Arrays.asList("Left click - decrease kph by 1",
+                        "Right click - decrease kph by 5"))), 3);
+                setSlot(slotImpl(e -> {
+                    if (e.getClick().isLeftClick()) {
+                        wind.kphMax -= 1;
+                    } else {
+                        wind.kphMax -= 5;
+                    }
+                    fixWindMinMax();
+                }, makeItem(Material.GUNPOWDER, 1, "Wind decrease (max)",
+                    Arrays.asList("Left click - decrease kph by 1",
+                        "Right click - decrease kph by 5"))), 4);
+
+                setSlot(slotImpl(e -> {
+                    this.parentRemoveSubPage();
+                }, makeItem(Material.GREEN_TERRACOTTA, 1, "Save", null)), 8);
+                setSlot(slotImpl(e -> {
+                }, makeItem(Material.BLACK_STAINED_GLASS_PANE, 1, "Wind",
+                    Arrays.asList(String.format("%d kph (min)", wind.kphMin),
+                        String.format("%d kph (max)", wind.kphMax)))), 0);
             }
 
             @Override
@@ -339,23 +314,22 @@ public class BiomeTypeGuiPageSettings extends InventoryGuiPageSimple {
         }
     }
 
-    private class DeleteSlot implements InventoryGui.InventoryGuiSlot {
+    private class DeleteSlot implements ItemGuiSlotACD {
+
         private int deleteCount = 5;
 
         @Override
         public void dealWithClick(InventoryClickEvent event) {
             if (deleteCount-- == 0) {
                 BiomeTypeDatabase.removeBiome(biome);
-                callbackGui.update(null);
-                event.getWhoClicked().openInventory(callbackGui.getInventory());
+                parentRemoveSubPage();
             }
         }
 
         @Override
         public ItemStack getItem() {
-            return InventoryUtils.makeItem(Material.RED_TERRACOTTA, 1, "CLICK 5 TIMES TO DELETE", List.of(
-                    "Note: to simply not save changes,", "just exit your inventory."
-            ));
+            return makeItem(Material.RED_TERRACOTTA, 1, "CLICK 5 TIMES TO DELETE",
+                List.of("Note: to simply not save changes,", "just exit your inventory."));
         }
     }
 }

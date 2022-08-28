@@ -13,17 +13,19 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchTickable;
 
 public class TemperatureWatchPlayer implements WatchTickable {
+
     private static final double TIME_TO_HEAT_CHANGE = 10;
+    private static final int SAVE_INTERVAL = 10;
     private final Player player;
     private final WatchPlayer watchPlayer;
-    private static final int SAVE_INTERVAL = 10;
-    private PlayerTemperatureVisual playerVisual;
+    private final PlayerTemperatureVisual playerVisual;
     private final PlayerTemperature playerInfo;
-    private double wetness = 0;
+    private final double wetness = 0;
     private int saveInterval = SAVE_INTERVAL;
     private int tickCount;
 
-    public TemperatureWatchPlayer(Player player, PlayerTemperatureVisual playerVisual, WatchPlayer watchPlayer) {
+    public TemperatureWatchPlayer(Player player, PlayerTemperatureVisual playerVisual,
+        WatchPlayer watchPlayer) {
         this.player = player;
         this.playerVisual = playerVisual;
         this.playerInfo = watchPlayer.getPlayerInfo();
@@ -37,10 +39,12 @@ public class TemperatureWatchPlayer implements WatchTickable {
             WatchPlayerListener.get().leave(this.player.getUniqueId());
             return;
         }
-        if (this.player.getGameMode() == GameMode.SURVIVAL && PlayerTemperatureCommand.getTemperature()) {
+        if (this.player.getGameMode() == GameMode.SURVIVAL
+            && PlayerTemperatureCommand.getTemperature()) {
             Location location = this.player.getLocation();
             @Nullable BiomeType currentBiome = watchPlayer.getBiomeWatch().getCurrentGuess();
-            double airTemp = currentBiome == null ? 0 : currentBiome.getTypicalTempNow(location.getWorld().getTime());
+            double airTemp = currentBiome == null ? 0
+                : currentBiome.getTypicalTempNow(location.getWorld().getTime());
             double insideness = TemperatureChecks.insideness(location);
             double blockHeatSource = TemperatureChecks.sources(location);
             double wind = TemperatureChecks.wind(currentBiome, location);
@@ -56,13 +60,16 @@ public class TemperatureWatchPlayer implements WatchTickable {
 
             double fluidFactor = TemperatureChecks.fluidFactor(finalWind, playerWetness);
             double boundaries = 150;
-            double airTemp3 = airTemp2 - ((boundaries / (1 + Math.pow(Math.E, (-airTemp2 / boundaries)))) * fluidFactor / 10);
+            double airTemp3 = airTemp2 - (
+                (boundaries / (1 + Math.pow(Math.E, (-airTemp2 / boundaries)))) * fluidFactor / 10);
 
             double feltTemperature = clothing.resistTemp(airTemp3);
-            this.playerInfo.temperature += (feltTemperature - this.playerInfo.temperature) * TmwWatchConfig.getCheckInterval().heatTransferConstant;
+            this.playerInfo.temperature += (feltTemperature - this.playerInfo.temperature)
+                * TmwWatchConfig.getCheckInterval().heatTransferConstant;
             this.playerInfo.doTemperatureEffects(this.playerVisual);
             TextComponent msg = new TextComponent();
-            msg.setText(String.format("final temp - %.2f, biome - %s", this.playerInfo.temperature, currentBiome == null ? "null" : currentBiome.getName()));
+            msg.setText(String.format("final temp - %.2f, biome - %s", this.playerInfo.temperature,
+                currentBiome == null ? "null" : currentBiome.getName()));
             this.player.sendActionBar(msg);
             if (--this.saveInterval <= 0) {
                 this.saveInterval = SAVE_INTERVAL;

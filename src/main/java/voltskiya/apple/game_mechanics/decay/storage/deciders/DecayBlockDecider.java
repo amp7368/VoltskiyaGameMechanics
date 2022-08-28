@@ -6,6 +6,7 @@ import org.jetbrains.annotations.NotNull;
 
 @FunctionalInterface
 public interface DecayBlockDecider extends DecayBlockRequirementAbstract<Material> {
+
     DecayBlockDecider AIR = given(Material.AIR);
 
     @Contract(pure = true)

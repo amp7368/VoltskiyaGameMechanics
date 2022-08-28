@@ -2,8 +2,6 @@ package voltskiya.apple.game_mechanics.tmw.tmw_world.temperature;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import voltskiya.apple.game_mechanics.tmw.PluginTMW;
-
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -12,12 +10,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 
 public class PlayerTemperatureDatabase {
+
     public static final File playerTemperaturesFolder;
     private static final String PLAYER_TEMPERATURES_FOLDER = "playerTemperature";
     private static final HashMap<UUID, PlayerTemperature> playerTemperatures = new HashMap<>();
-    private static Gson gson;
+    private static final Gson gson;
     private static PlayerTemperatureDatabase instance;
 
     static {
@@ -25,10 +25,11 @@ public class PlayerTemperatureDatabase {
         gson = gsonBuilder.create();
 
         // get the playerTemperatures from our db
-        playerTemperaturesFolder = new File(PluginTMW.get().getDataFolder(), PLAYER_TEMPERATURES_FOLDER);
+        playerTemperaturesFolder = new File(PluginTMW.get().getDataFolder(),
+            PLAYER_TEMPERATURES_FOLDER);
         playerTemperaturesFolder.mkdirs();
         final File[] files = playerTemperaturesFolder.listFiles();
-        if (files != null)
+        if (files != null) {
             for (File file : files) {
                 try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
                     PlayerTemperature temp = gson.fromJson(reader, PlayerTemperature.class);
@@ -37,6 +38,7 @@ public class PlayerTemperatureDatabase {
                     e.printStackTrace();
                 }
             }
+        }
 
     }
 

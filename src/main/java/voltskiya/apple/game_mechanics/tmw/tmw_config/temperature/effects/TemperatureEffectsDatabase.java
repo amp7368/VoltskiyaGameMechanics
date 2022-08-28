@@ -2,12 +2,21 @@ package voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.effects;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 
-import java.io.*;
-import java.util.*;
-
 public class TemperatureEffectsDatabase {
+
     private static final String EFFECTS_FOLDER = "effect";
     private static final File EFFECTS_FILE;
     private static final Gson gson;

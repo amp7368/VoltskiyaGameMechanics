@@ -1,6 +1,7 @@
 package voltskiya.apple.game_mechanics.tmw.sql;
 
 public class SqlVariableNames {
+
     public static final String X = "x";
     public static final String Y = "y";
     public static final String Z = "z";
@@ -16,6 +17,7 @@ public class SqlVariableNames {
     public static final String TABLE_MATERIAL = "material";
 
     public static class ChunkSql {
+
         public static final String TABLE_CHUNK = "chunk";
         public static final String CHUNK_UID = "chunk_uid";
         public static final String BIOME_GUESS_UID = "biome_guess_uid";
@@ -31,6 +33,7 @@ public class SqlVariableNames {
     }
 
     public static class Contour {
+
         public static final String TABLE_CONTOUR = "contour";
         public static final String CHUNK_UID = "chunk_uid";
         public static final String CHUNK_X = "chunk_x";
@@ -45,11 +48,13 @@ public class SqlVariableNames {
     }
 
     public static class Kills {
+
         public static final String TABLE_CHUNK_KILL = "chunk_kill";
         public static final String TIME = "time_of_kill";
     }
 
     public static class Decay {
+
         // table
         public static final String TABLE_DECAY_BLOCK = "decay_block";
 

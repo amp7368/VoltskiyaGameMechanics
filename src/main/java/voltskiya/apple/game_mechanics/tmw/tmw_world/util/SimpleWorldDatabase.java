@@ -3,13 +3,13 @@ package voltskiya.apple.game_mechanics.tmw.tmw_world.util;
 import apple.utilities.database.SaveFileable;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-
 import java.util.HashMap;
 import java.util.UUID;
 
 public class SimpleWorldDatabase implements SaveFileable {
+
     private static SimpleWorldDatabase instance;
-    private HashMap<UUID, Integer> realToMyWorldSaved = new HashMap<>();
+    private final HashMap<UUID, Integer> realToMyWorldSaved = new HashMap<>();
     private transient BiMap<UUID, Integer> realToMyWorld = null;
 
     public SimpleWorldDatabase() {

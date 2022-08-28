@@ -1,15 +1,18 @@
 package voltskiya.apple.game_mechanics.decay;
 
-import plugin.util.plugin.plugin.util.plugin.PluginManagedModule;
+import apple.lib.pmc.PluginModule;
+import apple.mc.utilities.PluginModuleMcUtil;
+import apple.mc.utilities.player.wand.WandType;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDatabase;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDefaultsDatabase;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockSettingsDatabase;
 import voltskiya.apple.game_mechanics.decay.storage.DecaySqlStorage;
 import voltskiya.apple.game_mechanics.decay.storage.MaterialDatabase;
 import voltskiya.apple.game_mechanics.decay.world.WatchBlockBreak;
-import voltskiya.apple.utilities.util.wand.WandToolList;
 
-public class PluginDecay extends PluginManagedModule {
+public class PluginDecay extends PluginModule implements PluginModuleMcUtil {
+
+    public static WandType<DecayWand> DECAY_WAND;
     private static PluginDecay instance;
 
     public static PluginDecay get() {
@@ -29,7 +32,7 @@ public class PluginDecay extends PluginManagedModule {
         DecayBlockDatabase.load();
         new WatchBlockBreak();
         new DecayCommand();
-        WandToolList.addWand(DecayWand.WAND_KEY, DecayWand::new);
+        DECAY_WAND = createWand(DecayWand::new, "decay_wand");
         new DecaySqlStorage.SaveDaemon();
     }
 

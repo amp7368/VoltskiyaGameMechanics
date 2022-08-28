@@ -1,18 +1,18 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.biomes;
 
-import net.minecraft.resources.MinecraftKey;
+import apple.mc.utilities.inventory.item.InventoryUtils;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import net.minecraft.resources.ResourceLocation;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class BiomeType {
+
     private final BiomeTypeBuilder.BiomeIcon icon;
     private final HashMap<MobType, Integer> mobs;
     private final int spawnRate;
@@ -26,7 +26,8 @@ public class BiomeType {
         this.mobs = builder.mobs;
         this.dailyTemperatures = builder.dailyTemperatures;
         this.windInfo = builder.windInfo;
-        this.biomeUid = builder.biomeUid <= 0 ? BiomeTypeDatabase.getCurrentBiomeUid() : builder.biomeUid;
+        this.biomeUid =
+            builder.biomeUid <= 0 ? BiomeTypeDatabase.getCurrentBiomeUid() : builder.biomeUid;
     }
 
     public ItemStack toItem() {
@@ -60,8 +61,10 @@ public class BiomeType {
     }
 
     public int getTypicalTempNow(long time) {
-        final TemperatureInfo temperatureInfo = dailyTemperatures.get(TemperatureTime.getTime(time));
-        return temperatureInfo == null ? -100 : temperatureInfo.degrees; // null should be impossible
+        final TemperatureInfo temperatureInfo = dailyTemperatures.get(
+            TemperatureTime.getTime(time));
+        return temperatureInfo == null ? -100
+            : temperatureInfo.degrees; // null should be impossible
     }
 
     public double getWind() {
@@ -73,7 +76,9 @@ public class BiomeType {
     }
 
     public void validateUid() {
-        if (this.biomeUid <= 0) this.biomeUid = BiomeTypeDatabase.getCurrentBiomeUid();
+        if (this.biomeUid <= 0) {
+            this.biomeUid = BiomeTypeDatabase.getCurrentBiomeUid();
+        }
     }
 
     public double getUsefulSpawnRate() {
@@ -105,20 +110,26 @@ public class BiomeType {
         public static TemperatureTime getTime(long time) {
             time += 6000;
             time %= 24000;
-            if (time < 3000) return MIDNIGHT;
-            else if (time < 9000) return MORNING;
-            else if (time < 16000) return NOON;
-            else return EVENING;
+            if (time < 3000) {
+                return MIDNIGHT;
+            } else if (time < 9000) {
+                return MORNING;
+            } else if (time < 16000) {
+                return NOON;
+            } else {
+                return EVENING;
+            }
         }
     }
 
     public static class BiomeTypeBuilder {
+
+        public HashMap<MobType, Integer> mobs = new HashMap<>();
+        public int biomeUid = -1;
         private BiomeIcon icon;
         private int spawnRate = 0;
-        public HashMap<MobType, Integer> mobs = new HashMap<>();
         private HashMap<TemperatureTime, TemperatureInfo> dailyTemperatures = new HashMap<>();
         private WindInfo windInfo;
-        public int biomeUid = -1;
 
         public BiomeTypeBuilder(BiomeType real) {
             this.icon = real.icon;
@@ -127,18 +138,24 @@ public class BiomeType {
             this.dailyTemperatures = real.dailyTemperatures;
             this.windInfo = real.windInfo;
             this.biomeUid = real.biomeUid;
-            if (this.windInfo == null) this.windInfo = new WindInfo();
-            if (this.dailyTemperatures == null) this.dailyTemperatures = new HashMap<>();
-            for (TemperatureTime time : TemperatureTime.values())
+            if (this.windInfo == null) {
+                this.windInfo = new WindInfo();
+            }
+            if (this.dailyTemperatures == null) {
+                this.dailyTemperatures = new HashMap<>();
+            }
+            for (TemperatureTime time : TemperatureTime.values()) {
                 this.dailyTemperatures.putIfAbsent(time, new TemperatureInfo());
+            }
 
         }
 
         public BiomeTypeBuilder() {
             icon = null;
             this.windInfo = new WindInfo();
-            for (TemperatureTime time : TemperatureTime.values())
+            for (TemperatureTime time : TemperatureTime.values()) {
                 this.dailyTemperatures.putIfAbsent(time, new TemperatureInfo());
+            }
         }
 
         public void setIcon(BiomeIcon icon) {
@@ -146,7 +163,9 @@ public class BiomeType {
         }
 
         public ItemStack getIconItem() {
-            return icon == null ? InventoryUtils.makeItem(Material.LEVER, 1, "No spawn egg", null) : icon.toItem();
+            return icon == null ? InventoryUtils
+                .get()
+                .makeItem(Material.LEVER, 1, "No spawn egg", null) : icon.toItem();
         }
 
         public BiomeType build() {
@@ -206,11 +225,12 @@ public class BiomeType {
             this.mobs.remove(mob);
         }
 
-        public List<MinecraftKey> getMinecraftBiomes() {
+        public List<ResourceLocation> getMinecraftBiomes() {
             return BiomeTypeDatabase.get().getMinecraftBiomes(this);
         }
 
         public static class BiomeIcon {
+
             private final String name;
             private final Material material;
             private final List<String> lore;
@@ -237,10 +257,12 @@ public class BiomeType {
     }
 
     public static class TemperatureInfo {
+
         public int degrees = 0;
     }
 
     public static class WindInfo {
+
         public int kphMin = 0;
         public int kphMax = 0;
     }

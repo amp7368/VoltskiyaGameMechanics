@@ -1,5 +1,8 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world.mobs;
 
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Entity;
@@ -10,10 +13,6 @@ import org.jetbrains.annotations.NotNull;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.tmw.sql.MobSqlStorage;
 import voltskiya.apple.game_mechanics.tmw.sql.TmwStoredMob;
-
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MobListener implements Listener {
 
@@ -36,7 +35,8 @@ public class MobListener implements Listener {
             if (uniqueName != null) {
                 long despawnAtTime = Long.MAX_VALUE;
                 for (String tag : entity.getScoreboardTags()) {
-                    if (tag.startsWith(DESPAWN_AT_TIME) && tag.length() > DESPAWN_AT_TIME.length()) {
+                    if (tag.startsWith(DESPAWN_AT_TIME)
+                        && tag.length() > DESPAWN_AT_TIME.length()) {
                         try {
                             despawnAtTime = Long.parseLong(tag.substring(DESPAWN_AT_TIME.length()));
                         } catch (NumberFormatException e) {
@@ -46,7 +46,9 @@ public class MobListener implements Listener {
                 }
 
                 try {
-                    mobsToSave.add(new TmwStoredMob(x, y, z, location.getWorld().getUID(), uniqueName, despawnAtTime));
+                    mobsToSave.add(
+                        new TmwStoredMob(x, y, z, location.getWorld().getUID(), uniqueName,
+                            despawnAtTime));
                     entity.remove();
                     break;
                 } catch (SQLException e) {

@@ -6,6 +6,7 @@ import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.decay.config.gui.template.variant.BlockSizeType;
 
 public class MaterialVariant {
+
     public DecayBlockTemplateRequiredTypeJoined requirementsType;
     public Material material;
     public double chance;

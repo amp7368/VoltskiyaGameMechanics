@@ -1,16 +1,16 @@
 package voltskiya.apple.game_mechanics.decay.config.template;
 
+import apple.mc.utilities.inventory.item.ItemSerial;
+import java.util.HashMap;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockSettingsDatabase;
-import voltskiya.apple.utilities.util.minecraft.ItemSerializable;
-
-import java.util.HashMap;
-import java.util.UUID;
 
 public class DecayBlockTemplateGrouping {
+
     private transient DecayBlockTemplateGroupingSettings settings = null;
-    private ItemSerializable icon;
+    private ItemSerial icon;
     private HashMap<Material, DecayBlockTemplate> blocksInGroup;
     private HashMap<Material, DecayInto> decayInto;
     private UUID settingsUUID;
@@ -26,14 +26,14 @@ public class DecayBlockTemplateGrouping {
     }
 
     public DecayBlockTemplateGrouping(ItemStack currentItem) {
-        this.icon = new ItemSerializable(currentItem, true);
+        this.icon = new ItemSerial(currentItem, true);
         this.blocksInGroup = new HashMap<>();
         this.decayInto = new HashMap<>();
         this.settings = null;
         this.settingsUUID = null;
     }
 
-    public ItemSerializable getIcon() {
+    public ItemSerial getIcon() {
         return icon;
     }
 
@@ -59,7 +59,9 @@ public class DecayBlockTemplateGrouping {
 
     public DecayBlockTemplateGroupingSettings getSettings() {
         validateSettings();
-        if (settings == null) return DecayBlockTemplateGroupingSettings.DEFAULT;
+        if (settings == null) {
+            return DecayBlockTemplateGroupingSettings.DEFAULT;
+        }
         return settings;
     }
 

@@ -1,15 +1,16 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.gui;
 
+import apple.mc.utilities.inventory.gui.acd.page.InventoryGuiPageScrollableACD;
 import org.bukkit.Material;
-import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
-import voltskiya.apple.utilities.util.gui.InventoryGuiPageScrollable;
-import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.TMWGui;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType.MobTypeBuilder;
 
-public class MobTypeGuiPageSpawnConditions extends InventoryGuiPageScrollable {
-    public MobTypeGuiPageSpawnConditions(MobTypeGui mobTypeGui, MobType.MobTypeBuilder mob) {
+public class MobTypeGuiPageSpawnConditions extends InventoryGuiPageScrollableACD<TMWGui> {
+
+    public MobTypeGuiPageSpawnConditions(TMWGui mobTypeGui, MobTypeBuilder mob) {
         super(mobTypeGui);
-        setSlot(new InventoryGuiSlotGeneric((e) -> mobTypeGui.nextPage(-1), InventoryUtils.makeItem(Material.RED_TERRACOTTA, 1, "Previous Page", null)
+        setSlot(slotImpl((e) -> parentRemoveSubPage(),
+            makeItem(Material.RED_TERRACOTTA, 1, "Previous Page", null)
         ), 0);
     }
 
@@ -21,10 +22,5 @@ public class MobTypeGuiPageSpawnConditions extends InventoryGuiPageScrollable {
     @Override
     public int size() {
         return 54;
-    }
-
-    @Override
-    protected int getScrollIncrement() {
-        return 8;
     }
 }

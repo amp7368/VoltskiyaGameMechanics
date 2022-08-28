@@ -1,14 +1,15 @@
 package voltskiya.apple.game_mechanics.tmw.sql;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 
 @Table(name = SqlVariableNames.Contour.TABLE_CONTOUR)
 @Entity(name = SqlVariableNames.Contour.TABLE_CONTOUR)
 public class TmwMapContour {
+
     @Id
     @Column(name = SqlVariableNames.Contour.CHUNK_UID, nullable = false)
     public long chunk_uid;
@@ -36,7 +37,9 @@ public class TmwMapContour {
     public TmwMapContour() {
     }
 
-    public TmwMapContour(long chunk_uid, int worldMyUid, int chunk_x, int chunk_z, Long bride_x_pos, Long bride_x_neg, Long bride_z_pos, Long bride_z_neg, int middle_x, int middle_y, int middle_z) {
+    public TmwMapContour(long chunk_uid, int worldMyUid, int chunk_x, int chunk_z, Long bride_x_pos,
+        Long bride_x_neg, Long bride_z_pos, Long bride_z_neg, int middle_x, int middle_y,
+        int middle_z) {
         this.chunk_uid = chunk_uid;
         this.worldMyUid = worldMyUid;
         this.chunk_x = chunk_x;

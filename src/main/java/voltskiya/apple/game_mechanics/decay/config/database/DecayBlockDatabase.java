@@ -2,6 +2,9 @@ package voltskiya.apple.game_mechanics.decay.config.database;
 
 import apple.utilities.database.SaveFileable;
 import apple.utilities.database.singleton.AppleJsonDatabaseSingleton;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -11,11 +14,8 @@ import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateGr
 import voltskiya.apple.game_mechanics.decay.config.template.MaterialVariant;
 import voltskiya.apple.game_mechanics.util.FileIOService;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 public class DecayBlockDatabase implements SaveFileable {
+
     private static DecayBlockDatabase instance;
     private static AppleJsonDatabaseSingleton<DecayBlockDatabase> databaseManager;
     private transient final HashMap<Material, DecayBlockTemplateGrouping> allBlocks = new HashMap<>();
@@ -23,10 +23,11 @@ public class DecayBlockDatabase implements SaveFileable {
 
     public static void load() {
         databaseManager = new AppleJsonDatabaseSingleton<>(
-                PluginDecay.get().getFile("decayBlocks"),
-                FileIOService.get()
+            PluginDecay.get().getFile("decayBlocks"),
+            FileIOService.get()
         );
-        @Nullable DecayBlockDatabase database = databaseManager.loadNow(DecayBlockDatabase.class, getSaveFileNameStatic());
+        @Nullable DecayBlockDatabase database = databaseManager.loadNow(DecayBlockDatabase.class,
+            getSaveFileNameStatic());
         if (database == null) {
             instance = new DecayBlockDatabase();
             save();
@@ -47,8 +48,11 @@ public class DecayBlockDatabase implements SaveFileable {
     }
 
     public synchronized static void addBlock(DecayBlockTemplateGrouping grouping) {
-        DecayBlockTemplateGrouping oldGrouping = instance.blocks.put(grouping.getIcon().getMaterial(), grouping);
-        if (oldGrouping != null) oldGrouping.setDeleted(true);
+        DecayBlockTemplateGrouping oldGrouping = instance.blocks.put(
+            grouping.getIcon().getMaterial(), grouping);
+        if (oldGrouping != null) {
+            oldGrouping.setDeleted(true);
+        }
         grouping.setDeleted(false);
         for (DecayBlockTemplate blockTemplate : grouping.getBlocks().values()) {
             for (MaterialVariant material : blockTemplate.getMaterials().values()) {
@@ -73,8 +77,11 @@ public class DecayBlockDatabase implements SaveFileable {
     }
 
     @Nullable
-    public static DecayBlockTemplate getBlock(DecayBlockTemplateGrouping grouping, Material material) {
-        if (material == null || material.isAir()) return null;
+    public static DecayBlockTemplate getBlock(DecayBlockTemplateGrouping grouping,
+        Material material) {
+        if (material == null || material.isAir()) {
+            return null;
+        }
         DecayBlockTemplate block = grouping == null ? null : grouping.getBlock(material);
         if (block == null) {
             return DecayBlockTemplate.defaultWithMaterial(material);
@@ -84,7 +91,9 @@ public class DecayBlockDatabase implements SaveFileable {
 
     @Nullable
     public static DecayBlockTemplateGrouping getGroup(Material material) {
-        if (material == null || material.isAir()) return null;
+        if (material == null || material.isAir()) {
+            return null;
+        }
         return get().allBlocks.get(material);
     }
 
@@ -95,13 +104,13 @@ public class DecayBlockDatabase implements SaveFileable {
 
     }
 
-    @Override
-    public String getSaveFileName() {
-        return getSaveFileNameStatic();
-    }
-
     @NotNull
     private static String getSaveFileNameStatic() {
         return "decayBlocksDB.json";
+    }
+
+    @Override
+    public String getSaveFileName() {
+        return getSaveFileNameStatic();
     }
 }

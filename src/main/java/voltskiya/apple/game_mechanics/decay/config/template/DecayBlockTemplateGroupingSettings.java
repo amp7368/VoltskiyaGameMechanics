@@ -1,15 +1,16 @@
 package voltskiya.apple.game_mechanics.decay.config.template;
 
+import apple.mc.utilities.inventory.item.InventoryUtils;
+import apple.mc.utilities.inventory.item.ItemSerial;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDefaultsDatabase;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
-import voltskiya.apple.utilities.util.minecraft.ItemSerializable;
-
-import java.util.UUID;
 
 public class DecayBlockTemplateGroupingSettings {
-    public static final DecayBlockTemplateGroupingSettings DEFAULT = createDefault(InventoryUtils.makeItem(Material.COMMAND_BLOCK, "DEFAULT"));
+
+    public static final DecayBlockTemplateGroupingSettings DEFAULT = createDefault(
+        InventoryUtils.get().makeItem(Material.COMMAND_BLOCK, "DEFAULT"));
 
     static {
         DEFAULT.uuid = UUID.fromString("68a069a5-5a9e-4422-a71c-f3fc2c8f6e0c");
@@ -18,12 +19,12 @@ public class DecayBlockTemplateGroupingSettings {
     private UUID uuid;
     private int durability;
     private int resistance;
-    private ItemSerializable icon;
+    private ItemSerial icon;
 
     private DecayBlockTemplateGroupingSettings() {
     }
 
-    public DecayBlockTemplateGroupingSettings(ItemSerializable icon) {
+    public DecayBlockTemplateGroupingSettings(ItemSerial icon) {
         uuid = UUID.randomUUID();
         this.icon = icon;
         this.durability = DecayBlockDefaultsDatabase.getDurability();
@@ -38,7 +39,7 @@ public class DecayBlockTemplateGroupingSettings {
     }
 
     public static DecayBlockTemplateGroupingSettings createDefault(ItemStack item) {
-        return new DecayBlockTemplateGroupingSettings(new ItemSerializable(item, true));
+        return new DecayBlockTemplateGroupingSettings(new ItemSerial(item, true));
     }
 
     public UUID getUuid() {

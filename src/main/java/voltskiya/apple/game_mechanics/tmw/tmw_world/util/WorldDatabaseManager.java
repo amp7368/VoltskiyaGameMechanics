@@ -5,14 +5,14 @@ import apple.utilities.request.AppleRequestQueue;
 import apple.utilities.request.settings.RequestSettingsBuilder;
 import apple.utilities.request.settings.RequestSettingsBuilderVoid;
 import apple.utilities.util.FileFormatting;
+import java.io.File;
+import java.util.Collection;
 import org.jetbrains.annotations.NotNull;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.util.FileIOService;
 
-import java.io.File;
-import java.util.Collection;
-
 public class WorldDatabaseManager implements AppleJsonDatabaseManager<SimpleWorldDatabase> {
+
     private static final WorldDatabaseManager instance = new WorldDatabaseManager();
 
     public static WorldDatabaseManager get() {

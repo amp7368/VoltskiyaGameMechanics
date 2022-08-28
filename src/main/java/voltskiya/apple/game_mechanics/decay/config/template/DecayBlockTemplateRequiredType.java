@@ -1,8 +1,8 @@
 package voltskiya.apple.game_mechanics.decay.config.template;
 
+import apple.utilities.util.BooleanUtils;
 import apple.utilities.util.NumberUtils;
 import org.bukkit.Material;
-import org.bukkit.craftbukkit.libs.org.apache.commons.lang3.BooleanUtils;
 import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockContext;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockRequirementAbstract;
@@ -23,18 +23,28 @@ public enum DecayBlockTemplateRequiredType implements DecayBlockRequirementAbstr
         for (int focus = 0; focus < 3; focus++) {
             int isWall = 0;
             for (int xi = -1; xi <= 1; xi++) {
-                if (focus != 0 && xi != 1) continue;
+                if (focus != 0 && xi != 1) {
+                    continue;
+                }
                 for (int yi = -1; yi <= 1; yi++) {
-                    if (focus != 1 && yi != 1) continue;
+                    if (focus != 1 && yi != 1) {
+                        continue;
+                    }
                     for (int zi = -1; zi <= 1; zi++) {
-                        if (focus != 2 && zi != 1) continue;
+                        if (focus != 2 && zi != 1) {
+                            continue;
+                        }
                         int xii = xi + x;
                         int yii = yi + y;
                         int zii = zi + z;
-                        if (BooleanUtils.and(NumberUtils.betweenMultiple(0, blocks.length, xii, yii, zii))) {
+                        if (BooleanUtils.and(
+                            NumberUtils.betweenMultiple(0, blocks.length, xii, yii, zii))) {
                             Material estimate = blocks[xii][yii][zii].estimate();
-                            if (estimate != null && !estimate.isAir() && estimate.getBlastResistance() != 0) {
-                                if (++isWall >= 4) return true;
+                            if (estimate != null && !estimate.isAir()
+                                && estimate.getBlastResistance() != 0) {
+                                if (++isWall >= 4) {
+                                    return true;
+                                }
                             }
                         }
                     }
@@ -52,10 +62,13 @@ public enum DecayBlockTemplateRequiredType implements DecayBlockRequirementAbstr
                 int xii = xi + x;
                 int yii = -1 + y;
                 int zii = zi + z;
-                if (BooleanUtils.and(NumberUtils.betweenMultiple(0, blocks.length, xii, yii, zii))) {
+                if (BooleanUtils.and(
+                    NumberUtils.betweenMultiple(0, blocks.length, xii, yii, zii))) {
                     Material estimate = blocks[xii][yii][zii].estimate();
                     if (estimate != null && !estimate.isAir()) {
-                        if (++isWall >= 3) return true;
+                        if (++isWall >= 3) {
+                            return true;
+                        }
                     }
                 }
             }
@@ -71,10 +84,14 @@ public enum DecayBlockTemplateRequiredType implements DecayBlockRequirementAbstr
                 int xii = xi + x;
                 int yii = 1 + y;
                 int zii = zi + z;
-                if (BooleanUtils.and(NumberUtils.betweenMultiple(0, blocks.length, xii, yii, zii))) {
+                if (BooleanUtils.and(
+                    NumberUtils.betweenMultiple(0, blocks.length, xii, yii, zii))) {
                     Material estimate = blocks[xii][yii][zii].estimate();
-                    if (estimate == null || estimate.isAir() || estimate.getBlastResistance() == 0) {
-                        if (++isAir >= 4) return true;
+                    if (estimate == null || estimate.isAir()
+                        || estimate.getBlastResistance() == 0) {
+                        if (++isAir >= 4) {
+                            return true;
+                        }
                     }
                 }
             }

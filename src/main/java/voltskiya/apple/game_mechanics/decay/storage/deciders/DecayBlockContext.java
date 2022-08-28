@@ -1,12 +1,12 @@
 package voltskiya.apple.game_mechanics.decay.storage.deciders;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateRequiredType;
 import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 public class DecayBlockContext {
+
     public static final DecayBlockContext EMPTY = new DecayBlockContext();
     private final DecayBlock[][][] blocksToDecay;
     private Collection<DecayBlockTemplateRequiredType> given = null;
@@ -23,8 +23,9 @@ public class DecayBlockContext {
         if (given == null) {
             given = new ArrayList<>();
             for (DecayBlockTemplateRequiredType requiredType : DecayBlockTemplateRequiredType.values()) {
-                if (requiredType.decide(this, x, y, z))
+                if (requiredType.decide(this, x, y, z)) {
                     given.add(requiredType);
+                }
             }
         }
         return given;

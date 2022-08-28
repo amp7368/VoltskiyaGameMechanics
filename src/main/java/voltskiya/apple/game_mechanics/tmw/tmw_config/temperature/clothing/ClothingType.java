@@ -1,13 +1,13 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.clothing;
 
+import apple.mc.utilities.item.material.ArmorType;
+import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import voltskiya.apple.utilities.util.minecraft.ArmorType;
-
-import java.util.List;
 
 public class ClothingType {
+
     private final ClothingTypeBuilder.ClothingIcon icon;
     private final ArmorType clothingPlace;
     private final double windProtection;
@@ -65,6 +65,7 @@ public class ClothingType {
     }
 
     public static class ClothingTypeBuilder {
+
         private ClothingTypeBuilder.ClothingIcon icon = null;
         private ArmorType clothingPlace = null;
         private double windProtection = 0;
@@ -135,6 +136,7 @@ public class ClothingType {
         }
 
         public static class ClothingIcon {
+
             private final String name;
             private final Material material;
             private final List<String> lore;

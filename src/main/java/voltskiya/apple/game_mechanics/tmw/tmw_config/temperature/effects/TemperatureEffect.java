@@ -1,15 +1,15 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.effects;
 
+import apple.mc.utilities.inventory.item.InventoryUtils;
+import java.util.Collections;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
-
-import java.util.Collections;
-import java.util.UUID;
 
 public class TemperatureEffect {
+
     private String uuid;
     private double temperatureStart;
     private String potionEffectType;
@@ -63,11 +63,8 @@ public class TemperatureEffect {
     }
 
     public ItemStack toItem() {
-        return InventoryUtils.makeItem(Material.POTION, 1, potionEffectType,
-                Collections.singletonList(
-                        String.format("Start: %.1f", temperatureStart)
-                )
-        );
+        return InventoryUtils.get().makeItem(Material.POTION, 1, potionEffectType,
+            Collections.singletonList(String.format("Start: %.1f", temperatureStart)));
     }
 
     public PotionEffect getPotionData() {
@@ -76,6 +73,7 @@ public class TemperatureEffect {
     }
 
     public static class TemperatureEffectBuilder {
+
         private UUID uuid = UUID.randomUUID();
         private double temperatureStart = 0;
         private PotionEffectType potionEffectType = null;

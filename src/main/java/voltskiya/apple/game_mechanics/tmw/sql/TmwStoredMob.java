@@ -1,22 +1,27 @@
 package voltskiya.apple.game_mechanics.tmw.sql;
 
-import net.minecraft.server.level.WorldServer;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import java.sql.SQLException;
+import java.util.Set;
+import java.util.UUID;
+import net.minecraft.server.level.ServerLevel;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.World;
-import org.bukkit.craftbukkit.v1_17_R1.CraftWorld;
+import org.bukkit.craftbukkit.v1_19_R1.CraftWorld;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 
-import javax.persistence.*;
-import java.sql.SQLException;
-import java.util.Set;
-import java.util.UUID;
-
 @Entity(name = "stored_mob")
 @Table(name = "stored_mob")
 public class TmwStoredMob {
+
     private static final String VOLT_MOB = "volt.mob.";
     @Id
     @Column(name = SqlVariableNames.MOB_MY_UID)
@@ -41,7 +46,8 @@ public class TmwStoredMob {
     public TmwStoredMob() {
     }
 
-    public TmwStoredMob(int x, int y, int z, UUID worldUUID, String uniqueName, long despawnTime) throws SQLException {
+    public TmwStoredMob(int x, int y, int z, UUID worldUUID, String uniqueName, long despawnTime)
+        throws SQLException {
         this.uid = VerifyDatabaseTmw.getMobMyUid();
         this.x = x;
         this.y = y;
@@ -78,9 +84,11 @@ public class TmwStoredMob {
         return VOLT_MOB + uniqueName;
     }
 
-    public WorldServer getNmsWorld() {
+    public ServerLevel getNmsWorld() {
         @Nullable World world = getWorld();
-        if (world == null) return null;
+        if (world == null) {
+            return null;
+        }
         return ((CraftWorld) world).getHandle();
     }
 
@@ -90,5 +98,9 @@ public class TmwStoredMob {
             this.worldUUID = SimpleWorldDatabase.getWorld(myWorldUid);
         }
         return Bukkit.getWorld(worldUUID);
+    }
+
+    public Location getLocation() {
+        return new Location(getWorld(), x, y, z);
     }
 }

@@ -1,12 +1,12 @@
 package voltskiya.apple.game_mechanics.tmw.sql;
 
 import apple.utilities.request.AppleRequestService;
+import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 
-import java.util.List;
-
 public class BiomeSqlStorage extends AppleRequestService {
+
     public static void insertContour(List<TmwMapContour> chunks) {
         try (Session session = VerifyDatabaseTmw.sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();

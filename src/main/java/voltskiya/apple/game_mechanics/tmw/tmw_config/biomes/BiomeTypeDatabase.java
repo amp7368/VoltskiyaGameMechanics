@@ -1,41 +1,40 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.biomes;
 
+import apple.lib.pmc.FileIOServiceNow;
+import apple.mc.utilities.data.serialize.GsonSerializeMC;
 import apple.utilities.database.SaveFileable;
-import apple.utilities.database.singleton.AppleJsonDatabaseSingleton;
+import apple.utilities.database.ajd.AppleAJD;
+import apple.utilities.database.ajd.AppleAJDInst;
+import apple.utilities.threading.service.queue.AsyncTaskQueue;
 import apple.utilities.util.FileFormatting;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.minecraft.resources.MinecraftKey;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import net.minecraft.resources.ResourceLocation;
 import org.jetbrains.annotations.Nullable;
-import plugin.util.plugin.plugin.util.plugin.FileIOServiceNow;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
-import voltskiya.apple.utilities.util.storage.GsonTypeAdapterUtils;
-
-import java.io.File;
-import java.util.*;
 
 public class BiomeTypeDatabase implements SaveFileable {
-    private static AppleJsonDatabaseSingleton<BiomeTypeDatabase> databaseManager;
+
+    private static AppleAJDInst<BiomeTypeDatabase, AsyncTaskQueue> manager;
     private static int currentBiomeUid = 1;
     private final HashMap<String, BiomeType> biomesByName = new HashMap<>();
-
-    private static BiomeTypeDatabase instance;
-    private final HashMap<MinecraftKey, String> biomeKeyToName = new HashMap<>();
-
-    public BiomeTypeDatabase() {
-        instance = this;
-    }
+    private final HashMap<ResourceLocation, String> biomeKeyToName = new HashMap<>();
 
     public static void load() {
-        final GsonBuilder gsonBuilder = new GsonBuilder();
+        GsonBuilder gsonBuilder = new GsonBuilder();
         gsonBuilder.registerTypeHierarchyAdapter(MobType.class, MobType.MobTypeSerializer.get());
-        GsonTypeAdapterUtils.registerMinecraftKeyTypeAdapter(gsonBuilder);
-        Gson gson = gsonBuilder.create();
-        File folder = PluginTMW.get().getFile("biomes");
-        databaseManager = new AppleJsonDatabaseSingleton<>(folder, FileIOServiceNow.get(), gson);
-        databaseManager.loadNow(BiomeTypeDatabase.class, getFileNameStatic());
-        if (instance == null) instance = new BiomeTypeDatabase();
+        GsonSerializeMC.registerMinecraftKeyTypeAdapter(gsonBuilder);
+        File folder = PluginTMW.get().getFile("biomes", "BiomesDB.json");
+        manager = AppleAJD.createInst(BiomeTypeDatabase.class, folder,
+            FileIOServiceNow.get().taskCreator());
+        manager.setSerializingJson(gsonBuilder.create());
+        BiomeTypeDatabase instance = manager.loadOrMake();
         for (BiomeType biome : instance.biomesByName.values())
             currentBiomeUid = Math.max(currentBiomeUid, biome.getUid());
         for (BiomeType biome : instance.biomesByName.values())
@@ -47,7 +46,7 @@ public class BiomeTypeDatabase implements SaveFileable {
     }
 
     private static void save() {
-        databaseManager.save(instance);
+        manager.save();
     }
 
     public synchronized static void addBiome(BiomeType biome) {
@@ -60,12 +59,14 @@ public class BiomeTypeDatabase implements SaveFileable {
     }
 
     public static BiomeTypeDatabase get() {
-        return instance;
+        return manager.getInstance();
     }
 
     public static void removeBiome(BiomeType.BiomeTypeBuilder biome) {
         final String key = biome.getName();
-        if (key == null) return;
+        if (key == null) {
+            return;
+        }
         get().biomesByName.remove(key);
         save();
 
@@ -76,31 +77,9 @@ public class BiomeTypeDatabase implements SaveFileable {
     }
 
     @Nullable
-    public static BiomeType getBiome(MinecraftKey key) {
-        String biome = instance.biomeKeyToName.get(key);
-        return biome == null ? null : instance.biomesByName.get(biome);
-    }
-
-    public void addBiomeMapping(MinecraftKey minecraft, String name) {
-        this.biomeKeyToName.put(minecraft, name);
-        save();
-    }
-
-    public List<MinecraftKey> getMinecraftBiomes(BiomeType.BiomeTypeBuilder biome) {
-        final String key = biome.getName();
-        if (key == null) return Collections.emptyList();
-        List<MinecraftKey> minecraft = new ArrayList<>();
-        for (Map.Entry<MinecraftKey, String> biomeKey : biomeKeyToName.entrySet()) {
-            if (key.equals(biomeKey.getValue())) {
-                minecraft.add(biomeKey.getKey());
-            }
-        }
-        return minecraft;
-    }
-
-    @Override
-    public String getSaveFileName() {
-        return getFileNameStatic();
+    public static BiomeType getBiome(ResourceLocation key) {
+        String biome = get().biomeKeyToName.get(key);
+        return biome == null ? null : get().biomesByName.get(biome);
     }
 
     @Nullable
@@ -113,7 +92,31 @@ public class BiomeTypeDatabase implements SaveFileable {
         return null;
     }
 
-    public void removeMapping(MinecraftKey minecraftBiome) {
+    public void addBiomeMapping(ResourceLocation minecraft, String name) {
+        this.biomeKeyToName.put(minecraft, name);
+        save();
+    }
+
+    public List<ResourceLocation> getMinecraftBiomes(BiomeType.BiomeTypeBuilder biome) {
+        final String key = biome.getName();
+        if (key == null) {
+            return Collections.emptyList();
+        }
+        List<ResourceLocation> minecraft = new ArrayList<>();
+        for (Map.Entry<ResourceLocation, String> biomeKey : biomeKeyToName.entrySet()) {
+            if (key.equals(biomeKey.getValue())) {
+                minecraft.add(biomeKey.getKey());
+            }
+        }
+        return minecraft;
+    }
+
+    @Override
+    public String getSaveFileName() {
+        return getFileNameStatic();
+    }
+
+    public void removeMapping(ResourceLocation minecraftBiome) {
         this.biomeKeyToName.remove(minecraftBiome);
         save();
     }

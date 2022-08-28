@@ -1,18 +1,18 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world.biomes;
 
-import net.minecraft.resources.MinecraftKey;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import javax.annotation.Nullable;
+import net.minecraft.resources.ResourceLocation;
 import voltskiya.apple.game_mechanics.tmw.sql.TmwChunkEntity;
 import voltskiya.apple.game_mechanics.tmw.sql.TmwMapContour;
 import voltskiya.apple.game_mechanics.tmw.sql.VerifyDatabaseTmw;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.BiomeUIDDatabase;
 
-import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 public class ScanWorldChunk {
+
     public static final int CHUNK_LENGTH = 16;
     public ChunkColumn[][] columns = new ChunkColumn[CHUNK_LENGTH][CHUNK_LENGTH];
     private ChunkColumn[] north = new ChunkColumn[CHUNK_LENGTH];
@@ -33,8 +33,9 @@ public class ScanWorldChunk {
     public List<TmwMapContour> toSaveableChunk(int worldMyUid, int x, int z) {
         List<TmwMapContour> chunks = new ArrayList<>();
         for (ChunkColumnFlattened contour : contours) {
-            if (contour.getRefer() == contour)
+            if (contour.getRefer() == contour) {
                 chunks.add(contour.toSaveableContour(worldMyUid, x, z));
+            }
         }
         return chunks;
     }
@@ -48,17 +49,21 @@ public class ScanWorldChunk {
     }
 
     public void cleanUp(@Nullable ScanWorldChunk zPos,
-                        @Nullable ScanWorldChunk zNeg,
-                        @Nullable ScanWorldChunk xPos,
-                        @Nullable ScanWorldChunk xNeg) {
-        if (zPos != null)
+        @Nullable ScanWorldChunk zNeg,
+        @Nullable ScanWorldChunk xPos,
+        @Nullable ScanWorldChunk xNeg) {
+        if (zPos != null) {
             doNextTo(north, zPos.south, ScanBorder.NORTH);
-        if (zNeg != null)
+        }
+        if (zNeg != null) {
             doNextTo(south, zNeg.north, ScanBorder.SOUTH);
-        if (xPos != null)
+        }
+        if (xPos != null) {
             doNextTo(east, xPos.west, ScanBorder.EAST);
-        if (xNeg != null)
+        }
+        if (xNeg != null) {
             doNextTo(west, xNeg.east, ScanBorder.WEST);
+        }
     }
 
     private void doNextTo(ChunkColumn[] row1, ChunkColumn[] row2, ScanBorder border) {
@@ -77,27 +82,37 @@ public class ScanWorldChunk {
 
 
     public void calculate() {
-        while (flatten()) ;
+        while (flatten())
+            ;
         freeInner();
     }
 
     private void freeInner() {
         int length = CHUNK_LENGTH - 1;
-        for (int xi = 1; xi < length; xi++) {
-            for (int zi = 1; zi < length; zi++) {
-                columns[xi][zi].free();
-                columns[xi][zi] = null;
-            }
-        }
+//        int lengthInner = length - 1;
+//        for (int xi = 1; xi < lengthInner; xi++) {
+//            for (int zi = 1; zi < lengthInner; zi++) {
+//                columns[xi][zi].free();
+//                columns[xi][zi] = null;
+//            }
+//        }todo
         for (int xi = 0; xi < CHUNK_LENGTH; xi++) {
             for (int zi = 0; zi < CHUNK_LENGTH; zi++) {
-                if (xi == 0) west[zi] = columns[xi][zi];
-                else if (xi == length) east[zi] = columns[xi][zi];
-                if (zi == 0) south[xi] = columns[xi][zi];
-                else if (zi == length) north[xi] = columns[xi][zi];
+                if (xi == 0) {
+                    west[zi] = columns[xi][zi];
+                } else if (xi == length) {
+                    east[zi] = columns[xi][zi];
+                }
+                if (zi == 0) {
+                    south[xi] = columns[xi][zi];
+                } else if (zi == length) {
+                    north[xi] = columns[xi][zi];
+                } else {
+                    zi = length - 1; // skip to next possible check
+                }
             }
         }
-        columns = null;
+//        columns = null;
     }
 
     private boolean flatten() {
@@ -110,7 +125,9 @@ public class ScanWorldChunk {
                 ChunkColumn xNeg = xi == 0 ? null : columns[xi - 1][zi];
                 ChunkColumn me = columns[xi][zi];
                 boolean didFlatten = me.flatten(contours, zPos, zNeg, xPos, xNeg);
-                if (didFlatten) shouldContinue = true;
+                if (didFlatten) {
+                    shouldContinue = true;
+                }
             }
         }
         return shouldContinue;
@@ -118,10 +135,11 @@ public class ScanWorldChunk {
 
 
     public static class ChunkColumnFlattened {
+
         private final int middleX;
         private final int middleY;
         private final int middleZ;
-        private Map<MinecraftKey, Integer> biomes = new HashMap<>();
+        private Map<ResourceLocation, Integer> biomes = new HashMap<>();
         private ChunkColumnFlattened refer = null;
         private ChunkColumnFlattened north = null;
         private ChunkColumnFlattened south = null;
@@ -136,11 +154,18 @@ public class ScanWorldChunk {
             this.middleZ = middleZ;
         }
 
-        public void addBiome(MinecraftKey biome) {
+        private static Long getChunkUid(ChunkColumnFlattened chunk) {
+            if (chunk != null) {
+                System.out.println(chunk.chunkUID);
+            }
+            return chunk == null ? null : chunk.chunkUID;
+        }
+
+        public void addBiome(ResourceLocation biome) {
             getRefer().addBiome_(biome);
         }
 
-        private void addBiome_(MinecraftKey biome) {
+        private void addBiome_(ResourceLocation biome) {
             biomes.compute(biome, (b, i) -> i == null ? 1 : i + 1);
         }
 
@@ -149,8 +174,9 @@ public class ScanWorldChunk {
         }
 
         private void join_(ChunkColumnFlattened flattened) {
-            for (Map.Entry<MinecraftKey, Integer> biome : flattened.biomes.entrySet()) {
-                biomes.compute(biome.getKey(), (b, i) -> i == null ? biome.getValue() : i + biome.getValue());
+            for (Map.Entry<ResourceLocation, Integer> biome : flattened.biomes.entrySet()) {
+                biomes.compute(biome.getKey(),
+                    (b, i) -> i == null ? biome.getValue() : i + biome.getValue());
             }
             flattened.biomes = null;
             flattened.referTo(getRefer());
@@ -165,15 +191,27 @@ public class ScanWorldChunk {
         }
 
         public void setBorder(ChunkColumnFlattened other, ScanBorder border) {
-            getRefer().setBorder_(other, border);
+            getRefer().setBorder_(other.getRefer(), border);
         }
 
         private void setBorder_(ChunkColumnFlattened other, ScanBorder border) {
             switch (border) {
-                case NORTH -> this.north = other;
-                case SOUTH -> this.south = other;
-                case EAST -> this.east = other;
-                case WEST -> this.west = other;
+                case NORTH -> {
+                    this.north = other;
+                    other.south = this;
+                }
+                case SOUTH -> {
+                    this.south = other;
+                    other.north = this;
+                }
+                case EAST -> {
+                    this.east = other;
+                    other.west = this;
+                }
+                case WEST -> {
+                    this.west = other;
+                    other.east = this;
+                }
             }
         }
 
@@ -192,11 +230,14 @@ public class ScanWorldChunk {
         }
 
         public TmwMapContour toSaveableContour(int worldMyUid, int x, int z) {
-            return new TmwMapContour(chunkUID, worldMyUid, x, z, getChunkUid(this.east), getChunkUid(this.west), getChunkUid(this.north), getChunkUid(this.south), middleX, middleY, middleZ);
-        }
-
-        private Long getChunkUid(ChunkColumnFlattened chunk) {
-            return chunk == null ? null : chunk.chunkUID;
+            ChunkColumnFlattened border = getBorder(ScanBorder.EAST);
+            Long e = getChunkUid(border);
+            Long w = getChunkUid(getBorder(ScanBorder.WEST));
+            Long n = getChunkUid(getBorder(ScanBorder.NORTH));
+            Long s = getChunkUid(getBorder(ScanBorder.SOUTH));
+            System.out.printf("%s, %s,%s,%s,%s\n", border, e, w, n, s);
+            return new TmwMapContour(chunkUID, worldMyUid, x, z, e, w, n, s, middleX, middleY,
+                middleZ);
         }
 
         public void setChunkUID() {
@@ -206,8 +247,8 @@ public class ScanWorldChunk {
         public void setChunkUID_() {
             this.chunkUID = VerifyDatabaseTmw.getChunkUid();
             int maxBiomeVal = 0;
-            MinecraftKey maxBiome = null;
-            for (Map.Entry<MinecraftKey, Integer> biome : biomes.entrySet()) {
+            ResourceLocation maxBiome = null;
+            for (Map.Entry<ResourceLocation, Integer> biome : biomes.entrySet()) {
                 if (biome.getValue() > maxBiomeVal || maxBiome == null) {
                     maxBiomeVal = biome.getValue();
                     maxBiome = biome.getKey();

@@ -1,28 +1,24 @@
 package voltskiya.apple.game_mechanics.decay.config.gui.template.variant;
 
+import apple.mc.utilities.inventory.gui.acd.page.InventoryGuiPageScrollableACD;
+import apple.mc.utilities.inventory.gui.acd.page.ScrollableSectionACD;
+import apple.mc.utilities.inventory.gui.acd.slot.ItemGuiSlotCycleable;
 import apple.utilities.structures.expressions.EnumOperatorType;
 import apple.utilities.util.Pretty;
+import java.util.List;
 import org.bukkit.Material;
 import voltskiya.apple.game_mechanics.decay.config.gui.DecayGui;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateRequiredType;
 import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateRequiredTypeJoined;
 import voltskiya.apple.game_mechanics.decay.config.template.MaterialVariant;
-import voltskiya.apple.utilities.util.gui.acd.page.InventoryGuiPageScrollableACD;
-import voltskiya.apple.utilities.util.gui.acd.page.ScrollableSectionACD;
-import voltskiya.apple.utilities.util.gui.acd.slot.InventoryGuiSlotDoNothingACD;
-import voltskiya.apple.utilities.util.gui.acd.slot.InventoryGuiSlotImplACD;
-import voltskiya.apple.utilities.util.gui.acd.slot.cycle.InventoryGuiSlotCycleACD;
-import voltskiya.apple.utilities.util.gui.acd.slot.cycle.SlotCycleable;
-
-import java.util.List;
-
-import static voltskiya.apple.utilities.util.minecraft.InventoryUtils.makeItem;
 
 public class DecayGuiVariantRequirementsType extends InventoryGuiPageScrollableACD<DecayGui> {
+
     private final DecayBlockTemplateRequiredTypeJoined requirementsType;
     private final MaterialVariant parentBlock;
     private final ScrollableSectionACD section;
-    private RequiredTypeWrapper tempRequirementType = RequiredTypeWrapper.get(DecayBlockTemplateRequiredType.NONE);
+    private RequiredTypeWrapper tempRequirementType = RequiredTypeWrapper.get(
+        DecayBlockTemplateRequiredType.NONE);
 
     public DecayGuiVariantRequirementsType(DecayGui parent, MaterialVariant parentBlock) {
         super(parent, false);
@@ -35,37 +31,38 @@ public class DecayGuiVariantRequirementsType extends InventoryGuiPageScrollableA
     @Override
     public void initialize() {
         addRequirements();
-        setSlot(new InventoryGuiSlotDoNothingACD(makeItem(this.parentBlock.material)), 4);
-        setSlot(new InventoryGuiSlotImplACD(e -> parentRemoveSubPage(), makeItem(Material.RED_TERRACOTTA, "Discard Changes")), 0);
-        setSlot(new InventoryGuiSlotImplACD(e -> {
+        setSlot(slotDoNothing(makeItem(this.parentBlock.material)), 4);
+        setSlot(slotImpl(e -> parentRemoveSubPage(),
+            makeItem(Material.RED_TERRACOTTA, "Discard Changes")), 0);
+        setSlot(slotImpl(e -> {
             parentBlock.requirementsType = requirementsType;
             parentRemoveSubPage();
         }, makeItem(Material.GREEN_TERRACOTTA, "Save")), 8);
-        setSlot(new InventoryGuiSlotImplACD(
-                e -> {
-                    this.requirementsType.addEnum(this.tempRequirementType.wrapped());
-                    parentRefresh();
-                },
-                makeItem(Material.MAGENTA_GLAZED_TERRACOTTA, "Add the requirement")
+        setSlot(slotImpl(
+            e -> {
+                this.requirementsType.addEnum(this.tempRequirementType.wrapped());
+                parentRefresh();
+            },
+            makeItem(Material.MAGENTA_GLAZED_TERRACOTTA, "Add the requirement")
         ), 7);
     }
 
     @Override
     public void refreshPageItems() {
         addRequirements();
-        setSlot(new InventoryGuiSlotCycleACD<>(
-                () -> RequirementsOrValue.get(requirementsType.getOperatorType()),
-                r -> this.requirementsType.setOperator(r.getOperatorType())
+        setSlot(slotCycle(
+            () -> RequirementsOrValue.get(requirementsType.getOperatorType()),
+            r -> this.requirementsType.setOperator(r.getOperatorType())
         ), 2);
-        setSlot(new InventoryGuiSlotCycleACD<>(() -> this.tempRequirementType, (r) -> this.tempRequirementType = r), 6);
+        setSlot(slotCycle(() -> this.tempRequirementType, (r) -> this.tempRequirementType = r), 6);
     }
 
     private void addRequirements() {
         section.clear();
         for (DecayBlockTemplateRequiredType required : this.requirementsType.getMyEnums()) {
-            section.addItem(new InventoryGuiSlotImplACD(
-                    e -> requirementsType.removeEnum(required),
-                    makeItem(Material.QUARTZ, RequiredTypeWrapper.get(required).itemName())
+            section.addItem(slotImpl(
+                e -> requirementsType.removeEnum(required),
+                makeItem(Material.QUARTZ, RequiredTypeWrapper.get(required).itemName())
             ));
         }
     }
@@ -80,7 +77,7 @@ public class DecayGuiVariantRequirementsType extends InventoryGuiPageScrollableA
         return 27;
     }
 
-    private enum RequirementsOrValue implements SlotCycleable<RequirementsOrValue> {
+    private enum RequirementsOrValue implements ItemGuiSlotCycleable<RequirementsOrValue> {
         OR(Material.COMPARATOR),
         AND(Material.REPEATER);
 
@@ -112,9 +109,9 @@ public class DecayGuiVariantRequirementsType extends InventoryGuiPageScrollableA
         @Override
         public List<String> itemLore() {
             return List.of(
-                    "The operator that joins the requirements",
-                    "'AND' means the requirements all need to be true",
-                    "'OR' means only one requirements needs to be true"
+                "The operator that joins the requirements",
+                "'AND' means the requirements all need to be true",
+                "'OR' means only one requirements needs to be true"
             );
         }
 
@@ -127,7 +124,8 @@ public class DecayGuiVariantRequirementsType extends InventoryGuiPageScrollableA
     }
 
     private record RequiredTypeWrapper(DecayBlockTemplateRequiredType wrapped)
-            implements SlotCycleable<RequiredTypeWrapper> {
+        implements ItemGuiSlotCycleable<RequiredTypeWrapper> {
+
         private static final RequiredTypeWrapper[] values = new RequiredTypeWrapper[DecayBlockTemplateRequiredType.values().length];
 
         static {

@@ -1,45 +1,44 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.biomes;
 
+import apple.lib.pmc.FileIOServiceNow;
+import apple.mc.utilities.data.serialize.GsonSerializeMC;
 import apple.utilities.database.SaveFileable;
-import apple.utilities.database.singleton.AppleJsonDatabaseSingleton;
+import apple.utilities.database.ajd.AppleAJD;
+import apple.utilities.database.ajd.AppleAJDInst;
+import apple.utilities.threading.service.queue.AsyncTaskQueue;
 import apple.utilities.util.FileFormatting;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import net.minecraft.resources.MinecraftKey;
-import plugin.util.plugin.plugin.util.plugin.FileIOServiceNow;
-import voltskiya.apple.game_mechanics.tmw.PluginTMW;
-import voltskiya.apple.utilities.util.storage.GsonTypeAdapterUtils;
-
 import java.io.File;
 import java.util.HashMap;
+import net.minecraft.resources.ResourceLocation;
+import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 
 public class BiomeUIDDatabase implements SaveFileable {
+
     private static final String FILENAME = FileFormatting.extensionJson("biomeUids");
-    private static BiomeUIDDatabase instance;
-    private static AppleJsonDatabaseSingleton<BiomeUIDDatabase> databaseManager;
-    private transient final HashMap<MinecraftKey, Integer> uids = new HashMap<>();
-    private transient final HashMap<Integer, MinecraftKey> uids2 = new HashMap<>();
+    private static AppleAJDInst<BiomeUIDDatabase, AsyncTaskQueue> manager;
+    private transient final HashMap<ResourceLocation, Integer> uids = new HashMap<>();
+    private transient final HashMap<Integer, ResourceLocation> uids2 = new HashMap<>();
     private int currentBiomeUid = 0;
 
-    public BiomeUIDDatabase() {
-        instance = this;
-    }
 
     public static BiomeUIDDatabase get() {
-        return instance;
+        return manager.getInstance();
     }
 
     public static void load() {
         final GsonBuilder gsonBuilder = new GsonBuilder();
-        GsonTypeAdapterUtils.registerMinecraftKeyTypeAdapter(gsonBuilder);
+        GsonSerializeMC.registerMinecraftKeyTypeAdapter(gsonBuilder);
         Gson gson = gsonBuilder.create();
-        File folder = PluginTMW.get().getFile("biomes");
-        databaseManager = new AppleJsonDatabaseSingleton<>(folder, FileIOServiceNow.get(), gson);
-        databaseManager.loadNow(BiomeUIDDatabase.class, FILENAME);
-        if (instance == null) instance = new BiomeUIDDatabase();
+        File folder = PluginTMW.get().getFile("biomes", FILENAME);
+        manager = AppleAJD.createInst(BiomeUIDDatabase.class, folder,
+            FileIOServiceNow.get().taskCreator());
+        manager.setSerializingJson(gson);
+        manager.loadOrMake();
     }
 
-    public synchronized int getBiome(MinecraftKey biome) {
+    public synchronized int getBiome(ResourceLocation biome) {
         Integer biomeUid = uids.get(biome);
         if (biomeUid == null) {
             biomeUid = getCurrentBiomeUid();
@@ -51,10 +50,10 @@ public class BiomeUIDDatabase implements SaveFileable {
     }
 
     private void save() {
-        databaseManager.save(this);
+        manager.save();
     }
 
-    public synchronized MinecraftKey getBiome(int biomeUid) {
+    public synchronized ResourceLocation getBiome(int biomeUid) {
         return uids2.get(biomeUid);
     }
 

@@ -1,9 +1,10 @@
 package voltskiya.apple.game_mechanics.tmw;
 
-import apple.utilities.util.FileFormatting;
-import plugin.util.plugin.plugin.util.plugin.PluginManagedModule;
-import voltskiya.apple.configs.plugin.manage.ConfigBuilderHolder;
-import voltskiya.apple.configs.plugin.manage.PluginManagedModuleConfig;
+import apple.configs.data.config.AppleConfig;
+import apple.configs.factory.AppleConfigLike;
+import apple.lib.pmc.PluginModule;
+import apple.mc.utilities.PluginModuleMcUtil;
+import java.util.List;
 import voltskiya.apple.game_mechanics.tmw.commands.CommandMobsTmw;
 import voltskiya.apple.game_mechanics.tmw.sql.TmwDatabaseConfig;
 import voltskiya.apple.game_mechanics.tmw.sql.VerifyDatabaseTmw;
@@ -16,24 +17,30 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.mobs.MobRegen;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.PlayerTemperatureCommand;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.WorldDatabaseManager;
 
-import java.util.Collection;
-import java.util.List;
+public class PluginTMW extends PluginModule implements PluginModuleMcUtil {
 
-public class PluginTMW extends PluginManagedModule implements PluginManagedModuleConfig {
     public static final String MOBS_FOLDER = "mobs";
+    public static final int BLOCKS_IN_A_CHUNK = 16;
     private static PluginTMW instance;
-
-    public static PluginTMW get() {
-        return instance;
-    }
+    private AppleConfig<?> tmwMobConfig;
 
     public PluginTMW() {
         instance = this;
     }
 
+    public static PluginTMW get() {
+        return instance;
+    }
+
     @Override
     public void init() {
-        TmwMobConfigDatabase.initialize();
+        tmwMobConfig = configJson(TmwMobConfigDatabase.class, "TmwMobConfig.json",
+            PluginTMW.MOBS_FOLDER).build()[0];
+        tmwMobConfig.register();
+    }
+
+    public void saveTmwMobConfig() {
+        tmwMobConfig.save();
     }
 
     @Override
@@ -43,7 +50,6 @@ public class PluginTMW extends PluginManagedModule implements PluginManagedModul
         WorldDatabaseManager.get().loadAllNow();
         BiomeTypeDatabase.load();
         VerifyDatabaseTmw.connect();
-
         new MobListener();
         new WatchPlayerListener();
         new MobRegen();
@@ -59,19 +65,9 @@ public class PluginTMW extends PluginManagedModule implements PluginManagedModul
     }
 
     @Override
-    public Collection<ConfigBuilderHolder<?>> getConfigsToRegister() {
-        return List.of(
-                configFolder(
-                        yml(TmwWatchConfig.class)
-                                .setName("TmwWatchConfig")
-                                .setExtension(FileFormatting::extensionYml),
-                        basic(TmwMobConfigDatabase.class)
-                                .setLoading(TmwMobConfigDatabase::loadNow)
-                                .setName(TmwMobConfigDatabase.getFileNameExtStatic()),
-                        yml(ScanWorldConfig.class)
-                                .setName("ScanWorldConfig")
-                                .setExtension(this::extensionYmlI)
-                ).nameAsExtension()
+    public List<AppleConfigLike> getConfigs() {
+        return List.of(configYaml(TmwWatchConfig.class, "TmwWatchConfig.yml"),
+            configYaml(ScanWorldConfig.class, "ScanWorldConfig.yml")
         );
     }
 }

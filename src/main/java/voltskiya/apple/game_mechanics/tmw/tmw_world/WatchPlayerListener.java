@@ -1,5 +1,8 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -7,11 +10,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
 public class WatchPlayerListener implements Listener {
+
     private static WatchPlayerListener instance;
     private final Map<UUID, WatchPlayer> watches = new HashMap<>();
 
@@ -20,8 +20,9 @@ public class WatchPlayerListener implements Listener {
         instance = this;
         for (Player player : Bukkit.getOnlinePlayers()) {
             UUID playerUUID = player.getUniqueId();
-            if (!watches.containsKey(playerUUID))
+            if (!watches.containsKey(playerUUID)) {
                 watches.put(playerUUID, new WatchPlayer(player));
+            }
         }
         Bukkit.getScheduler().scheduleSyncRepeatingTask(VoltskiyaPlugin.get(), this::tick, 1, 1);
     }
@@ -38,8 +39,9 @@ public class WatchPlayerListener implements Listener {
     public synchronized void onJoin(PlayerJoinEvent event) {
         final Player player = event.getPlayer();
         final UUID playerUUID = player.getUniqueId();
-        if (!watches.containsKey(playerUUID))
+        if (!watches.containsKey(playerUUID)) {
             watches.put(playerUUID, new WatchPlayer(player));
+        }
     }
 
     private synchronized void tick() {

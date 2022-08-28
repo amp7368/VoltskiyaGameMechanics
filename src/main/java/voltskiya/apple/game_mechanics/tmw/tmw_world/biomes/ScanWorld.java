@@ -2,7 +2,11 @@ package voltskiya.apple.game_mechanics.tmw.tmw_world.biomes;
 
 
 import apple.nms.decoding.world.DecodeBiome;
-import net.minecraft.resources.MinecraftKey;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ForkJoinPool;
+import java.util.logging.Level;
+import net.minecraft.resources.ResourceLocation;
 import org.bukkit.Bukkit;
 import org.bukkit.ChunkSnapshot;
 import org.bukkit.Material;
@@ -15,12 +19,8 @@ import voltskiya.apple.game_mechanics.tmw.sql.TmwChunkEntity;
 import voltskiya.apple.game_mechanics.tmw.sql.TmwMapContour;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ForkJoinPool;
-import java.util.logging.Level;
-
 public class ScanWorld {
+
     private final World world;
     private final int worldMyUid;
     private final int xCorner1;
@@ -28,7 +28,9 @@ public class ScanWorld {
     private final int layerLength;
     private final int totalLayers;
     private final List<Double> tps = new ArrayList<>();
-    private final ForkJoinPool workerService = new ForkJoinPool(((int) (Runtime.getRuntime().availableProcessors() * 1.5)));
+    private final ForkJoinPool workerService = new ForkJoinPool(
+        ((int) (Runtime.getRuntime().availableProcessors() * 1.5)));
+    private final int buildHeight;
     ScanWorldConfig scanningConfig = ScanWorldConfig.get();
     private ScanWorldChunk[] layer1;
     private ScanWorldChunk[] layer2;
@@ -36,12 +38,13 @@ public class ScanWorld {
     private int ziLayer = 0;
     private int xiLayer = 0;
     private int limit = 0;
-    private double limitShouldBe = 5;
+    private double limitShouldBe = ScanWorldConfig.get().limitShouldBe;
     private ScanningState state = ScanningState.SCAN;
     private boolean isWaitingForLastPhase = false;
 
     public ScanWorld(World world, int xCorner1, int zCorner1, int xCorner2, int zCorner2) {
         this.world = world;
+        this.buildHeight = world.getMaxHeight();
         this.xCorner1 = Math.min(xCorner1, xCorner2) / 16;
         this.zCorner1 = Math.min(zCorner1, zCorner2) / 16;
         int xCorner21 = Math.max(xCorner1, xCorner2) / 16;
@@ -56,17 +59,24 @@ public class ScanWorld {
 
     public void scanAll() {
         setLimitFromTps();
-        PluginTMW.get().log(Level.INFO, "state: %s, work/tick: %.2f ", state.toString(), limitShouldBe);
-        while (limit != 0) runSelf();
+        PluginTMW.get()
+            .log(Level.INFO, "state: %s, work/tick: %.2f, Completion: %.1f%%", state.toString(),
+                limitShouldBe, ziLayer / (double) totalLayers * 100);
+        while (limit != 0) {
+            runSelf();
+        }
         if (state == ScanningState.DONE_DONE) {
             finish();
             return;
         }
-        VoltskiyaPlugin.get().scheduleSyncDelayedTask(this::scanAll, scanningConfig.ticksPerScheduleWork);
+        VoltskiyaPlugin.get()
+            .scheduleSyncDelayedTask(this::scanAll, scanningConfig.ticksPerScheduleWork);
     }
 
     private void finish() {
-        PluginTMW.get().log(Level.INFO, "DONE DONE SCANNING");
+        for (int i = 0; i < 7; i++) {
+            PluginTMW.get().log(Level.INFO, "DONE DONE SCANNING");
+        }
     }
 
     private void runSelf() {
@@ -90,7 +100,9 @@ public class ScanWorld {
         double nowTps = Bukkit.getTPS()[0];
         this.tps.add(nowTps);
 
-        while (this.tps.size() > scanningConfig.getWatchTpsSize()) this.tps.remove(0);
+        while (this.tps.size() > scanningConfig.getWatchTpsSize()) {
+            this.tps.remove(0);
+        }
         double oldTps = this.tps.get(0);
         if (nowTps > scanningConfig.maxTps || oldTps < nowTps) {
             incrementLimit(1);
@@ -98,8 +110,9 @@ public class ScanWorld {
             incrementLimit(-1);
         }
         limit = (int) limitShouldBe;
-        if (Math.random() < limitShouldBe - limit)
+        if (Math.random() < limitShouldBe - limit) {
             limit++;
+        }
     }
 
     private void incrementLimit(double i) {
@@ -113,7 +126,9 @@ public class ScanWorld {
     }
 
     private void insertLayer() {
-        if (reachedCapacity()) return;
+        if (reachedCapacity()) {
+            return;
+        }
         int z = ziLayer + zCorner1;
         List<TmwMapContour> chunks = new ArrayList<>();
         List<TmwChunkEntity> biomes = new ArrayList<>();
@@ -122,39 +137,52 @@ public class ScanWorld {
             chunk.setChunkUID();
             chunks.addAll(chunk.toSaveableChunk(worldMyUid, xiLayer + xCorner1, z));
             biomes.addAll(chunk.toSaveableBiome());
-            if (--limit == 0) break;
+            if (--limit == 0) {
+                break;
+            }
         }
         addTask(() -> {
             BiomeSqlStorage.insertContour(chunks);
             BiomeSqlStorage.insertBiomes(biomes);
         });
-        if (limit != 0)
+        if (limit != 0) {
             incrementInsideLoop();
+        }
     }
 
     private void shiftLayer() {
         for (ScanWorldChunk scanWorldChunk : layer1) {
-            if (scanWorldChunk != null)
+            if (scanWorldChunk != null) {
                 scanWorldChunk.free();
+            }
         }
         layer1 = layer2;
         layer2 = layer3;
         layer3 = new ScanWorldChunk[layerLength];
-        if (++ziLayer == totalLayers) state = ScanningState.DONE_DONE;
-        else incrementInsideLoop();
+        if (++ziLayer == totalLayers) {
+            state = ScanningState.DONE_DONE;
+        } else {
+            incrementInsideLoop();
+        }
     }
 
     private void consolidateLayer() {
-        if (reachedCapacity()) return;
+        if (reachedCapacity()) {
+            return;
+        }
         for (; xiLayer < layerLength; xiLayer++) {
             ScanWorldChunk me = layer2[xiLayer];
-            if (me == null) continue;
+            if (me == null) {
+                continue;
+            }
             ScanWorldChunk zPos = layer3[xiLayer];
             ScanWorldChunk zNeg = layer1[xiLayer];
             ScanWorldChunk xPos = xiLayer + 1 == layerLength ? null : layer2[xiLayer + 1];
             ScanWorldChunk xNeg = xiLayer == 0 ? null : layer2[xiLayer - 1];
             addTask(() -> me.cleanUp(zPos, zNeg, xPos, xNeg));
-            if (--limit == 0) return;
+            if (--limit == 0) {
+                return;
+            }
         }
         incrementInsideLoop();
     }
@@ -164,11 +192,15 @@ public class ScanWorld {
     }
 
     private void scanLayer() {
-        if (reachedCapacity()) return;
+        if (reachedCapacity()) {
+            return;
+        }
         int z = ziLayer + zCorner1;
         for (; xiLayer < layerLength; xiLayer++) {
             scanChunk(z, xiLayer);
-            if (--limit == 0) return;
+            if (--limit == 0) {
+                return;
+            }
         }
         incrementInsideLoop();
     }
@@ -179,8 +211,7 @@ public class ScanWorld {
 
     private void scanChunk(int z, int xi) {
         int x = xi + xCorner1;
-        ChunkSnapshot chunkToScan = world.getChunkAt(x, z)
-                .getChunkSnapshot(false, true, false);
+        ChunkSnapshot chunkToScan = world.getChunkAt(x, z).getChunkSnapshot(false, true, false);
         ScanWorldChunk scannedChunk;
         layer3[xi] = scannedChunk = new ScanWorldChunk();
         addTask(() -> scanChunk(chunkToScan, scannedChunk, x, z));
@@ -196,15 +227,18 @@ public class ScanWorld {
         scannedChunk.calculate();
     }
 
-    private void scanColumn(ChunkSnapshot chunkToScan, ChunkColumn column, int xi, int zi, int x, int z) {
+    private void scanColumn(ChunkSnapshot chunkToScan, ChunkColumn column, int xi, int zi, int x,
+        int z) {
         boolean isLastBlockAir = true;
-        for (int yi = 0; yi < 256; yi++) {
+        for (int yi = 0; yi < buildHeight; yi++) {
             Material block = chunkToScan.getBlockType(xi, yi, zi);
             boolean isThisBlockAir = block.isAir();
             if (!isLastBlockAir && isThisBlockAir) {
-                @Nullable MinecraftKey biome = DecodeBiome.getBiomeKeyAt(this.world, x, yi, z);
-                if (biome != null)
+                @Nullable ResourceLocation biome = DecodeBiome.getBiomeKey(this.world, x, yi, z)
+                    .location();
+                if (biome != null) {
                     column.addTopBlock(biome, yi - 1);
+                }
             }
             isLastBlockAir = isThisBlockAir;
         }
@@ -221,7 +255,9 @@ public class ScanWorld {
 
         public ScanningState next() {
             int index = ordinal() + 1;
-            if (index == LAST_INDEX) index = 0;
+            if (index == LAST_INDEX) {
+                index = 0;
+            }
             return values()[index];
         }
     }

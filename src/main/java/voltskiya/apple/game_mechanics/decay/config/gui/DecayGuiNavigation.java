@@ -1,23 +1,22 @@
 package voltskiya.apple.game_mechanics.decay.config.gui;
 
+import apple.mc.utilities.inventory.gui.acd.page.InventoryGuiPageImplACD;
 import org.bukkit.Material;
-import voltskiya.apple.utilities.util.gui.acd.page.InventoryGuiPageImplACD;
-import voltskiya.apple.utilities.util.gui.acd.slot.InventoryGuiSlotImplACD;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 public class DecayGuiNavigation extends InventoryGuiPageImplACD<DecayGui> {
+
     public DecayGuiNavigation(DecayGui decayGui) {
         super(decayGui);
     }
 
     @Override
     public void initialize() {
-        setSlot(new InventoryGuiSlotImplACD(e -> parentAddSubPage(new DecayGuiListBlocksPage(parent)),
-                InventoryUtils.makeItem(Material.BRICKS, "Blocks list")), 1);
-        setSlot(new InventoryGuiSlotImplACD(e -> parentAddSubPage(new DecayGuiListBlockSettingsPage(parent)),
-                InventoryUtils.makeItem(Material.REDSTONE_TORCH, "Block settings list")), 4);
-        setSlot(new InventoryGuiSlotImplACD(e -> parentAddSubPage(new DecayGuiSettingsPage(parent)),
-                InventoryUtils.makeItem(Material.COMPARATOR, "General settings")), 7);
+        setSlot(slotImpl(e -> parentAddSubPage(new DecayGuiListBlocksPage(parent)),
+            makeItem(Material.BRICKS, "Blocks list")), 1);
+        setSlot(slotImpl(e -> parentAddSubPage(new DecayGuiListBlockSettingsPage(parent)),
+            makeItem(Material.REDSTONE_TORCH, "Block settings list")), 4);
+        setSlot(slotImpl(e -> parentAddSubPage(new DecayGuiSettingsPage(parent)),
+            makeItem(Material.COMPARATOR, "General settings")), 7);
     }
 
     @Override

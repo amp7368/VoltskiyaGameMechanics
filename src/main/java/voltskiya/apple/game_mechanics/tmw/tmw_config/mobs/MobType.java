@@ -1,24 +1,28 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.mobs;
 
+import apple.mc.utilities.data.serialize.EntitySerializable;
+import apple.mc.utilities.inventory.item.InventoryUtils;
 import apple.utilities.json.gson.serialize.JsonSerializing;
-import com.google.gson.*;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
-import net.minecraft.nbt.MojangsonParser;
-import net.minecraft.nbt.NBTTagCompound;
-import org.bukkit.Material;
-import org.bukkit.craftbukkit.v1_17_R1.inventory.CraftItemStack;
-import org.bukkit.inventory.ItemStack;
-import org.bukkit.inventory.meta.ItemMeta;
-import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
-import voltskiya.apple.utilities.util.minecraft.NbtUtils;
-
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import de.tr7zw.nbtapi.NBTCompound;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.entity.Entity;
+import org.bukkit.inventory.ItemStack;
+import org.jetbrains.annotations.Nullable;
+import voltskiya.apple.game_mechanics.tmw.tmw_config.biomes.gui.BiomeTypeBuilderRegisterBlocks;
 
 public class MobType {
+
+    private static final Random random = new Random();
     private final MobTypeBuilder.MobIcon icon;
     private final boolean isPersistent;
     private final double despawnsAfterHours;
@@ -26,7 +30,6 @@ public class MobType {
     private final int highestYLevel;
     private final int lowestYLevel;
     private final TimeToSpawn timeToSpawn;
-    private static final Random random = new Random();
     private final ArrayList<Integer> groups;
 
     public MobType(MobTypeBuilder builder) {
@@ -106,7 +109,9 @@ public class MobType {
     }
 
     public int getGroup() {
-        if (groups.isEmpty()) return 0;
+        if (groups.isEmpty()) {
+            return 0;
+        }
         return groups.get(random.nextInt(groups.size()));
     }
 
@@ -114,19 +119,17 @@ public class MobType {
         return (long) (System.currentTimeMillis() + this.despawnsAfterHours * 60 * 1000);
     }
 
-    public NBTTagCompound getEnitityNbt() {
-        return getNbt().getCompound(NbtUtils.ITEM_TAG).getCompound(NbtUtils.ENTITY_TAG_NBT);
+    public NBTCompound getEnitityNbt() {
+        return this.icon.getNbt().getEntityTag();
     }
 
-    public NBTTagCompound getNbt() {
-        try {
-            return MojangsonParser.parse(icon.nbt);
-        } catch (CommandSyntaxException e) {
-            return new NBTTagCompound();
-        }
+    @Nullable
+    public Entity spawn(Location location) {
+        return this.icon.getNbt().spawn(location);
     }
 
     public static class MobTypeSerializer implements JsonSerializing<MobType> {
+
         private static final MobTypeSerializer instance = new MobTypeSerializer();
 
         public static MobTypeSerializer get() {
@@ -134,17 +137,20 @@ public class MobType {
         }
 
         @Override
-        public JsonElement serialize(MobType mobType, Type type, JsonSerializationContext jsonSerializationContext) {
+        public JsonElement serialize(MobType mobType, Type type,
+            JsonSerializationContext jsonSerializationContext) {
             return new JsonPrimitive(mobType.icon.getName());
         }
 
         @Override
-        public MobType deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
+        public MobType deserialize(JsonElement jsonElement, Type type,
+            JsonDeserializationContext jsonDeserializationContext) throws JsonParseException {
             return MobTypeDatabase.getMob(jsonElement.getAsString());
         }
     }
 
     public static class MobTypeBuilder {
+
         public ArrayList<Integer> groups = new ArrayList<>() {{
             add(1);
         }};
@@ -176,7 +182,8 @@ public class MobType {
         }
 
         public ItemStack getIconItem() {
-            return icon == null ? InventoryUtils.makeItem(Material.LEVER, 1, "No spawn egg", null) : icon.toItem();
+            return icon == null ? InventoryUtils.get()
+                .makeItem(Material.LEVER, 1, "No spawn egg", null) : icon.toItem();
         }
 
         public MobType build() {
@@ -228,7 +235,9 @@ public class MobType {
         }
 
         public TimeToSpawn getTimeToSpawn() {
-            if (timeToSpawn == null) timeToSpawn = new TimeToSpawn();
+            if (timeToSpawn == null) {
+                timeToSpawn = new TimeToSpawn();
+            }
             return timeToSpawn;
         }
 
@@ -251,32 +260,26 @@ public class MobType {
         }
 
         public static class MobIcon {
+
             private final String name;
             private final Material material;
             private final List<String> lore;
-            private final String nbt;
+            private final EntitySerializable nbt;
 
-            public MobIcon(String name, Material material, List<String> lore, NBTTagCompound nbt) {
-                this.name = name;
-                this.material = material;
-                this.lore = lore;
-                this.nbt = nbt.asString();
+            public MobIcon(ItemStack item) {
+                InventoryUtils utils = InventoryUtils.get();
+                this.name = utils.getDisplayName(item);
+                this.material = item.getType();
+                this.lore = utils.getLore(item);
+                this.nbt = new EntitySerializable(item);
             }
 
             public ItemStack toItem() {
-                ItemStack item = new ItemStack(material);
-                ItemStack itemStack;
-                try {
-                    net.minecraft.world.item.ItemStack nmsItem = net.minecraft.world.item.ItemStack.a(MojangsonParser.parse(nbt));
-                    itemStack = CraftItemStack.asBukkitCopy(nmsItem);
-                } catch (CommandSyntaxException e) {
-                    itemStack = new ItemStack(material);
-                }
-                final ItemMeta itemMeta = item.getItemMeta();
-                itemMeta.setDisplayName(name);
-                itemMeta.setLore(lore);
-                item.setItemMeta(itemMeta);
-                return itemStack;
+                return InventoryUtils.get().makeItem(material, 1, name, lore);
+            }
+
+            public EntitySerializable getNbt() {
+                return nbt;
             }
 
             public String getName() {
@@ -286,6 +289,7 @@ public class MobType {
     }
 
     public static class TimeToSpawn {
+
         private boolean isDay = true;
         private boolean isEvening = true;
         private boolean isNight = true;

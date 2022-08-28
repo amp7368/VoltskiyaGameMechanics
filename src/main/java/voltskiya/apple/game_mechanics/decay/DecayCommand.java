@@ -10,11 +10,10 @@ import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import voltskiya.apple.game_mechanics.VoltskiyaPlugin;
 import voltskiya.apple.game_mechanics.decay.config.gui.DecayGui;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
-import voltskiya.apple.utilities.util.wand.WandToolList;
 
 @CommandAlias("decay")
 public class DecayCommand extends BaseCommand {
+
     public DecayCommand() {
         VoltskiyaPlugin.get().getCommandManager().registerCommand(this);
     }
@@ -25,14 +24,12 @@ public class DecayCommand extends BaseCommand {
     }
 
     @Subcommand("wand")
-    public class Wand extends BaseCommand {
+    public class DecayWandCommand extends BaseCommand {
+
         @Default
         public void giveWand(Player player) {
-            player.getInventory().addItem(InventoryUtils.addDataString(
-                    InventoryUtils.makeItem(Material.DEAD_BUSH, 1, "Decay Wand", null),
-                    DecayWand.WAND_KEY,
-                    ""
-            ));
+            player.getInventory()
+                .addItem(PluginDecay.DECAY_WAND.createItem(Material.DEAD_BUSH, "Decay Wand"));
         }
 
         @Subcommand("give")
@@ -43,7 +40,7 @@ public class DecayCommand extends BaseCommand {
         @Subcommand("radius")
         @CommandCompletion("#")
         public void size(Player player, int size) {
-            DecayWand wand = WandToolList.getPlayerWand(DecayWand.WAND_KEY, player, DecayWand.class);
+            DecayWand wand = PluginDecay.DECAY_WAND.getWand(player);
             wand.setSize(size);
             player.sendMessage(ChatColor.GREEN + "Set the radius to " + size);
         }
@@ -51,7 +48,7 @@ public class DecayCommand extends BaseCommand {
         @Subcommand("force")
         @CommandCompletion("#")
         public void force(Player player, int force) {
-            DecayWand wand = WandToolList.getPlayerWand(DecayWand.WAND_KEY, player, DecayWand.class);
+            DecayWand wand = PluginDecay.DECAY_WAND.getWand(player);
             wand.setForce(force);
             player.sendMessage(ChatColor.GREEN + "Set the force to " + force);
         }

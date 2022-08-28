@@ -8,6 +8,7 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.PlayerTemperatur
 import voltskiya.apple.game_mechanics.tmw.tmw_world.temperature.TemperatureWatchPlayer;
 
 public class WatchPlayer {
+
     private final Player player;
     private final BiomeWatchPlayer biomeWatch;
     private final MobWatchPlayer mobWatch;

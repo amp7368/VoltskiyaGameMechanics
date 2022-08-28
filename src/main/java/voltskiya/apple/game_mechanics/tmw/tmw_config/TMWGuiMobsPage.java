@@ -1,5 +1,9 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config;
 
+import apple.mc.utilities.inventory.gui.acd.page.InventoryGuiPageScrollableACD;
+import apple.mc.utilities.inventory.gui.acd.slot.base.ItemGuiSlotACD;
+import java.util.Comparator;
+import java.util.List;
 import org.bukkit.Material;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
@@ -7,46 +11,34 @@ import org.bukkit.inventory.ItemStack;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobType;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.MobTypeDatabase;
 import voltskiya.apple.game_mechanics.tmw.tmw_config.mobs.gui.MobTypeGui;
-import voltskiya.apple.utilities.util.gui.InventoryGuiPageScrollable;
-import voltskiya.apple.utilities.util.gui.InventoryGuiSlotGeneric;
-import voltskiya.apple.utilities.util.gui.InventoryGuiSlotScrollable;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
-import java.util.Comparator;
-import java.util.List;
+public class TMWGuiMobsPage extends InventoryGuiPageScrollableACD<TMWGui> {
 
-public class TMWGuiMobsPage extends InventoryGuiPageScrollable {
     private final TMWGui tmwGui;
 
     public TMWGuiMobsPage(TMWGui tmwGui) {
         super(tmwGui);
         this.tmwGui = tmwGui;
-        addMobs();
-        setSlots();
     }
 
-    private void addMobs() {
+    @Override
+    public void initialize() {
+
+        setSlot(slotImpl((e1) -> tmwGui.parentNext(),
+            makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)), 8);
+        setSlot(
+            slotImpl(e -> parentAddSubPage(new MobTypeGui(tmwGui, new MobType.MobTypeBuilder())),
+                makeItem(Material.DARK_OAK_SAPLING, 1, "Add a mob", null)), 4);
+    }
+
+    @Override
+    public void refreshPageItems() {
         clear();
         List<MobType> mobs = MobTypeDatabase.getAll();
         mobs.sort(Comparator.comparing(MobType::getName, String.CASE_INSENSITIVE_ORDER));
         for (MobType mob : mobs) {
             add(new MobTypeInventorySlot(mob, tmwGui));
         }
-    }
-
-    @Override
-    public void setSlots() {
-        super.setSlots();
-        setSlot(new InventoryGuiSlotGeneric((e1) -> tmwGui.nextPage(1), InventoryUtils.makeItem(Material.GREEN_TERRACOTTA, 1, "Next Page", null)
-        ), 8);
-        setSlot(new InventoryGuiSlotGeneric(e -> e.getWhoClicked().openInventory(new MobTypeGui(tmwGui, new MobType.MobTypeBuilder()).getInventory()),
-                InventoryUtils.makeItem(Material.DARK_OAK_SAPLING, 1, "Add a mob", null)), 4);
-    }
-
-    @Override
-    public void fillInventory() {
-        addMobs();
-        super.fillInventory();
     }
 
     @Override
@@ -59,12 +51,8 @@ public class TMWGuiMobsPage extends InventoryGuiPageScrollable {
         return 54;
     }
 
-    @Override
-    protected int getScrollIncrement() {
-        return 8;
-    }
+    public static class MobTypeInventorySlot implements ItemGuiSlotACD {
 
-    public static class MobTypeInventorySlot extends InventoryGuiSlotScrollable {
         private final MobType mob;
         private final TMWGui tmwGui;
 
@@ -81,9 +69,8 @@ public class TMWGuiMobsPage extends InventoryGuiPageScrollable {
                 event.getWhoClicked().getInventory().addItem(item);
                 return;
             }
-            event.getWhoClicked().openInventory(
-                    new MobTypeGui(tmwGui, mob.toBuilder()).getInventory()
-            );
+            event.getWhoClicked()
+                .openInventory(new MobTypeGui(tmwGui, mob.toBuilder()).getInventory());
         }
 
         @Override

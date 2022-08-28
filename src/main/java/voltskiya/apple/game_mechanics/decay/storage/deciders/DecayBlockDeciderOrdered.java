@@ -1,14 +1,14 @@
 package voltskiya.apple.game_mechanics.decay.storage.deciders;
 
 import apple.utilities.util.ObjectUtilsFormatting;
-import org.bukkit.Material;
-import org.jetbrains.annotations.NotNull;
-
 import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
+import org.bukkit.Material;
+import org.jetbrains.annotations.NotNull;
 
 public class DecayBlockDeciderOrdered implements DecayBlockDecider {
+
     private final Random random = new Random();
     private final Material defaultChoice;
     private List<DecayBlockPossibility> choices;
@@ -18,12 +18,15 @@ public class DecayBlockDeciderOrdered implements DecayBlockDecider {
         this.defaultChoice = defaultChoice;
     }
 
-    public DecayBlockDeciderOrdered addChance(DecayBlockRequirementAbstract<Double> chanceDecider, Material materialIfChance) {
-        this.choices.add(new DecayBlockPossibility(Integer.MAX_VALUE, chanceDecider, materialIfChance));
+    public DecayBlockDeciderOrdered addChance(DecayBlockRequirementAbstract<Double> chanceDecider,
+        Material materialIfChance) {
+        this.choices.add(
+            new DecayBlockPossibility(Integer.MAX_VALUE, chanceDecider, materialIfChance));
         return this;
     }
 
-    public DecayBlockDeciderOrdered addChance(DecayBlockRequirementAbstract<Double> chanceDecider, Material materialIfChance, int priority) {
+    public DecayBlockDeciderOrdered addChance(DecayBlockRequirementAbstract<Double> chanceDecider,
+        Material materialIfChance, int priority) {
         this.choices.add(new DecayBlockPossibility(priority, chanceDecider, materialIfChance));
         return this;
     }
@@ -50,5 +53,6 @@ public class DecayBlockDeciderOrdered implements DecayBlockDecider {
     private record DecayBlockPossibility(int priority,
                                          DecayBlockRequirementAbstract<Double> chanceDecider,
                                          Material materialIfChance) {
+
     }
 }

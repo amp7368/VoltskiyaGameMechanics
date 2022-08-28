@@ -1,14 +1,15 @@
 package voltskiya.apple.game_mechanics.tmw.sql;
 
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 @Entity
 @Table(name = SqlVariableNames.ChunkSql.TABLE_CHUNK)
 public class TmwChunkEntity {
+
     @Id
     @Column(name = SqlVariableNames.ChunkSql.CHUNK_UID)
     public long chunkUid;
@@ -18,5 +19,8 @@ public class TmwChunkEntity {
     public TmwChunkEntity(long chunkUid, int biome) {
         this.chunkUid = chunkUid;
         this.biome = biome;
+    }
+
+    public TmwChunkEntity() {
     }
 }

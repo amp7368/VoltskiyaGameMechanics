@@ -1,10 +1,11 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_config.temperature.blocks;
 
+import apple.mc.utilities.inventory.item.InventoryUtils;
 import org.bukkit.Material;
 import org.bukkit.inventory.ItemStack;
-import voltskiya.apple.utilities.util.minecraft.InventoryUtils;
 
 public class TempBlockType {
+
     private final double temperature;
     private final Material material;
 
@@ -26,10 +27,13 @@ public class TempBlockType {
     }
 
     public ItemStack toItem() {
-        return InventoryUtils.makeItem(material.isItem() ? material : Material.BLACK_CONCRETE, 1, material.name(), null);
+        return InventoryUtils.get()
+            .makeItem(material.isItem() ? material : Material.BLACK_CONCRETE, 1,
+                material.name(), null);
     }
 
     public static class TempBlockTypeBuilder {
+
         private Material material = Material.AIR;
         private double temperature = 0;
 

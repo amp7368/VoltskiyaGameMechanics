@@ -5,15 +5,15 @@ import apple.utilities.database.singleton.AppleJsonDatabaseSingleton;
 import apple.utilities.util.FileFormatting;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
+import java.util.Collection;
+import java.util.HashMap;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import voltskiya.apple.game_mechanics.decay.PluginDecay;
 import voltskiya.apple.game_mechanics.util.FileIOService;
 
-import java.util.Collection;
-import java.util.HashMap;
-
 public class MaterialDatabase implements SaveFileable {
+
     private static final BiMap<Material, Integer> materialToMyUid = HashBiMap.create();
     private static AppleJsonDatabaseSingleton<MaterialDatabase> databaseManager;
     private static int currentUid = 0;
@@ -22,10 +22,11 @@ public class MaterialDatabase implements SaveFileable {
 
     public static void load() {
         databaseManager = new AppleJsonDatabaseSingleton<>(
-                FileFormatting.fileWithChildren(PluginDecay.get().getDataFolder(), "shared"),
-                FileIOService.get()
+            FileFormatting.fileWithChildren(PluginDecay.get().getDataFolder(), "shared"),
+            FileIOService.get()
         );
-        @NotNull Collection<MaterialDatabase> database = databaseManager.loadAllNow(MaterialDatabase.class);
+        @NotNull Collection<MaterialDatabase> database = databaseManager.loadAllNow(
+            MaterialDatabase.class);
         if (database.isEmpty()) {
             instance = new MaterialDatabase();
             save();
@@ -33,7 +34,9 @@ public class MaterialDatabase implements SaveFileable {
             instance = database.stream().findFirst().get();
             materialToMyUid.putAll(instance.materialToMyUidSaved);
             for (Integer i : materialToMyUid.values()) {
-                if (i != null && i >= currentUid) currentUid = i + 1;
+                if (i != null && i >= currentUid) {
+                    currentUid = i + 1;
+                }
             }
         }
     }
@@ -50,9 +53,13 @@ public class MaterialDatabase implements SaveFileable {
     @NotNull
     public static Integer get(Material material) {
         synchronized (materialToMyUid) {
-            if (material == null) material = Material.AIR;
+            if (material == null) {
+                material = Material.AIR;
+            }
             Integer result = materialToMyUid.get(material);
-            if (result != null) return result;
+            if (result != null) {
+                return result;
+            }
             return put(material);
         }
     }

@@ -1,10 +1,24 @@
 package voltskiya.apple.game_mechanics.decay.storage;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
+import jakarta.persistence.UniqueConstraint;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Random;
+import java.util.UUID;
 import org.bukkit.Material;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import voltskiya.apple.game_mechanics.decay.config.database.DecayBlockDatabase;
-import voltskiya.apple.game_mechanics.decay.config.template.*;
+import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplate;
+import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateGrouping;
+import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateGroupingSettings;
+import voltskiya.apple.game_mechanics.decay.config.template.DecayBlockTemplateRequiredType;
+import voltskiya.apple.game_mechanics.decay.config.template.DecayInto;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockContext;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockDecider;
 import voltskiya.apple.game_mechanics.decay.storage.deciders.DecayBlockDeciderRequirements;
@@ -13,15 +27,11 @@ import voltskiya.apple.game_mechanics.tmw.sql.SqlVariableNames.Decay;
 import voltskiya.apple.game_mechanics.tmw.sql.VerifyDatabaseTmw;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 
-import javax.persistence.*;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Random;
-import java.util.UUID;
-
-@Table(name = Decay.TABLE_DECAY_BLOCK, uniqueConstraints = {@UniqueConstraint(columnNames = {Decay.X, Decay.Y, Decay.Z, Decay.WORLD_UID})})
+@Table(name = Decay.TABLE_DECAY_BLOCK, uniqueConstraints = {
+    @UniqueConstraint(columnNames = {Decay.X, Decay.Y, Decay.Z, Decay.WORLD_UID})})
 @Entity(name = Decay.TABLE_DECAY_BLOCK)
 public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
+
     @Transient
     private transient final Random random = new Random();
     @Id
@@ -52,7 +62,8 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
     @Transient
     private transient Material estimate;
 
-    public DecayBlock(Material oldMaterial, Material currentMaterial, int x, int y, int z, UUID world) {
+    public DecayBlock(Material oldMaterial, Material currentMaterial, int x, int y, int z,
+        UUID world) {
         this.oldMaterial = oldMaterial;
         this.currentMaterial = currentMaterial;
         this.x = x;
@@ -71,7 +82,8 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
     @Override
     public boolean equals(Object obj) {
         if (obj instanceof DecayBlock b) {
-            return b.x == this.x && b.y == this.y && b.z == this.z && b.myWorldUid == this.myWorldUid;
+            return b.x == this.x && b.y == this.y && b.z == this.z
+                && b.myWorldUid == this.myWorldUid;
         }
         return false;
     }
@@ -99,25 +111,38 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
     }
 
     public Material getOldMaterial() {
-        if (oldMaterial == null) oldMaterial = MaterialDatabase.get(oldMaterialUid);
+        if (oldMaterial == null) {
+            oldMaterial = MaterialDatabase.get(oldMaterialUid);
+        }
         return oldMaterial;
     }
 
     public Material getCurrentMaterial() {
-        if (currentMaterial == null) currentMaterial = MaterialDatabase.get(currentMaterialUid);
+        if (currentMaterial == null) {
+            currentMaterial = MaterialDatabase.get(currentMaterialUid);
+        }
         return currentMaterial;
+    }
+
+    private void setCurrentMaterial(Material material) {
+        this.currentMaterial = material;
+        this.currentMaterialUid = MaterialDatabase.get(material);
     }
 
     @NotNull
     public UUID getWorld() {
-        if (world == null) world = SimpleWorldDatabase.getWorld(myWorldUid);
+        if (world == null) {
+            world = SimpleWorldDatabase.getWorld(myWorldUid);
+        }
         return world;
     }
 
     public void explosion(float damage, double chanceOfFire) {
         this.damage += damage;
-        @Nullable DecayBlockTemplateGrouping group = DecayBlockDatabase.getGroup(this.getCurrentMaterial());
-        @Nullable DecayBlockTemplate template = DecayBlockDatabase.getBlock(group, this.getCurrentMaterial());
+        @Nullable DecayBlockTemplateGrouping group = DecayBlockDatabase.getGroup(
+            this.getCurrentMaterial());
+        @Nullable DecayBlockTemplate template = DecayBlockDatabase.getBlock(group,
+            this.getCurrentMaterial());
         boolean isOriginal = true;
         while (template != null && this.damage > template.getSettings().getDurability()) {
             isOriginal = false;
@@ -133,8 +158,10 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
         if (template == null) {
             // make it air
             this.decider = new DecayBlockDeciderRequirements(Material.AIR)
-                    .addChance(DecayBlockTemplateRequiredType.BLOCK_BELOW, (c, x, y, z) -> chanceOfFire, Material.FIRE)
-                    .addChance(DecayBlockTemplateRequiredType.NONE, (c, x, y, z) -> 1 - chanceOfFire, Material.AIR);
+                .addChance(DecayBlockTemplateRequiredType.BLOCK_BELOW, (c, x, y, z) -> chanceOfFire,
+                    Material.FIRE)
+                .addChance(DecayBlockTemplateRequiredType.NONE, (c, x, y, z) -> 1 - chanceOfFire,
+                    Material.AIR);
             this.estimate = Material.AIR;
         } else {
             this.decider = template.toDecider();
@@ -142,14 +169,10 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
         }
     }
 
-    private void setCurrentMaterial(Material material) {
-        this.currentMaterial = material;
-        this.currentMaterialUid = MaterialDatabase.get(material);
-    }
-
     private void doBreak(DecayBlockTemplateGrouping group, DecayBlockTemplate template) {
         this.damage -= template.getSettings().getDurability();
-        Collection<DecayInto> decayInto = group == null ? Collections.emptyList() : group.getDecayInto().values();
+        Collection<DecayInto> decayInto =
+            group == null ? Collections.emptyList() : group.getDecayInto().values();
         if (decayInto.isEmpty()) {
             setCurrentMaterial(null);
             return;
@@ -177,14 +200,17 @@ public class DecayBlock implements DecayBlockRequirementAbstract<Material> {
 
     @Nullable
     public Material estimate() {
-        if (this.estimate == null) return this.currentMaterial;
+        if (this.estimate == null) {
+            return this.currentMaterial;
+        }
         return this.estimate;
     }
 
     public float getResistance() {
         DecayBlockTemplate template = DecayBlockDatabase.getBlock(this.getCurrentMaterial());
-        if (template == null) return 0;
-        else {
+        if (template == null) {
+            return 0;
+        } else {
             DecayBlockTemplateGroupingSettings settings = template.getSettings();
             return Math.min(settings.getResistance(), settings.getDurability() - this.damage);
         }

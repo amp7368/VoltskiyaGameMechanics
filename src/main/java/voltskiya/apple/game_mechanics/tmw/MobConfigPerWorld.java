@@ -1,6 +1,7 @@
 package voltskiya.apple.game_mechanics.tmw;
 
 public class MobConfigPerWorld {
+
     private boolean isMobSpawning = false;
 
     public MobConfigPerWorld() {

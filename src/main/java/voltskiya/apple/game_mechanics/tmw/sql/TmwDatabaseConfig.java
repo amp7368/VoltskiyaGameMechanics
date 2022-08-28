@@ -2,11 +2,16 @@ package voltskiya.apple.game_mechanics.tmw.sql;
 
 import apple.utilities.util.FileFormatting;
 import com.google.gson.Gson;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import voltskiya.apple.game_mechanics.tmw.PluginTMW;
 
-import java.io.*;
-
 public class TmwDatabaseConfig {
+
     private static TmwDatabaseConfig instance;
     public String password = "pass";
     public String username = "user";
@@ -21,7 +26,8 @@ public class TmwDatabaseConfig {
     }
 
     public static TmwDatabaseConfig load() {
-        File file = FileFormatting.fileWithChildren(PluginTMW.get().getDataFolder(), "tmwDatabaseConfig.json");
+        File file = FileFormatting.fileWithChildren(PluginTMW.get().getDataFolder(),
+            "tmwDatabaseConfig.json");
         file.getParentFile().mkdirs();
         Gson gson = new Gson();
         TmwDatabaseConfig config;
@@ -30,8 +36,10 @@ public class TmwDatabaseConfig {
         } catch (IOException e) {
             config = new TmwDatabaseConfig();
         }
-        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file));) {
-            if (!file.exists()) file.createNewFile();
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(file))) {
+            if (!file.exists()) {
+                file.createNewFile();
+            }
             gson.toJson(config, writer);
         } catch (IOException ex) {
             ex.printStackTrace();

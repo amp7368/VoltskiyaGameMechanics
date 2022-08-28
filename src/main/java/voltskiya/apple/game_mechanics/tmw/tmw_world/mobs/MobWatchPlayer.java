@@ -1,7 +1,9 @@
 package voltskiya.apple.game_mechanics.tmw.tmw_world.mobs;
 
-import net.minecraft.world.entity.Entity;
-import net.minecraft.world.entity.EntityTypes;
+import static voltskiya.apple.game_mechanics.tmw.PluginTMW.BLOCKS_IN_A_CHUNK;
+
+import java.util.ArrayList;
+import java.util.List;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
@@ -16,13 +18,8 @@ import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchPlayerListener;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.WatchTickable;
 import voltskiya.apple.game_mechanics.tmw.tmw_world.util.SimpleWorldDatabase;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-
-import static voltskiya.apple.game_mechanics.deleteme_later.chunks.TemperatureChunk.BLOCKS_IN_A_CHUNK;
-
 public class MobWatchPlayer implements WatchTickable {
+
     private static final int CHUNK_SIGHT = 6;
 
     private final Player player;
@@ -36,25 +33,16 @@ public class MobWatchPlayer implements WatchTickable {
         List<Long> mobsToRemove = new ArrayList<>();
         for (TmwStoredMob storedMob : mobsToSpawn) {
             synchronized (MobSqlStorage.mobsToBeRemoved) {
-                if (MobSqlStorage.mobsToBeRemoved.contains(storedMob.uid)) continue;
+                if (MobSqlStorage.mobsToBeRemoved.contains(storedMob.uid)) {
+                    continue;
+                }
             }
             MobType mobType = MobTypeDatabase.getMob(storedMob.uniqueName);
-            Optional<EntityTypes<?>> entityTypes = EntityTypes.a(mobType.getEnitityNbt());
-            if (entityTypes.isPresent()) {
-                Entity entity = entityTypes.get().a(storedMob.getNmsWorld());
-                mobsToRemove.add(storedMob.uid);
-                synchronized (MobSqlStorage.mobsToBeRemoved) {
-                    MobSqlStorage.mobsToBeRemoved.add(storedMob.uid);
-                }
-                if (entity != null) {
-                    entity.load(mobType.getEnitityNbt());
-                    storedMob.getNmsWorld().addAllEntitiesSafely(entity);
-                    entity.load(mobType.getEnitityNbt());
-                    entity.addScoreboardTag(TmwStoredMob.getTag(storedMob.uniqueName));
-                    entity.teleportAndSync(storedMob.x, storedMob.y, storedMob.z);
-                    if (TmwWatchConfig.get().consoleOutput.showSummonMob)
-                        PluginTMW.get().logger().info("summon mob %s at %s %d %d %d", storedMob.uniqueName, storedMob.getWorld().getName(), storedMob.x, storedMob.y, storedMob.z);
-                }
+            mobType.spawn(storedMob.getLocation());
+            mobsToRemove.add(storedMob.uid);
+            if (TmwWatchConfig.get().consoleOutput.showSummonMob) {
+                PluginTMW.get().logger().info("summon mob %s at %s %d %d %d", storedMob.uniqueName,
+                    storedMob.getWorld().getName(), storedMob.x, storedMob.y, storedMob.z);
             }
         }
         MobSqlStorage.removeMobs(mobsToRemove);
@@ -75,14 +63,10 @@ public class MobWatchPlayer implements WatchTickable {
         int upperX = x + CHUNK_SIGHT;
         int lowerZ = z - CHUNK_SIGHT;
         int upperZ = z + CHUNK_SIGHT;
-        MobSqlStorage.getMobs(
-                lowerX * BLOCKS_IN_A_CHUNK,
-                (1 + upperX) * BLOCKS_IN_A_CHUNK,
-                lowerZ * BLOCKS_IN_A_CHUNK,
-                (1 + upperZ) * BLOCKS_IN_A_CHUNK,
-                SimpleWorldDatabase.getWorld(playerLocation.getWorld().getUID()),
-                MobWatchPlayer::spawnMobs
-        );
+        MobSqlStorage.getMobs(lowerX * BLOCKS_IN_A_CHUNK, (1 + upperX) * BLOCKS_IN_A_CHUNK,
+            lowerZ * BLOCKS_IN_A_CHUNK, (1 + upperZ) * BLOCKS_IN_A_CHUNK,
+            SimpleWorldDatabase.getWorld(playerLocation.getWorld().getUID()),
+            MobWatchPlayer::spawnMobs);
     }
 
     @Override

@@ -1,8 +1,7 @@
 package voltskiya.apple.game_mechanics.decay.world;
 
-import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
-
 import java.util.function.BiFunction;
+import voltskiya.apple.game_mechanics.decay.storage.DecayBlock;
 
 public enum DecayErosionType {
     // overgrowth
